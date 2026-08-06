@@ -420,6 +420,11 @@
         .floating-install-btn:active {
             transform: scale(0.95);
         }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
 
         .install-btn {
             display: none !important;
@@ -3837,11 +3842,12 @@
             });
 
             // ============================================================
-            //  3. INSTALL BUTTON LOGIC
+            //  3. INSTALL BUTTON LOGIC - مُصَحَّح
             // ============================================================
             let deferredPrompt = null;
             let isAppInstalled = false;
 
+            // التحقق مما إذا كان التطبيق مثبتاً بالفعل
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 isAppInstalled = true;
                 localStorage.setItem('app_installed', 'true');
@@ -3849,22 +3855,31 @@
                 isAppInstalled = true;
             }
 
-            if (isAppInstalled) {
-                floatingInstallBtn.style.display = 'none';
-            } else {
-                floatingInstallBtn.style.display = 'flex';
-                floatingInstallBtn.textContent = '📲 تثبيت التطبيق';
+            // إظهار أو إخفاء الزر حسب الحالة
+            function updateInstallButton() {
+                if (isAppInstalled) {
+                    floatingInstallBtn.style.display = 'none';
+                } else if (deferredPrompt) {
+                    floatingInstallBtn.style.display = 'flex';
+                    floatingInstallBtn.textContent = '📲 تثبيت التطبيق';
+                } else {
+                    // إذا لم يكن هناك deferredPrompt، نعرض الزر لكن مع رسالة مختلفة
+                    floatingInstallBtn.style.display = 'flex';
+                    floatingInstallBtn.textContent = '📲 تثبيت (من القائمة)';
+                }
             }
 
+            // تسجيل حدث beforeinstallprompt في أقرب وقت ممكن
             window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('✅ beforeinstallprompt تم التقاطه'); // للتأكد من وصول الحدث
                 e.preventDefault();
                 deferredPrompt = e;
-                if (!isAppInstalled) {
-                    floatingInstallBtn.style.display = 'flex';
-                }
+                updateInstallButton();
             });
 
+            // حدث التثبيت الناجح
             window.addEventListener('appinstalled', () => {
+                console.log('✅ تم تثبيت التطبيق');
                 isAppInstalled = true;
                 localStorage.setItem('app_installed', 'true');
                 deferredPrompt = null;
@@ -3872,9 +3887,11 @@
                 showToast('✅ تم تثبيت التطبيق بنجاح');
             });
 
+            // زر التثبيت العائم
             if (floatingInstallBtn) {
                 floatingInstallBtn.addEventListener('click', async function() {
                     if (deferredPrompt) {
+                        // إذا كان هناك حدث معلق، نستخدمه
                         deferredPrompt.prompt();
                         const result = await deferredPrompt.userChoice;
                         if (result.outcome === 'accepted') {
@@ -3887,10 +3904,18 @@
                         }
                         deferredPrompt = null;
                     } else {
-                        showToast('📲 اضغط على زر المشاركة ⬆️ ثم اختر "أضف إلى الشاشة الرئيسية"');
+                        // إذا لم يكن هناك deferredPrompt، نوجه المستخدم للطريقة اليدوية
+                        showToast('⚠️ استخدم قائمة المتصفح ⋮ واختر "تثبيت التطبيق" أو "أضف إلى الشاشة الرئيسية"');
+                        // يمكنك أيضاً محاولة فتح قائمة المشاركة
+                        if (navigator.share) {
+                            navigator.share({ title: 'احسبلي بلس', url: window.location.href });
+                        }
                     }
                 });
             }
+
+            // تحديث حالة الزر عند بدء التشغيل
+            updateInstallButton();
 
             // ============================================================
             //  4. ITEMS - تم إصلاح تعديل الصنف
