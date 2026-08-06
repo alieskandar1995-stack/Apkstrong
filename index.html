@@ -408,7 +408,7 @@
             touch-action: manipulation;
             min-height: 48px;
             min-width: 48px;
-            display: none; /* مخفي افتراضيًا */
+            display: none;
             align-items: center;
             gap: 8px;
             font-family: inherit;
@@ -421,12 +421,10 @@
             transform: scale(0.95);
         }
 
-        /* ===== زر تثبيت التطبيق القديم (نخفيه) ===== */
         .install-btn {
             display: none !important;
         }
 
-        /* ----- باقي الـ CSS الأصلي (لم يتغير) ----- */
         /* ----- Header & Quick Stats ----- */
         .app-header {
             display: flex;
@@ -460,7 +458,7 @@
             background: rgba(255, 255, 255, 0.04);
             border-radius: 16px;
             padding: 8px 8px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             border: 1px solid rgba(255, 215, 0, 0.06);
             font-size: 13px;
             gap: 4px;
@@ -479,6 +477,52 @@
         #quickStats .stat-item .stat-value.gold { color: #f5a623; }
         #quickStats .stat-item .stat-value.green { color: #2ecc71; }
         #quickStats .stat-item .stat-value.equity { color: #8e44ad; font-weight: 800; }
+
+        /* ===== حقل سعر الصرف الجديد ===== */
+        #exchangeRateBar {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 10px 16px;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.08);
+        }
+        #exchangeRateBar .label {
+            color: #b8b4b0;
+            font-size: 14px;
+        }
+        #exchangeRateBar .input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        #exchangeRateBar input {
+            width: 120px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        #exchangeRateBar input:focus {
+            border-color: #f5a623;
+        }
+        #exchangeRateBar .btn {
+            padding: 6px 16px;
+            min-height: 36px;
+            font-size: 13px;
+        }
+        #exchangeRateBar .currency-symbol {
+            color: #6a6868;
+            font-size: 12px;
+        }
 
         .currency-toggle {
             display: flex;
@@ -919,6 +963,7 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
             margin: 6px 0 8px;
         }
         .qty-btn {
@@ -939,6 +984,19 @@
             color: #0b0b0e;
             border-color: #f5a623;
             box-shadow: 0 6px 18px rgba(245, 166, 35, 0.25);
+        }
+        #customQtyInput {
+            width: 70px;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        #customQtyInput:focus {
+            border-color: #f5a623;
         }
 
         .temp-invoice-table {
@@ -1022,6 +1080,35 @@
         .switch input:checked + .slider::before { transform: translateX(20px); }
 
         /* Quick Mode */
+        #quickModeSearchContainer {
+            display: none;
+            margin-bottom: 10px;
+        }
+        #quickModeSearchContainer .search-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        #quickModeSearchContainer input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+        }
+        #quickModeSearchContainer input:focus {
+            border-color: #f5a623;
+        }
+        #quickModeSearchContainer .btn {
+            min-height: 40px;
+            min-width: 44px;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
         #quickModeContainer {
             display: none;
             padding: 10px 0 80px 0;
@@ -1544,7 +1631,6 @@
         .invoice-type-sales { background: rgba(46, 204, 113, 0.05) !important; border-color: rgba(46, 204, 113, 0.15) !important; }
         .invoice-type-purchases { background: rgba(52, 152, 219, 0.05) !important; border-color: rgba(52, 152, 219, 0.15) !important; }
 
-        /* ===== زر تثبيت عائم - تعديل للشاشات الصغيرة ===== */
         @media (max-width: 480px) {
             .floating-install-btn {
                 bottom: 16px;
@@ -1570,7 +1656,7 @@
         </div>
     </div>
 
-    <!-- ===== زر تثبيت عائم (يظهر في كل الشاشات) ===== -->
+    <!-- ===== زر تثبيت عائم ===== -->
     <button id="floatingInstallBtn" class="floating-install-btn" style="display:none;">
         📲 تثبيت التطبيق
     </button>
@@ -1625,9 +1711,6 @@
                 </div>
             </div>
 
-            <!-- زر التثبيت القديم تم إخفاؤه بواسطة CSS -->
-            <button class="install-btn" id="installBtnWelcome">📲 تثبيت التطبيق</button>
-
             <button class="whatsapp-btn" id="whatsappSupportBtn">💬 طلب اشتراك عبر واتساب</button>
             <div style="margin-top:16px; font-size:13px; color:#6a6868;">لديك كود تفعيل؟ أدخله أعلاه</div>
         </div>
@@ -1669,6 +1752,16 @@
             <div class="stat-item">🏦 رأس المال: <span class="stat-value equity" id="statTotalEquity">0</span></div>
         </div>
 
+        <!-- ===== حقل سعر الصرف الجديد ===== -->
+        <div id="exchangeRateBar">
+            <span class="label">💵 سعر صرف الدولار (ل.س/$)</span>
+            <div class="input-group">
+                <input type="number" id="exchangeRateTop" step="1" min="0" placeholder="13000" />
+                <button class="btn btn-gold" id="exchangeRateTopBtn">تحديث</button>
+                <span class="currency-symbol">$</span>
+            </div>
+        </div>
+
         <!-- ===== PANELS ===== -->
 
         <!-- Items -->
@@ -1703,13 +1796,16 @@
                             <label for="quickModeToggle">⚡ الوضع السريع (أزرار)</label>
                         </div>
 
-                        <div id="quickModeContainer" style="display: none; padding: 10px 0 80px 0; max-height: calc(100vh - 250px); overflow-y: auto;">
-                            <div id="quickModeSearchContainer" style="display: none; margin-bottom: 10px;">
-                                <div style="display:flex; gap:8px; align-items:center;">
-                                    <input type="text" id="quickModeSearch" placeholder="🔍 ابحث عن صنف أو امسح باركود..." style="flex:1; padding:10px 16px; border-radius:40px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#fff; outline:none; font-size:14px;" />
-                                    <button type="button" class="btn btn-gold-outline btn-sm" id="quickModeScanBarcodeBtn" style="min-height:40px; min-width:44px; flex-shrink:0; font-size:18px;">📷</button>
-                                </div>
+                        <!-- ===== حقل البحث وزر المسح (خارج quickModeContainer) ===== -->
+                        <div id="quickModeSearchContainer" style="display: none; margin-bottom: 10px;">
+                            <div class="search-wrapper">
+                                <input type="text" id="quickModeSearch" placeholder="🔍 ابحث عن صنف أو امسح باركود..." />
+                                <button type="button" class="btn btn-gold-outline btn-sm" id="quickModeScanBarcodeBtn" style="min-height:40px; min-width:44px; flex-shrink:0; font-size:18px;">📷</button>
                             </div>
+                        </div>
+
+                        <div id="quickModeContainer" style="display: none; padding: 10px 0 80px 0; max-height: calc(100vh - 250px); overflow-y: auto;">
+                            <!-- الأزرار ستظهر هنا بواسطة JavaScript -->
                         </div>
 
                         <div id="traditionalPosElements">
@@ -1737,6 +1833,8 @@
                                     <button class="qty-btn" data-qty="4">4</button>
                                     <button class="qty-btn" data-qty="5">5</button>
                                     <button class="qty-btn" data-qty="6">6</button>
+                                    <!-- ===== حقل الكمية المخصص ===== -->
+                                    <input type="number" id="customQtyInput" min="1" value="1" placeholder="كمية" />
                                 </div>
                                 <button class="btn btn-gold-outline btn-sm" id="addToTempBtn" style="margin-top:4px;">➕ إضافة إلى الفاتورة</button>
                             </div>
@@ -1889,7 +1987,7 @@
                 </div>
                 <div class="records-search" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                     <input type="text" id="recordsSearch" placeholder="🔍 بحث برقم الفاتورة أو اسم العميل..." style="flex:1; min-width:150px;" />
-                    <button class="btn btn-gold-outline btn-sm" id="exportRecordsExcelBtn" style="font-size:13px;min-height:36px;">📥 تصدير السجلات إلى Excel</button>
+                    <button class="btn btn-gold-outline btn-sm" id="exportRecordsExcelBtn" style="font-size:13px;min-height:36px;">📥 تصدير السجلات إلى CSV</button>
                 </div>
                 <div id="recordsList">
                     <div style="text-align:center;color:#6a6868;padding:30px 0;">جارٍ تحميل الفواتير...</div>
@@ -1911,7 +2009,7 @@
                         <input type="date" id="reportDateTo" />
                     </div>
                     <button class="btn btn-gold" id="reportGenerateBtn">تحديث</button>
-                    <button class="btn btn-gold-outline" id="exportReportExcelBtn">📥 تصدير التقرير إلى Excel</button>
+                    <button class="btn btn-gold-outline" id="exportReportExcelBtn">📥 تصدير التقرير إلى CSV</button>
                 </div>
 
                 <div id="financialAlert"></div>
@@ -2014,7 +2112,8 @@
                     <button class="btn btn-gold" id="saveFavoritesBtn" style="min-height:40px;">💾 حفظ المميزة</button>
                 </div>
 
-                <div class="settings-group">
+                <!-- ===== حقل سعر الصرف القديم (مخفي) ===== -->
+                <div class="settings-group" style="display:none;">
                     <h4>💵 سعر صرف الدولار اليومي</h4>
                     <div class="settings-row">
                         <div class="form-group">
@@ -2084,10 +2183,9 @@
                     <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
                 </div>
 
-                <!-- زر التثبيت القديم في الإعدادات (مخفي) -->
-                <div class="settings-group">
+                <div class="settings-group" style="display:none;">
                     <h4>📲 تثبيت التطبيق</h4>
-                    <button class="install-btn" id="installBtnSettings">📲 تثبيت التطبيق على جهازك</button>
+                    <!-- تم حذف زر التثبيت المكرر -->
                 </div>
             </div>
         </section>
@@ -2569,7 +2667,7 @@
             }
 
             // ============================================================
-            // 🔧 دوال التعامل مع العملات والأسعار
+            // 🔧 دوال التعامل مع العملات والأسعار - تم إصلاح عرض الدولار
             // ============================================================
             function getPriceInOldCurrency(priceObj) {
                 if (typeof priceObj === 'number') return priceObj;
@@ -2583,28 +2681,57 @@
                 return val;
             }
 
+            // --- دوال جديدة للعرض الصحيح ---
+            function convertFromCurrencyToDisplay(value, fromCurrency) {
+                const rate = getExchangeRate();
+                const toCur = getDisplayCurrency();
+                if (fromCurrency === toCur) return value;
+                // أولاً نحول إلى الليرة السورية القديمة (old)
+                let oldValue = value;
+                if (fromCurrency === 'new') oldValue = value * 100;
+                else if (fromCurrency === 'usd') oldValue = value * rate;
+                // ثم من old إلى العملة المعروضة
+                if (toCur === 'new') return oldValue / 100;
+                else if (toCur === 'usd') return rate > 0 ? oldValue / rate : 0;
+                else return oldValue; // toCur === 'old'
+            }
+
+            function formatCurrencyDisplay(value) {
+                const cur = getDisplayCurrency();
+                const formatted = Number(value).toFixed(2);
+                if (cur === 'new') return formatted + ' ل.س.ج';
+                if (cur === 'usd') return '$' + formatted;
+                return formatted + ' ل.س';
+            }
+
             function displayPrice(priceObj) {
-                if (typeof priceObj === 'number') return formatCurrency(priceObj);
-                if (!priceObj || typeof priceObj !== 'object') return formatCurrency(0);
+                if (typeof priceObj === 'number') {
+                    // القيمة معطاة بالليرة القديمة
+                    return formatCurrencyDisplay(convertFromCurrencyToDisplay(priceObj, 'old'));
+                }
+                if (!priceObj || typeof priceObj !== 'object') {
+                    return formatCurrencyDisplay(0);
+                }
                 const val = parseFloat(priceObj.value) || 0;
                 const cur = priceObj.currency || 'old';
-                const displayCur = getDisplayCurrency();
-                const rate = getExchangeRate();
-                let displayVal = val;
-                if (displayCur === 'new') {
-                    if (cur === 'old') displayVal = val / 100;
-                    else if (cur === 'new') displayVal = val;
-                    else if (cur === 'usd') displayVal = val * rate / 100;
-                } else if (displayCur === 'usd') {
-                    if (cur === 'old') displayVal = val / rate;
-                    else if (cur === 'new') displayVal = val / (rate / 100);
-                    else if (cur === 'usd') displayVal = val;
-                } else {
-                    if (cur === 'old') displayVal = val;
-                    else if (cur === 'new') displayVal = val * 100;
-                    else if (cur === 'usd') displayVal = val * rate;
+                const displayVal = convertFromCurrencyToDisplay(val, cur);
+                return formatCurrencyDisplay(displayVal);
+            }
+
+            // دالة التنسيق القديمة (تبقى للحسابات بالليرة القديمة)
+            function formatCurrency(v) {
+                const cur = getDisplayCurrency();
+                let converted = v;
+                if (cur === 'new') {
+                    converted = v / 100;
+                } else if (cur === 'usd') {
+                    const rate = getExchangeRate();
+                    converted = rate > 0 ? v / rate : 0;
                 }
-                return formatCurrency(displayVal);
+                const formatted = Number(converted).toFixed(2);
+                if (cur === 'new') return formatted + ' ل.س.ج';
+                if (cur === 'usd') return '$' + formatted;
+                return formatted + ' ل.س';
             }
 
             function convertInputToOld(value, currency) {
@@ -2770,21 +2897,6 @@
 
             let exchangeRate = 13000;
             let displayCurrency = 'old';
-
-            function formatCurrency(v) {
-                const cur = getDisplayCurrency();
-                let converted = v;
-                if (cur === 'new') {
-                    converted = v / 100;
-                } else if (cur === 'usd') {
-                    const rate = getExchangeRate();
-                    converted = rate > 0 ? v / rate : 0;
-                }
-                const formatted = Number(converted).toFixed(2);
-                if (cur === 'new') return formatted + ' ل.س.ج';
-                if (cur === 'usd') return '$' + formatted;
-                return formatted + ' ل.س';
-            }
 
             function setDisplayCurrency(cur) {
                 if (cur !== 'old' && cur !== 'new' && cur !== 'usd') return;
@@ -3140,19 +3252,16 @@
                     return d >= from && d <= to;
                 });
 
-                // ===== التصحيح الثاني: تصحيح حساب COGS والمبيعات الصافية بطرح المرتجعات =====
                 const salesInvoices = invoices.filter(inv => inv.type === 'مبيعات' && !inv.isReturn && inv.status !== 'ملغاة');
                 const purchaseInvoices = invoices.filter(inv => inv.type === 'مشتريات' && !inv.isReturn && inv.status !== 'ملغاة');
                 const expenseInvoices = invoices.filter(inv => inv.type === 'مصروفات' && inv.status !== 'ملغاة');
                 const capitalInvoices = invoices.filter(inv => inv.type === 'رأس_مال' && inv.status !== 'ملغاة');
 
-                // حساب إجمالي المبيعات الصافي (طرح المرتجعات)
                 let totalSales = 0;
                 let totalPurchases = 0;
                 let cogs = 0;
                 let realizedProfit = 0;
 
-                // تجميع المرتجعات حسب الفاتورة الأصلية
                 const returnInvoices = invoices.filter(inv => inv.isReturn && inv.status !== 'ملغاة');
                 const returnsByInvoice = {};
                 for (let ret of returnInvoices) {
@@ -3161,7 +3270,6 @@
                     returnsByInvoice[origId] += ret.netAmount;
                 }
 
-                // حساب COGS الكلي للمبيعات
                 const allInvItems = await dbGetAll('invoiceItems');
                 let totalCogs = 0;
                 for (let inv of salesInvoices) {
@@ -3174,7 +3282,6 @@
                     totalCogs += invCogs;
                 }
 
-                // حساب COGS للمرتجعات (نخصمها من COGS الكلي)
                 let returnCogs = 0;
                 for (let retInv of returnInvoices) {
                     const retItems = allInvItems.filter(i => i.invoiceId === retInv.id);
@@ -3184,14 +3291,12 @@
                 }
                 cogs = totalCogs - returnCogs;
 
-                // حساب المبيعات الصافية
                 for (let inv of salesInvoices) {
                     const totalReturns = returnsByInvoice[inv.id] || 0;
                     const netSales = inv.netAmount - totalReturns;
                     totalSales += netSales;
                 }
 
-                // حساب الأرباح الفعلية المحققة (تطبق نفس المنطق)
                 for (let inv of salesInvoices) {
                     const totalReturns = returnsByInvoice[inv.id] || 0;
                     const netSales = inv.netAmount - totalReturns;
@@ -3206,7 +3311,6 @@
                     }
                 }
 
-                // إجمالي المشتريات (غير المرتجعة)
                 totalPurchases = purchaseInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
 
                 const totalOperationalExpenses = expenseInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
@@ -3385,11 +3489,12 @@
             }
 
             // ============================================================
-            // 📥 EXPORT TO EXCEL
+            // 📥 EXPORT TO CSV
             // ============================================================
-            function exportTableToExcel(type, filename = 'report.xls') {
+            function exportTableToCSV(type, filename = 'report.csv') {
                 let dataRows = [];
                 let headers = [];
+
                 if (type === 'report') {
                     const rows = document.querySelectorAll('#reportDetails tr');
                     rows.forEach(row => {
@@ -3426,26 +3531,14 @@
                     }
                 }
 
-                let html = '<table><thead><tr>';
-                headers.forEach(h => html += `<th>${h}</th>`);
-                html += '</tr></thead><tbody>';
+                let csvContent = '\uFEFF'; // BOM
+                csvContent += headers.join(',') + '\n';
                 dataRows.forEach(row => {
-                    html += '<tr>';
-                    row.forEach(cell => html += `<td>${cell}</td>`);
-                    html += '</tr>';
+                    const escapedRow = row.map(cell => `"${String(cell).replace(/"/g, '""')}"`);
+                    csvContent += escapedRow.join(',') + '\n';
                 });
-                html += '</tbody></table>';
 
-                const fullHtml = `
-                    <html>
-                        <head><meta charset="UTF-8"></head>
-                        <body>
-                            <style>td,th{border:1px solid #ccc;padding:6px;}</style>
-                            ${html}
-                        </body>
-                    </html>
-                `;
-                const blob = new Blob([fullHtml], { type: 'application/vnd.ms-excel' });
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -3500,9 +3593,6 @@
             const pinScreen = $('#pinScreen');
             const appContainer = $('#app');
 
-            // Install buttons (القديمة مخفية)
-            const installBtnWelcome = $('#installBtnWelcome');
-            const installBtnSettings = $('#installBtnSettings');
             const floatingInstallBtn = document.getElementById('floatingInstallBtn');
 
             // Items
@@ -3529,6 +3619,7 @@
             const posUnitPrice = $('#posUnitPrice');
             const posTotalPrice = $('#posTotalPrice');
             const qtyButtons = $$('.qty-btn');
+            const customQtyInput = document.getElementById('customQtyInput');
             const posCashBtn = $('#posCashBtn');
             const posCreditBtn = $('#posCreditBtn');
             const posCancelBtn = $('#posCancelBtn');
@@ -3546,7 +3637,8 @@
             const quickModeTotalDisplay = $('#quickModeTotalDisplay');
             const traditionalPosElements = $('#traditionalPosElements');
             const quickModeSearch = $('#quickModeSearch');
-            const quickModeSearchContainer = $('#quickModeSearchContainer');
+            const quickModeSearchContainer = document.getElementById('quickModeSearchContainer');
+            const quickModeScanBarcodeBtn = document.getElementById('quickModeScanBarcodeBtn');
 
             // Wholesale
             const wholesaleContainer = $('#wholesaleContainer');
@@ -3595,6 +3687,9 @@
             const manageSubscriptionBtn = $('#manageSubscriptionBtn');
             const exchangeRateInput = $('#exchangeRateInput');
             const saveExchangeRateBtn = $('#saveExchangeRateBtn');
+            const exchangeRateTop = document.getElementById('exchangeRateTop');
+            const exchangeRateTopBtn = document.getElementById('exchangeRateTopBtn');
+
             const restoreBackupBtn = $('#restoreBackupBtn');
             const restoreFileInput = $('#restoreFileInput');
             const backupDateDisplay = $('#backupDateDisplay');
@@ -3699,7 +3794,7 @@
             });
 
             // ============================================================
-            //  2. TAB SWITCHING
+            //  2. TAB SWITCHING (مع تعديل إخفاء زر البيع السريع)
             // ============================================================
             bottomNav.addEventListener('click', (e) => {
                 const btn = e.target.closest('.nav-item');
@@ -3732,15 +3827,21 @@
                 if (tab === 'retail') {
                     applyQuickModeState();
                 }
+
+                // ✅ إظهار زر البيع السريع فقط في تبويب المفرق وعند تفعيل الوضع السريع
+                if (tab === 'retail' && quickModeEnabled) {
+                    quickModeFloatBtn.style.display = 'block';
+                } else {
+                    quickModeFloatBtn.style.display = 'none';
+                }
             });
 
             // ============================================================
-            //  3. INSTALL BUTTON LOGIC (زر عائم)
+            //  3. INSTALL BUTTON LOGIC
             // ============================================================
             let deferredPrompt = null;
             let isAppInstalled = false;
 
-            // التحقق من التثبيت
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 isAppInstalled = true;
                 localStorage.setItem('app_installed', 'true');
@@ -3748,22 +3849,17 @@
                 isAppInstalled = true;
             }
 
-            // إخفاء الأزرار القديمة
-            if (installBtnWelcome) installBtnWelcome.style.display = 'none';
-            if (installBtnSettings) installBtnSettings.style.display = 'none';
-
-            // إخفاء الزر العائم إذا كان مثبتاً
             if (isAppInstalled) {
                 floatingInstallBtn.style.display = 'none';
             } else {
-                floatingInstallBtn.style.display = 'none';
+                floatingInstallBtn.style.display = 'flex';
+                floatingInstallBtn.textContent = '📲 تثبيت التطبيق';
             }
 
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
                 if (!isAppInstalled) {
-                    // إظهار الزر العائم
                     floatingInstallBtn.style.display = 'flex';
                 }
             });
@@ -3776,31 +3872,28 @@
                 showToast('✅ تم تثبيت التطبيق بنجاح');
             });
 
-            // ربط الزر العائم بالتثبيت
             if (floatingInstallBtn) {
-                floatingInstallBtn.addEventListener('click', installApp);
-            }
-
-            async function installApp() {
-                if (!deferredPrompt) {
-                    showToast('⚠️ التثبيت غير متاح حالياً. حاول من خلال متصفحك.');
-                    return;
-                }
-                deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
-                if (result.outcome === 'accepted') {
-                    isAppInstalled = true;
-                    localStorage.setItem('app_installed', 'true');
-                    floatingInstallBtn.style.display = 'none';
-                    showToast('✅ تم تثبيت التطبيق');
-                } else {
-                    showToast('❌ تم إلغاء التثبيت');
-                }
-                deferredPrompt = null;
+                floatingInstallBtn.addEventListener('click', async function() {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const result = await deferredPrompt.userChoice;
+                        if (result.outcome === 'accepted') {
+                            isAppInstalled = true;
+                            localStorage.setItem('app_installed', 'true');
+                            floatingInstallBtn.style.display = 'none';
+                            showToast('✅ تم تثبيت التطبيق');
+                        } else {
+                            showToast('❌ تم إلغاء التثبيت');
+                        }
+                        deferredPrompt = null;
+                    } else {
+                        showToast('📲 اضغط على زر المشاركة ⬆️ ثم اختر "أضف إلى الشاشة الرئيسية"');
+                    }
+                });
             }
 
             // ============================================================
-            //  4. ITEMS
+            //  4. ITEMS - تم إصلاح تعديل الصنف
             // ============================================================
             async function loadItems() {
                 try {
@@ -3869,27 +3962,30 @@
             }
 
             function fillForm(data) {
+                if (!data) return;
                 const cur = getDisplayCurrency();
                 itemName.value = data.name || '';
                 itemUnit.value = data.unit || 'قطعة';
-                itemPurchase.value = displayPrice(data.purchasePrice);
-                itemRetail.value = displayPrice(data.retailPrice);
-                itemWholesale.value = displayPrice(data.wholesalePrice);
+                itemPurchase.value = data.purchasePrice ? displayPrice(data.purchasePrice) : '0.00';
+                itemRetail.value = data.retailPrice ? displayPrice(data.retailPrice) : '0.00';
+                itemWholesale.value = data.wholesalePrice ? displayPrice(data.wholesalePrice) : '0.00';
                 itemQty.value = data.quantity || 0;
                 itemMinQty.value = data.minQuantity || 5;
                 document.getElementById('itemBarcode').value = data.barcode || '';
-                document.querySelectorAll('#itemPurchaseCur .cur-btn, #itemRetailCur .cur-btn, #itemWholesaleCur .cur-btn')
-                    .forEach(btn => {
-                        let targetCur = 'old';
-                        const parent = btn.closest('.currency-inline');
-                        if (parent.id === 'itemPurchaseCur' && data.purchasePrice) targetCur = data.purchasePrice
-                            .currency || 'old';
-                        else if (parent.id === 'itemRetailCur' && data.retailPrice) targetCur = data.retailPrice
-                            .currency || 'old';
-                        else if (parent.id === 'itemWholesaleCur' && data.wholesalePrice) targetCur = data
-                            .wholesalePrice.currency || 'old';
+
+                const priceFields = [
+                    { container: document.getElementById('itemPurchaseCur'), price: data.purchasePrice },
+                    { container: document.getElementById('itemRetailCur'), price: data.retailPrice },
+                    { container: document.getElementById('itemWholesaleCur'), price: data.wholesalePrice }
+                ];
+                priceFields.forEach(({ container, price }) => {
+                    if (!container) return;
+                    const btns = container.querySelectorAll('.cur-btn');
+                    const targetCur = (price && price.currency) ? price.currency : 'old';
+                    btns.forEach(btn => {
                         btn.classList.toggle('active-currency', btn.dataset.cur === targetCur);
                     });
+                });
             }
 
             function resetItemForm() {
@@ -3973,44 +4069,40 @@
             function populateItemSelects() { renderLines(); }
 
             // ============================================================
-            //  5. RETAIL & QUICK MODE
+            //  5. RETAIL & QUICK MODE - إصلاح الباركود في الوضع السريع
             // ============================================================
 
-            // ===== زر مسح الباركود في الوضع السريع =====
-            document.getElementById('quickModeScanBarcodeBtn').addEventListener('click', function() {
-                startBarcodeScanner('quickModeSearch', (result) => {
-                    const item = allItems.find(it => it.barcode === result);
-                    if (item) {
-                        // إضافة الصنف إلى الفاتورة المؤقتة بكمية 1
-                        const qty = 1;
-                        if ((item.quantity || 0) < qty) {
-                            showToast(`⚠️ الكمية غير كافية! المتوفر: ${item.quantity}`);
-                            return;
+            if (quickModeScanBarcodeBtn) {
+                quickModeScanBarcodeBtn.addEventListener('click', function() {
+                    startBarcodeScanner('quickModeSearch', (result) => {
+                        const item = allItems.find(it => it.barcode === result);
+                        if (item) {
+                            quickModeSelectedQuantities[item.id] = (quickModeSelectedQuantities[item.id] || 0) + 1;
+                            calculateQuickModeTotal();
+                            renderQuickMode();
+                            showToast(`✅ تم إضافة ${item.name} عبر الباركود (الكمية: ${quickModeSelectedQuantities[item.id]})`);
+                        } else {
+                            showToast('⚠️ لا يوجد صنف بهذا الباركود');
+                            document.getElementById('quickModeSearch').value = result;
                         }
-                        const priceObj = item.retailPrice || { value: 0, currency: 'old' };
-                        const unitPrice = getPriceInOldCurrency(priceObj);
-                        tempInvoiceLines.push({
-                            id: ++tempLineIdCounter,
-                            itemId: item.id,
-                            itemName: item.name,
-                            quantity: qty,
-                            unitPrice: unitPrice,
-                            total: unitPrice * qty
-                        });
-                        renderTempInvoice();
-                        calculateQuickModeTotal(); // تحديث إجمالي الزر العائم
-                        showToast(`✅ تم إضافة ${qty} × ${item.name} عبر الباركود`);
-                    } else {
-                        showToast('⚠️ لا يوجد صنف بهذا الباركود');
-                        document.getElementById('quickModeSearch').value = result;
-                    }
+                    });
                 });
-            });
+            }
 
+            // ===== دالة renderQuickMode المعدلة مع شرط التبويب =====
             function renderQuickMode() {
                 if (!quickModeEnabled) {
                     quickModeContainer.style.display = 'none';
                     quickModeFloatBtn.style.display = 'none';
+                    return;
+                }
+
+                // التحقق من أن التبويب النشط هو retail
+                const activeTab = document.querySelector('.nav-item.active');
+                const isRetail = activeTab && activeTab.dataset.tab === 'retail';
+                if (!isRetail) {
+                    quickModeFloatBtn.style.display = 'none';
+                    quickModeContainer.style.display = 'none';
                     return;
                 }
 
@@ -4161,17 +4253,22 @@
             });
 
             function applyQuickModeState() {
-                if (quickModeEnabled) {
+                const isRetail = document.querySelector('.nav-item.active')?.dataset.tab === 'retail';
+                if (quickModeEnabled && isRetail) {
                     traditionalPosElements.style.display = 'none';
                     quickModeContainer.style.display = 'grid';
                     quickModeFloatBtn.style.display = 'block';
-                    quickModeSearchContainer.style.display = 'block';
+                    if (quickModeSearchContainer) {
+                        quickModeSearchContainer.style.display = 'block';
+                    }
                     renderQuickMode();
                 } else {
                     traditionalPosElements.style.display = 'block';
                     quickModeContainer.style.display = 'none';
                     quickModeFloatBtn.style.display = 'none';
-                    quickModeSearchContainer.style.display = 'none';
+                    if (quickModeSearchContainer) {
+                        quickModeSearchContainer.style.display = 'none';
+                    }
                 }
             }
 
@@ -4222,6 +4319,7 @@
                     if (!item) { showToast('⚠️ الصنف غير موجود'); return; }
                     posSelectedItem = item;
                     posSelectedQty = 1;
+                    if (customQtyInput) customQtyInput.value = 1;
                     updatePosDisplay();
                     qtyButtons.forEach(b => b.classList.toggle('active', Number(b.dataset.qty) === 1));
                     posSearch.value = item.name;
@@ -4251,9 +4349,20 @@
                 btn.addEventListener('click', () => {
                     posSelectedQty = Number(btn.dataset.qty);
                     qtyButtons.forEach(b => b.classList.toggle('active', Number(b.dataset.qty) === posSelectedQty));
+                    if (customQtyInput) customQtyInput.value = posSelectedQty;
                     updatePosDisplay();
                 });
             });
+
+            if (customQtyInput) {
+                customQtyInput.addEventListener('input', function() {
+                    let val = parseInt(this.value) || 1;
+                    if (val < 1) val = 1;
+                    posSelectedQty = val;
+                    qtyButtons.forEach(b => b.classList.remove('active'));
+                    updatePosDisplay();
+                });
+            }
 
             posCancelBtn.addEventListener('click', clearPos);
 
@@ -4263,6 +4372,7 @@
                 posSearch.value = '';
                 suggestionsBox.classList.remove('show');
                 qtyButtons.forEach(b => b.classList.toggle('active', Number(b.dataset.qty) === 1));
+                if (customQtyInput) customQtyInput.value = 1;
                 updatePosDisplay();
             }
 
@@ -4448,7 +4558,6 @@
                 }
             }
 
-            // ===== RETAIL: معالج أزرار الدفع =====
             posCashBtn.addEventListener('click', async () => {
                 if (tempInvoiceLines.length === 0 && !posSelectedItem) {
                     showToast('⚠️ يرجى اختيار صنف أو إضافة أصناف إلى الفاتورة');
@@ -5221,16 +5330,13 @@
                     }
                     setCashLiquidity(newCash);
 
-                    // ===== التصحيح الثالث: تعديل رصيد العميل في جميع حالات الإلغاء =====
                     if (inv.contactId) {
                         const contact = await dbGet('contacts', inv.contactId);
                         if (contact) {
                             let balanceChange = 0;
                             if (isSales || isReturnPurchase) {
-                                // مبيعات أو مرتجع مشتريات => العميل كان مديناً لنا
                                 balanceChange = -inv.paidAmount;
                             } else if (isPurchase || isReturnSales) {
-                                // مشتريات أو مرتجع مبيعات => نحن مدينون للعميل
                                 balanceChange = inv.paidAmount;
                             } else if (isExpense || isCapital) {
                                 balanceChange = 0;
@@ -5454,7 +5560,6 @@
                     let paidAmount = 0;
                     let remaining = 0;
 
-                    // ===== التصحيح الأول: تعديل رصيد العميل في حالة الاسترداد النقدي =====
                     if (method === 'cash') {
                         paidAmount = totalReturn;
                         remaining = 0;
@@ -5462,7 +5567,6 @@
                         if (inv.type === 'مبيعات') setCashLiquidity(currentCash - totalReturn);
                         else if (inv.type === 'مشتريات') setCashLiquidity(currentCash + totalReturn);
 
-                        // تعديل رصيد العميل إذا كانت الفاتورة آجلة
                         if (inv.contactId && inv.paymentMethod === 'آجل') {
                             const contact = await dbGet('contacts', inv.contactId);
                             if (contact) {
@@ -5646,15 +5750,37 @@
                 disablePin();
             });
 
-            saveExchangeRateBtn.addEventListener('click', async () => {
-                const val = parseFloat(exchangeRateInput.value);
-                if (isNaN(val) || val <= 0) { showToast('⚠️ يرجى إدخال سعر صحيح'); return; }
-                exchangeRate = val;
-                await dbPut('metadata', { key: 'exchangeRate', value: val });
-                showToast('✅ تم تحديث سعر الصرف');
-                updateAllDisplayedValues();
-                exchangeRateInput.value = val;
-            });
+            // ===== ربط حقل سعر الصرف العلوي مع النظام =====
+            function setupExchangeRateTop() {
+                if (exchangeRateTop) {
+                    exchangeRateTop.value = exchangeRate;
+                }
+
+                if (exchangeRateTopBtn) {
+                    exchangeRateTopBtn.addEventListener('click', async function() {
+                        const val = parseFloat(exchangeRateTop.value);
+                        if (isNaN(val) || val <= 0) {
+                            showToast('⚠️ يرجى إدخال سعر صحيح');
+                            return;
+                        }
+                        exchangeRate = val;
+                        await dbPut('metadata', { key: 'exchangeRate', value: val });
+                        if (exchangeRateInput) exchangeRateInput.value = val;
+                        updateAllDisplayedValues();
+                        showToast('✅ تم تحديث سعر الصرف');
+                    });
+                }
+
+                if (saveExchangeRateBtn) {
+                    saveExchangeRateBtn.addEventListener('click', function() {
+                        setTimeout(() => {
+                            if (exchangeRateTop) {
+                                exchangeRateTop.value = exchangeRate;
+                            }
+                        }, 50);
+                    });
+                }
+            }
 
             manageSubscriptionBtn.addEventListener('click', () => {
                 welcomeScreen.classList.add('open');
@@ -5810,12 +5936,13 @@
             // ============================================================
             reportGenerateBtn.addEventListener('click', generateReport);
 
+            // ===== تصدير التقرير إلى CSV =====
             exportReportExcelBtn.addEventListener('click', () => {
-                exportTableToExcel('report', 'تقرير_مالي.xls');
+                exportTableToCSV('report', `تقرير_مالي_${new Date().toISOString().split('T')[0]}.csv`);
             });
 
             // ============================================================
-            //  11. EXPORT RECORDS TO EXCEL
+            //  11. EXPORT RECORDS TO CSV
             // ============================================================
             exportRecordsExcelBtn.addEventListener('click', () => {
                 const invoices = getCurrentFilteredInvoices();
@@ -5823,7 +5950,7 @@
                     showToast('⚠️ لا توجد فواتير لتصديرها');
                     return;
                 }
-                exportTableToExcel('records', `سجل_الفواتير_${new Date().toISOString().split('T')[0]}.xls`);
+                exportTableToCSV('records', `سجل_الفواتير_${new Date().toISOString().split('T')[0]}.csv`);
             });
 
             function getCurrentFilteredInvoices() {
@@ -6017,9 +6144,6 @@
             // ============================================================
             //  14. BARCODE SCANNER
             // ============================================================
-            // ============================================================
-            // 🔊 تشغيل صوت التنبيه (Beep) عند مسح الباركود
-            // ============================================================
             function playBeep() {
                 try {
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -6086,7 +6210,6 @@
                             html5QrCode = null;
                         }).catch(() => {});
 
-                        // ✅ تشغيل صوت التنبيه عند نجاح المسح
                         playBeep();
 
                         if (document.body.contains(scannerContainer)) {
@@ -6228,7 +6351,7 @@
             }
 
             // ============================================================
-            //  16. SPLASH SCREEN LOGIC (يتم تشغيلها أولاً)
+            //  16. SPLASH SCREEN LOGIC
             // ============================================================
             const splashScreen = document.getElementById('splashScreen');
             const splashSkipBtn = document.getElementById('splashSkipBtn');
@@ -6280,7 +6403,7 @@
             startSplashTimer();
 
             // ============================================================
-            //  17. INIT - يتم استدعاؤها بعد اختفاء شاشة البداية
+            //  17. INIT
             // ============================================================
             window.initApp = async function() {
                 try {
@@ -6355,6 +6478,8 @@
 
                     populateFavoritesList();
 
+                    setupExchangeRateTop();
+
                     showToast('📦 احسبلي بلس جاهز - النقدية تتحدث تلقائياً', 2500);
                 } catch (e) {
                     console.error(e);
@@ -6362,14 +6487,24 @@
                 }
             };
 
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    loadItems();
-                    loadCustomers();
-                    if (document.querySelector('[data-tab="records"]').classList.contains('active')) loadRecords();
-                    updateQuickStats();
-                }
-            });
+            // ============================================================
+            //  إصلاح زر إغلاق تفاصيل الفاتورة
+            // ============================================================
+            if (detailCloseBtn) {
+                detailCloseBtn.addEventListener('click', function() {
+                    invoiceDetailModal.classList.remove('open');
+                    currentDetailInvoiceId = null;
+                });
+            }
+
+            if (invoiceDetailModal) {
+                invoiceDetailModal.addEventListener('click', function(e) {
+                    if (e.target === invoiceDetailModal) {
+                        invoiceDetailModal.classList.remove('open');
+                        currentDetailInvoiceId = null;
+                    }
+                });
+            }
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
@@ -6377,6 +6512,7 @@
                     [customerManageModal, customerAddModal, creditPaymentModal, invoiceDetailModal, itemModal,
                         dailyExpenseModal, debtPaymentModal, returnModal, retailCreditModal
                     ].forEach(m => m.classList.remove('open'));
+                    currentDetailInvoiceId = null;
                 }
             });
 
@@ -6392,8 +6528,8 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(() => console.log('✅ Service Worker مسجل بنجاح'))
+                navigator.serviceWorker.register('./sw.js?v=2')
+                    .then(() => console.log('✅ Service Worker v2 مسجل بنجاح'))
                     .catch(() => console.log('❌ فشل تسجيل Service Worker'));
             });
         }
