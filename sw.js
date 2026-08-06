@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hasbali-v3';
+const CACHE_NAME = 'hasbali-v4';
 const urlsToCache = [
   './',
   './index.html',
