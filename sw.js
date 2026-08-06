@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hasbali-v1';
+const CACHE_NAME = 'hasbali-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -10,10 +10,13 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  console.log('⚙️ Installing Service Worker v2...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
+  // فرض تفعيل الإصدار الجديد فوراً
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
@@ -24,12 +27,18 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+  console.log('⚙️ Activating Service Worker v2...');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      );
-    })
+    Promise.all([
+      // حذف المخابئ القديمة
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.filter(name => name !== CACHE_NAME)
+            .map(name => caches.delete(name))
+        );
+      }),
+      // السيطرة على جميع الصفحات المفتوحة فوراً
+      clients.claim()
+    ])
   );
 });

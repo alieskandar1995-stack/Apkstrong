@@ -48,7 +48,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: transparent; /* خلفية شفافة لتظهر خلفية شعارك داخل ملف PNG */
+            background: transparent;
             transition: opacity 0.6s ease, visibility 0.6s ease;
             opacity: 1;
             visibility: visible;
@@ -167,7 +167,6 @@
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
             text-align: center;
             position: relative;
-            /* الخصائص المضافة حديثاً لإصلاح مشكلة التمرير */
             max-height: 90vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -390,29 +389,41 @@
             background: #e8a317;
         }
 
-        /* ===== زر تثبيت التطبيق ===== */
-        .install-btn {
+        /* ===== زر تثبيت عائم ===== */
+        .floating-install-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10001;
             background: linear-gradient(135deg, #f7d875, #e8a317);
             color: #0b0b0e;
-            font-weight: 700;
             border: none;
-            padding: 14px;
-            border-radius: 40px;
-            width: 100%;
-            cursor: pointer;
+            padding: 14px 24px;
+            border-radius: 60px;
+            font-weight: 700;
             font-size: 16px;
-            transition: 0.2s;
-            margin-top: 8px;
-            min-height: 48px;
-            display: none;
-            box-shadow: 0 4px 16px rgba(245, 166, 35, 0.25);
-        }
-        .install-btn:hover {
-            transform: scale(1.02);
             box-shadow: 0 8px 24px rgba(245, 166, 35, 0.4);
+            cursor: pointer;
+            transition: 0.2s;
+            touch-action: manipulation;
+            min-height: 48px;
+            min-width: 48px;
+            display: none; /* مخفي افتراضيًا */
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
         }
-        .install-btn.visible {
-            display: block;
+        .floating-install-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(245, 166, 35, 0.5);
+        }
+        .floating-install-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== زر تثبيت التطبيق القديم (نخفيه) ===== */
+        .install-btn {
+            display: none !important;
         }
 
         /* ----- باقي الـ CSS الأصلي (لم يتغير) ----- */
@@ -1532,6 +1543,18 @@
         }
         .invoice-type-sales { background: rgba(46, 204, 113, 0.05) !important; border-color: rgba(46, 204, 113, 0.15) !important; }
         .invoice-type-purchases { background: rgba(52, 152, 219, 0.05) !important; border-color: rgba(52, 152, 219, 0.15) !important; }
+
+        /* ===== زر تثبيت عائم - تعديل للشاشات الصغيرة ===== */
+        @media (max-width: 480px) {
+            .floating-install-btn {
+                bottom: 16px;
+                right: 16px;
+                padding: 12px 18px;
+                font-size: 14px;
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1540,12 +1563,17 @@
     <div id="splashScreen">
         <button class="splash-skip" id="splashSkipBtn">تخطي</button>
         <div class="splash-logo">
-            <img src="icon_512.png" alt="احسبلي بلس" /> <!-- تم تغيير المسار هنا إلى PNG -->
+            <img src="icon_512.png" alt="احسبلي بلس" />
         </div>
         <div class="splash-progress-wrap">
             <div class="splash-progress-bar" id="splashProgress"></div>
         </div>
     </div>
+
+    <!-- ===== زر تثبيت عائم (يظهر في كل الشاشات) ===== -->
+    <button id="floatingInstallBtn" class="floating-install-btn" style="display:none;">
+        📲 تثبيت التطبيق
+    </button>
 
     <!-- ===== WELCOME SCREEN ===== -->
     <div id="welcomeScreen">
@@ -1597,7 +1625,7 @@
                 </div>
             </div>
 
-            <!-- زر تثبيت التطبيق -->
+            <!-- زر التثبيت القديم تم إخفاؤه بواسطة CSS -->
             <button class="install-btn" id="installBtnWelcome">📲 تثبيت التطبيق</button>
 
             <button class="whatsapp-btn" id="whatsappSupportBtn">💬 طلب اشتراك عبر واتساب</button>
@@ -1677,7 +1705,10 @@
 
                         <div id="quickModeContainer" style="display: none; padding: 10px 0 80px 0; max-height: calc(100vh - 250px); overflow-y: auto;">
                             <div id="quickModeSearchContainer" style="display: none; margin-bottom: 10px;">
-                                <input type="text" id="quickModeSearch" placeholder="🔍 ابحث عن صنف..." style="width:100%; padding:10px 16px; border-radius:40px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#fff; outline:none; font-size:14px;" />
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="text" id="quickModeSearch" placeholder="🔍 ابحث عن صنف أو امسح باركود..." style="flex:1; padding:10px 16px; border-radius:40px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#fff; outline:none; font-size:14px;" />
+                                    <button type="button" class="btn btn-gold-outline btn-sm" id="quickModeScanBarcodeBtn" style="min-height:40px; min-width:44px; flex-shrink:0; font-size:18px;">📷</button>
+                                </div>
                             </div>
                         </div>
 
@@ -2053,7 +2084,7 @@
                     <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
                 </div>
 
-                <!-- زر تثبيت التطبيق في الإعدادات -->
+                <!-- زر التثبيت القديم في الإعدادات (مخفي) -->
                 <div class="settings-group">
                     <h4>📲 تثبيت التطبيق</h4>
                     <button class="install-btn" id="installBtnSettings">📲 تثبيت التطبيق على جهازك</button>
@@ -3109,20 +3140,19 @@
                     return d >= from && d <= to;
                 });
 
+                // ===== التصحيح الثاني: تصحيح حساب COGS والمبيعات الصافية بطرح المرتجعات =====
                 const salesInvoices = invoices.filter(inv => inv.type === 'مبيعات' && !inv.isReturn && inv.status !== 'ملغاة');
                 const purchaseInvoices = invoices.filter(inv => inv.type === 'مشتريات' && !inv.isReturn && inv.status !== 'ملغاة');
                 const expenseInvoices = invoices.filter(inv => inv.type === 'مصروفات' && inv.status !== 'ملغاة');
                 const capitalInvoices = invoices.filter(inv => inv.type === 'رأس_مال' && inv.status !== 'ملغاة');
 
-                const totalSales = salesInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
-                const totalPurchases = purchaseInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
-                const totalOperationalExpenses = expenseInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
-                const totalCapitalAdjustments = capitalInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
-
-                let allInvItems = await dbGetAll('invoiceItems');
+                // حساب إجمالي المبيعات الصافي (طرح المرتجعات)
+                let totalSales = 0;
+                let totalPurchases = 0;
                 let cogs = 0;
                 let realizedProfit = 0;
 
+                // تجميع المرتجعات حسب الفاتورة الأصلية
                 const returnInvoices = invoices.filter(inv => inv.isReturn && inv.status !== 'ملغاة');
                 const returnsByInvoice = {};
                 for (let ret of returnInvoices) {
@@ -3131,6 +3161,9 @@
                     returnsByInvoice[origId] += ret.netAmount;
                 }
 
+                // حساب COGS الكلي للمبيعات
+                const allInvItems = await dbGetAll('invoiceItems');
+                let totalCogs = 0;
                 for (let inv of salesInvoices) {
                     const items = allInvItems.filter(i => i.invoiceId === inv.id);
                     let invCogs = 0;
@@ -3138,12 +3171,46 @@
                         const cost = it.purchasePriceAtSale || 0;
                         invCogs += cost * it.quantity;
                     }
-                    cogs += invCogs;
-                    if (inv.status === 'مغلقة' || inv.remaining === 0) {
-                        const totalReturns = returnsByInvoice[inv.id] || 0;
-                        realizedProfit += (inv.netAmount - totalReturns - invCogs);
+                    totalCogs += invCogs;
+                }
+
+                // حساب COGS للمرتجعات (نخصمها من COGS الكلي)
+                let returnCogs = 0;
+                for (let retInv of returnInvoices) {
+                    const retItems = allInvItems.filter(i => i.invoiceId === retInv.id);
+                    for (let rit of retItems) {
+                        returnCogs += rit.quantity * (rit.purchasePriceAtSale || 0);
                     }
                 }
+                cogs = totalCogs - returnCogs;
+
+                // حساب المبيعات الصافية
+                for (let inv of salesInvoices) {
+                    const totalReturns = returnsByInvoice[inv.id] || 0;
+                    const netSales = inv.netAmount - totalReturns;
+                    totalSales += netSales;
+                }
+
+                // حساب الأرباح الفعلية المحققة (تطبق نفس المنطق)
+                for (let inv of salesInvoices) {
+                    const totalReturns = returnsByInvoice[inv.id] || 0;
+                    const netSales = inv.netAmount - totalReturns;
+                    if (inv.status === 'مغلقة' || inv.remaining === 0) {
+                        const items = allInvItems.filter(i => i.invoiceId === inv.id);
+                        let invCogs = 0;
+                        for (let it of items) {
+                            const cost = it.purchasePriceAtSale || 0;
+                            invCogs += cost * it.quantity;
+                        }
+                        realizedProfit += (netSales - invCogs);
+                    }
+                }
+
+                // إجمالي المشتريات (غير المرتجعة)
+                totalPurchases = purchaseInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
+
+                const totalOperationalExpenses = expenseInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
+                const totalCapitalAdjustments = capitalInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
 
                 const fixedExpense = getFixedExpenseForPeriod(from, to);
                 const netProfit = totalSales - cogs - totalOperationalExpenses - fixedExpense;
@@ -3433,9 +3500,10 @@
             const pinScreen = $('#pinScreen');
             const appContainer = $('#app');
 
-            // Install buttons
+            // Install buttons (القديمة مخفية)
             const installBtnWelcome = $('#installBtnWelcome');
             const installBtnSettings = $('#installBtnSettings');
+            const floatingInstallBtn = document.getElementById('floatingInstallBtn');
 
             // Items
             const openItemModalBtn = $('#openItemModalBtn');
@@ -3667,11 +3735,12 @@
             });
 
             // ============================================================
-            //  3. INSTALL BUTTON LOGIC
+            //  3. INSTALL BUTTON LOGIC (زر عائم)
             // ============================================================
             let deferredPrompt = null;
             let isAppInstalled = false;
 
+            // التحقق من التثبيت
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 isAppInstalled = true;
                 localStorage.setItem('app_installed', 'true');
@@ -3679,12 +3748,23 @@
                 isAppInstalled = true;
             }
 
+            // إخفاء الأزرار القديمة
+            if (installBtnWelcome) installBtnWelcome.style.display = 'none';
+            if (installBtnSettings) installBtnSettings.style.display = 'none';
+
+            // إخفاء الزر العائم إذا كان مثبتاً
+            if (isAppInstalled) {
+                floatingInstallBtn.style.display = 'none';
+            } else {
+                floatingInstallBtn.style.display = 'none';
+            }
+
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
                 if (!isAppInstalled) {
-                    installBtnWelcome.classList.add('visible');
-                    installBtnSettings.classList.add('visible');
+                    // إظهار الزر العائم
+                    floatingInstallBtn.style.display = 'flex';
                 }
             });
 
@@ -3692,10 +3772,14 @@
                 isAppInstalled = true;
                 localStorage.setItem('app_installed', 'true');
                 deferredPrompt = null;
-                installBtnWelcome.classList.remove('visible');
-                installBtnSettings.classList.remove('visible');
+                floatingInstallBtn.style.display = 'none';
                 showToast('✅ تم تثبيت التطبيق بنجاح');
             });
+
+            // ربط الزر العائم بالتثبيت
+            if (floatingInstallBtn) {
+                floatingInstallBtn.addEventListener('click', installApp);
+            }
 
             async function installApp() {
                 if (!deferredPrompt) {
@@ -3707,17 +3791,13 @@
                 if (result.outcome === 'accepted') {
                     isAppInstalled = true;
                     localStorage.setItem('app_installed', 'true');
-                    installBtnWelcome.classList.remove('visible');
-                    installBtnSettings.classList.remove('visible');
+                    floatingInstallBtn.style.display = 'none';
                     showToast('✅ تم تثبيت التطبيق');
                 } else {
                     showToast('❌ تم إلغاء التثبيت');
                 }
                 deferredPrompt = null;
             }
-
-            installBtnWelcome.addEventListener('click', installApp);
-            installBtnSettings.addEventListener('click', installApp);
 
             // ============================================================
             //  4. ITEMS
@@ -3895,6 +3975,37 @@
             // ============================================================
             //  5. RETAIL & QUICK MODE
             // ============================================================
+
+            // ===== زر مسح الباركود في الوضع السريع =====
+            document.getElementById('quickModeScanBarcodeBtn').addEventListener('click', function() {
+                startBarcodeScanner('quickModeSearch', (result) => {
+                    const item = allItems.find(it => it.barcode === result);
+                    if (item) {
+                        // إضافة الصنف إلى الفاتورة المؤقتة بكمية 1
+                        const qty = 1;
+                        if ((item.quantity || 0) < qty) {
+                            showToast(`⚠️ الكمية غير كافية! المتوفر: ${item.quantity}`);
+                            return;
+                        }
+                        const priceObj = item.retailPrice || { value: 0, currency: 'old' };
+                        const unitPrice = getPriceInOldCurrency(priceObj);
+                        tempInvoiceLines.push({
+                            id: ++tempLineIdCounter,
+                            itemId: item.id,
+                            itemName: item.name,
+                            quantity: qty,
+                            unitPrice: unitPrice,
+                            total: unitPrice * qty
+                        });
+                        renderTempInvoice();
+                        calculateQuickModeTotal(); // تحديث إجمالي الزر العائم
+                        showToast(`✅ تم إضافة ${qty} × ${item.name} عبر الباركود`);
+                    } else {
+                        showToast('⚠️ لا يوجد صنف بهذا الباركود');
+                        document.getElementById('quickModeSearch').value = result;
+                    }
+                });
+            });
 
             function renderQuickMode() {
                 if (!quickModeEnabled) {
@@ -5110,28 +5221,35 @@
                     }
                     setCashLiquidity(newCash);
 
-                    if (inv.contactId && inv.remaining > 0) {
+                    // ===== التصحيح الثالث: تعديل رصيد العميل في جميع حالات الإلغاء =====
+                    if (inv.contactId) {
                         const contact = await dbGet('contacts', inv.contactId);
                         if (contact) {
                             let balanceChange = 0;
-                            if (isSales || isReturnPurchase) balanceChange = -inv.remaining;
-                            else if (isPurchase || isReturnSales) balanceChange = inv.remaining;
+                            if (isSales || isReturnPurchase) {
+                                // مبيعات أو مرتجع مشتريات => العميل كان مديناً لنا
+                                balanceChange = -inv.paidAmount;
+                            } else if (isPurchase || isReturnSales) {
+                                // مشتريات أو مرتجع مبيعات => نحن مدينون للعميل
+                                balanceChange = inv.paidAmount;
+                            } else if (isExpense || isCapital) {
+                                balanceChange = 0;
+                            }
+
                             if (balanceChange !== 0) {
                                 contact.balance = (contact.balance || 0) + balanceChange;
                                 if (contact.balance < 0) {
-                                    const actualChange = -(contact.balance - balanceChange);
                                     contact.balance = 0;
-                                    await addAuditLog({
-                                        action: 'إلغاء فاتورة مع تعديل رصيد',
-                                        invoiceId: inv.id,
-                                        amount: Math.abs(actualChange),
-                                        remaining: 0,
-                                        description: `تم تعديل رصيد العميل بسبب عدم كفاية الرصيد لإلغاء الفاتورة بالكامل. المبلغ المتبقي: ${Math.abs(balanceChange) - Math.abs(actualChange)}`
-                                    });
-                                    showToast(`⚠️ تم تعديل رصيد العميل بسبب عدم كفاية الرصيد. المبلغ المتبقي: ${formatCurrency(Math.abs(balanceChange) - Math.abs(actualChange))}`);
-                                } else {
-                                    await dbPut('contacts', contact);
+                                    showToast('⚠️ تم تعديل رصيد العميل إلى الصفر بسبب عدم كفاية الرصيد');
                                 }
+                                await dbPut('contacts', contact);
+                                await addAuditLog({
+                                    action: 'إلغاء فاتورة مع تعديل رصيد العميل',
+                                    invoiceId: inv.id,
+                                    amount: Math.abs(balanceChange),
+                                    remaining: 0,
+                                    description: `إلغاء فاتورة ${inv.id} - تغيير رصيد العميل: ${balanceChange}`
+                                });
                             }
                         }
                     }
@@ -5336,12 +5454,26 @@
                     let paidAmount = 0;
                     let remaining = 0;
 
+                    // ===== التصحيح الأول: تعديل رصيد العميل في حالة الاسترداد النقدي =====
                     if (method === 'cash') {
                         paidAmount = totalReturn;
                         remaining = 0;
                         const currentCash = getCashLiquidity();
                         if (inv.type === 'مبيعات') setCashLiquidity(currentCash - totalReturn);
                         else if (inv.type === 'مشتريات') setCashLiquidity(currentCash + totalReturn);
+
+                        // تعديل رصيد العميل إذا كانت الفاتورة آجلة
+                        if (inv.contactId && inv.paymentMethod === 'آجل') {
+                            const contact = await dbGet('contacts', inv.contactId);
+                            if (contact) {
+                                if (inv.type === 'مبيعات') {
+                                    contact.balance = (contact.balance || 0) - totalReturn;
+                                } else if (inv.type === 'مشتريات') {
+                                    contact.balance = (contact.balance || 0) + totalReturn;
+                                }
+                                await dbPut('contacts', contact);
+                            }
+                        }
                     } else if (method === 'credit' || method === 'discount') {
                         paidAmount = 0;
                         remaining = 0;
@@ -5885,6 +6017,28 @@
             // ============================================================
             //  14. BARCODE SCANNER
             // ============================================================
+            // ============================================================
+            // 🔊 تشغيل صوت التنبيه (Beep) عند مسح الباركود
+            // ============================================================
+            function playBeep() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.frequency.value = 880;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.25);
+                } catch (e) {
+                    console.warn('تعذر تشغيل الصوت:', e);
+                }
+            }
+
             let html5QrCode = null;
 
             function startBarcodeScanner(inputElementId, callback) {
@@ -5931,6 +6085,10 @@
                             html5QrCode.clear();
                             html5QrCode = null;
                         }).catch(() => {});
+
+                        // ✅ تشغيل صوت التنبيه عند نجاح المسح
+                        playBeep();
+
                         if (document.body.contains(scannerContainer)) {
                             document.body.removeChild(scannerContainer);
                         }
