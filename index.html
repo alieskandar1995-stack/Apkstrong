@@ -3842,61 +3842,36 @@
             });
 
             // ============================================================
-            //  3. INSTALL BUTTON LOGIC - مُصَحَّح
+            //  3. INSTALL BUTTON LOGIC - مُصَحَّح (بسيط ومباشر)
             // ============================================================
             let deferredPrompt = null;
-            let isAppInstalled = false;
 
-            // التحقق مما إذا كان التطبيق مثبتاً بالفعل
+            // إخفاء الزر إذا كان التطبيق مثبتاً بالفعل
             if (window.matchMedia('(display-mode: standalone)').matches) {
-                isAppInstalled = true;
-                localStorage.setItem('app_installed', 'true');
-            } else if (localStorage.getItem('app_installed') === 'true') {
-                isAppInstalled = true;
+                if (floatingInstallBtn) floatingInstallBtn.style.display = 'none';
             }
 
-            // إظهار أو إخفاء الزر حسب الحالة
-            function updateInstallButton() {
-                if (isAppInstalled) {
-                    floatingInstallBtn.style.display = 'none';
-                } else if (deferredPrompt) {
-                    floatingInstallBtn.style.display = 'flex';
-                    floatingInstallBtn.textContent = '📲 تثبيت التطبيق';
-                } else {
-                    // إذا لم يكن هناك deferredPrompt، نعرض الزر لكن مع رسالة مختلفة
-                    floatingInstallBtn.style.display = 'flex';
-                    floatingInstallBtn.textContent = '📲 تثبيت (من القائمة)';
-                }
-            }
-
-            // تسجيل حدث beforeinstallprompt في أقرب وقت ممكن
             window.addEventListener('beforeinstallprompt', (e) => {
-                console.log('✅ beforeinstallprompt تم التقاطه'); // للتأكد من وصول الحدث
                 e.preventDefault();
                 deferredPrompt = e;
-                updateInstallButton();
+                if (floatingInstallBtn) {
+                    floatingInstallBtn.style.display = 'flex';
+                    floatingInstallBtn.textContent = '📲 تثبيت التطبيق';
+                }
             });
 
-            // حدث التثبيت الناجح
             window.addEventListener('appinstalled', () => {
-                console.log('✅ تم تثبيت التطبيق');
-                isAppInstalled = true;
-                localStorage.setItem('app_installed', 'true');
                 deferredPrompt = null;
-                floatingInstallBtn.style.display = 'none';
+                if (floatingInstallBtn) floatingInstallBtn.style.display = 'none';
                 showToast('✅ تم تثبيت التطبيق بنجاح');
             });
 
-            // زر التثبيت العائم
             if (floatingInstallBtn) {
                 floatingInstallBtn.addEventListener('click', async function() {
                     if (deferredPrompt) {
-                        // إذا كان هناك حدث معلق، نستخدمه
                         deferredPrompt.prompt();
                         const result = await deferredPrompt.userChoice;
                         if (result.outcome === 'accepted') {
-                            isAppInstalled = true;
-                            localStorage.setItem('app_installed', 'true');
                             floatingInstallBtn.style.display = 'none';
                             showToast('✅ تم تثبيت التطبيق');
                         } else {
@@ -3904,18 +3879,11 @@
                         }
                         deferredPrompt = null;
                     } else {
-                        // إذا لم يكن هناك deferredPrompt، نوجه المستخدم للطريقة اليدوية
+                        // توجيه المستخدم إلى الطريقة اليدوية
                         showToast('⚠️ استخدم قائمة المتصفح ⋮ واختر "تثبيت التطبيق" أو "أضف إلى الشاشة الرئيسية"');
-                        // يمكنك أيضاً محاولة فتح قائمة المشاركة
-                        if (navigator.share) {
-                            navigator.share({ title: 'احسبلي بلس', url: window.location.href });
-                        }
                     }
                 });
             }
-
-            // تحديث حالة الزر عند بدء التشغيل
-            updateInstallButton();
 
             // ============================================================
             //  4. ITEMS - تم إصلاح تعديل الصنف
