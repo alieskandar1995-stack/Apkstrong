@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hasbali-v8'; // رقم إصدار جديد
+const CACHE_NAME = 'hasbali-v9'; // رقم إصدار جديد
 const urlsToCache = [
   './',
   './index.html',
