@@ -2,16 +2,18 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes" />
     <title>احسبلي+ · نظام نقاط بيع</title>
     <link rel="manifest" href="./manifest.json" />
     <style>
         /* ===== RESET & BASE ===== */
         *,::after,::before{margin:0;padding:0;box-sizing:border-box}
-        :root{--gold:#f5a623;--gold2:#f7d875;--gold3:#e8a317;--bg:#0b0b0e;--bg2:rgba(255,255,255,.04);--bg3:rgba(255,255,255,.06);--border:rgba(255,215,0,.08);--border2:rgba(255,255,255,.06);--text:#e8e6e3;--text2:#f5e7c8;--text3:#a8a6b0;--text4:#6a6868;--radius:16px;--radius2:24px;--shadow:0 30px 60px rgba(0,0,0,.8);--transition:.2s}
-        body{font-family:'Segoe UI',Tahoma,system-ui,sans-serif;background:var(--bg);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:12px 12px 200px;color:var(--text)}
-        .app-container{max-width:480px;width:100%;background:var(--bg2);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:var(--radius2);padding:14px 12px 18px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.06);border:1px solid var(--border);display:flex;flex-direction:column;margin:0 auto;transition:all .3s}
-        .app-container.quick-mode{max-width:560px;padding:18px 16px 20px}
+        :root{--gold:#f5a623;--gold2:#f7d875;--gold3:#e8a317;--bg:#0a0a0a;--bg2:rgba(255,255,255,.04);--bg3:rgba(255,255,255,.06);--border:rgba(255,215,0,.08);--border2:rgba(255,255,255,.06);--text:#e8e6e3;--text2:#f5e7c8;--text3:#a8a6b0;--text4:#6a6868;--radius:16px;--radius2:24px;--transition:.2s}
+        html,body{height:100%;margin:0;padding:0}
+        body{font-family:'Segoe UI',Tahoma,system-ui,sans-serif;background:var(--bg);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:0;color:var(--text);overflow-x:hidden}
+        .app-container{max-width:100%;width:100%;min-height:100vh;background:var(--bg);padding:10px 12px 0;border:none;border-radius:0;box-shadow:none;display:flex;flex-direction:column;margin:0 auto;transition:all .3s}
+        .app-container.quick-mode{max-width:100%;padding:10px 12px 0}
+
         /* ===== SPLASH ===== */
         #splashScreen{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;justify-content:center;align-items:center;background:transparent;transition:opacity .6s,visibility .6s;opacity:1;visibility:visible;padding:20px;overflow:hidden}
         #splashScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -26,10 +28,11 @@
         @keyframes shimmer{0%{background-position:0%}100%{background-position:100%}}
         .splash-skip{position:absolute;bottom:30px;right:24px;background:rgba(0,0,0,.15);border:none;color:rgba(0,0,0,.6);font-size:14px;font-weight:600;padding:8px 18px;border-radius:40px;cursor:pointer;z-index:3;backdrop-filter:blur(4px);transition:var(--transition)}
         .splash-skip:hover{background:rgba(0,0,0,.25);color:#000}
+
         /* ===== WELCOME & PIN ===== */
         #welcomeScreen,#pinScreen{position:fixed;inset:0;background:var(--bg);display:none;justify-content:center;align-items:center;z-index:9999;padding:20px;backdrop-filter:blur(4px)}
         #welcomeScreen.open,#pinScreen.open{display:flex}
-        .welcome-box,.pin-box{background:var(--bg2);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:36px;padding:28px 24px;max-width:480px;width:100%;border:1px solid rgba(255,215,0,.12);box-shadow:var(--shadow);text-align:center;position:relative;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        .welcome-box,.pin-box{background:var(--bg2);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:36px;padding:28px 24px;max-width:480px;width:100%;border:1px solid rgba(255,215,0,.12);box-shadow:0 30px 60px rgba(0,0,0,.8);text-align:center;position:relative;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
         .welcome-box .back-btn{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer;transition:var(--transition)}
         .welcome-box .back-btn:hover{transform:scale(1.1)}
         .welcome-box h1{font-size:28px;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
@@ -49,6 +52,7 @@
         .pin-box .btn{width:100%;margin-top:8px;min-height:48px}
         .pin-box .forgot-link{display:block;margin-top:12px;color:var(--text4);font-size:14px;cursor:pointer;transition:var(--transition);background:none;border:none;text-decoration:underline}
         .pin-box .forgot-link:hover{color:var(--gold)}
+
         /* ===== PRICING CARDS ===== */
         .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 12px}
         .pricing-card{background:var(--bg2);border-radius:var(--radius);padding:14px 8px;border:1px solid var(--border);transition:all .3s;position:relative;text-align:center}
@@ -62,9 +66,7 @@
         .pricing-card .btn-select-plan:hover{background:var(--gold);color:var(--bg)}
         .pricing-card.popular .btn-select-plan{background:var(--gold);color:var(--bg)}
         .pricing-card.popular .btn-select-plan:hover{background:var(--gold3)}
-        /* ===== FLOATING INSTALL ===== */
-        .floating-install-btn{position:fixed;bottom:24px;right:24px;z-index:10001;background:linear-gradient(135deg,var(--gold2),var(--gold3));color:var(--bg);border:none;padding:14px 24px;border-radius:60px;font-weight:700;font-size:16px;box-shadow:0 8px 24px rgba(245,166,35,.4);cursor:pointer;transition:var(--transition);touch-action:manipulation;min-height:48px;min-width:48px;display:none;align-items:center;gap:8px;font-family:inherit}
-        .floating-install-btn:hover{transform:scale(1.05);box-shadow:0 12px 32px rgba(245,166,35,.5)}
+
         /* ===== HEADER & STATS ===== */
         .app-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px}
         .app-title{font-size:22px;font-weight:700;letter-spacing:.5px;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:6px}
@@ -75,6 +77,7 @@
         #quickStats .stat-item .stat-value.gold{color:var(--gold)}
         #quickStats .stat-item .stat-value.green{color:#2ecc71}
         #quickStats .stat-item .stat-value.equity{color:#8e44ad;font-weight:800}
+
         /* ===== EXCHANGE RATE ===== */
         #exchangeRateBar{background:var(--bg2);border-radius:var(--radius);padding:10px 16px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border:1px solid var(--border)}
         #exchangeRateBar .label{color:#b8b4b0;font-size:14px}
@@ -86,14 +89,17 @@
         .currency-toggle{display:flex;gap:4px;background:var(--bg3);border-radius:30px;padding:3px;border:1px solid var(--border2)}
         .currency-toggle button{background:transparent;border:none;color:var(--text3);padding:4px 12px;border-radius:30px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition);min-height:32px}
         .currency-toggle button.active-currency{background:var(--gold);color:var(--bg);box-shadow:0 2px 12px rgba(245,166,35,.3)}
+
         /* ===== PANELS ===== */
         .panel{display:none;animation:fadeUp .35s ease;flex:1;transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px)}
         .panel.active{display:block;opacity:1;transform:translateY(0)}
         @keyframes fadeUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:translateY(0)}}
+
         /* ===== GLASS CARDS ===== */
-        .glass-card{background:rgba(255,255,255,.035);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:18px;padding:16px 18px;border:1px solid rgba(255,255,255,.05);box-shadow:0 12px 30px rgba(0,0,0,.35);margin-bottom:18px}
+        .glass-card{background:rgba(255,255,255,.035);border-radius:18px;padding:16px 18px;border:1px solid rgba(255,255,255,.05);box-shadow:0 12px 30px rgba(0,0,0,.35);margin-bottom:18px}
         .glass-card h3{font-size:16px;font-weight:600;margin-bottom:14px;color:var(--text2);display:flex;align-items:center;gap:8px}
         .glass-card h3 span{background:rgba(245,166,35,.12);padding:2px 12px;border-radius:30px;font-size:12px;color:var(--gold)}
+
         /* ===== BUTTONS ===== */
         .btn{padding:12px 20px;border:none;border-radius:40px;font-weight:600;font-size:14px;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.3px;min-height:44px;min-width:44px;flex-shrink:0}
         .btn-gold{background:linear-gradient(135deg,var(--gold2),var(--gold3));color:var(--bg);box-shadow:0 6px 18px rgba(245,166,35,.25)}
@@ -109,6 +115,7 @@
         .btn-blue:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(52,152,219,.35)}
         .btn-cancel{background:var(--bg3);color:var(--text3);border:1px solid var(--border2);padding:12px 20px;border-radius:40px;font-weight:600;min-height:44px}
         .btn-cancel:hover{background:rgba(255,255,255,.1);color:#fff}
+
         /* ===== FORM ===== */
         .form-group{display:flex;flex-direction:column;gap:4px}
         .form-group label{font-size:13px;font-weight:500;color:#b8b4b0;letter-spacing:.3px}
@@ -116,6 +123,7 @@
         .form-group input:focus,.form-group select:focus{border-color:var(--gold);background:rgba(255,255,255,.15);box-shadow:0 0 0 4px rgba(245,166,35,.08)}
         .form-group input::placeholder{color:#aaa}
         .form-group select option{background:#1a1a1e;color:#fff}
+
         /* ===== TABLE ===== */
         .table-wrap{overflow-x:auto;margin-top:6px;border-radius:var(--radius);border:1px solid rgba(255,255,255,.04)}
         table{min-width:unset;width:100%;border-collapse:collapse;font-size:13px}
@@ -124,6 +132,7 @@
         td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);color:#dfdbd6}
         tr:hover td{background:rgba(255,255,255,.02)}
         @media(max-width:480px){.table-wrap table,.table-wrap thead,.table-wrap tbody,.table-wrap tr,.table-wrap td,.table-wrap th{display:block}.table-wrap thead{display:none}.table-wrap tr{background:rgba(255,255,255,.03);border-radius:12px;padding:12px 14px;margin-bottom:10px;border:1px solid var(--border2);display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}.table-wrap td{padding:4px 0;border-bottom:none;display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.04)}.table-wrap td:last-child{border-bottom:none}.table-wrap td::before{content:attr(data-label);font-weight:600;color:var(--text3);font-size:12px}.table-wrap td:empty::before{content:''}.table-wrap td:empty{display:none}.table-wrap td:has(button){justify-content:flex-end;grid-column:span 2}.table-wrap td:has(button)::before{content:'';display:none}}
+
         /* ===== ITEMS LIST ===== */
         #itemsList{display:flex;flex-direction:column;gap:8px;margin-top:4px}
         .item-row{background:rgba(255,255,255,.03);border-radius:14px;padding:12px 16px;border:1px solid var(--border2);cursor:pointer;transition:var(--transition);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;position:relative}
@@ -131,7 +140,6 @@
         .item-row .item-main{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;flex:2 1 160px}
         .item-row .item-name{font-weight:600;color:var(--text2);font-size:15px}
         .item-row .item-unit{color:var(--text4);font-size:13px;font-weight:400}
-        .item-row .item-unit-info{color:var(--gold);font-size:12px;font-weight:500;background:rgba(245,166,35,.1);padding:0 8px;border-radius:12px}
         .item-row .item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:13px;color:var(--text3);flex:1 1 auto;justify-content:flex-start}
         .item-row .item-meta .meta-label{color:var(--text4);font-size:11px}
         .item-row .item-meta .meta-value{font-weight:600;color:var(--text2)}
@@ -145,6 +153,7 @@
         .item-row.item-row-updated{background:rgba(52,152,219,.08)!important;border-color:rgba(52,152,219,.2)}
         .item-row.item-row-updated .item-name::after{content:" 🔄 محدث";font-size:11px;color:#3498db;font-weight:600}
         @media(max-width:480px){.item-row{flex-direction:column;align-items:stretch;gap:6px}.item-row .item-main{flex:1 1 auto}.item-row .item-meta{justify-content:flex-start;gap:6px 12px}.item-row .item-arrow{display:none}}
+
         /* ===== ITEM MODAL ===== */
         #itemModal .modal-box{max-width:500px}
         #itemModal .modal-box h3{margin-bottom:16px}
@@ -164,6 +173,7 @@
         #itemEditMode .edit-actions{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
         #itemEditMode .edit-actions .btn{flex:1;min-width:70px}
         @media(max-width:480px){#itemEditMode .form-grid{grid-template-columns:1fr}#itemEditMode .form-grid .full-width{grid-column:1}.item-detail-view .detail-row{font-size:13px;flex-wrap:wrap;gap:4px}.item-detail-view .detail-row .value{text-align:right;width:100%}.item-detail-view .detail-actions .btn{min-width:60px;font-size:13px;padding:10px 12px}}
+
         /* ===== RECORDS FILTER ===== */
         .records-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
         .records-filter .filter-btn{padding:6px 16px;border-radius:40px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-weight:600;cursor:pointer;transition:var(--transition);font-size:13px;min-height:36px}
@@ -172,6 +182,7 @@
         .records-search{margin-bottom:14px}
         .records-search input{width:100%;padding:10px 16px;border-radius:40px;background:var(--bg2);border:1px solid var(--border2);color:#f0ede8;font-size:14px;outline:none}
         .records-search input:focus{border-color:var(--gold)}
+
         /* ===== INVOICE CARD ===== */
         .invoice-card{background:rgba(255,255,255,.03);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border:1px solid rgba(255,255,255,.05);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;transition:var(--transition)}
         .invoice-card:hover{background:rgba(255,255,255,.06)}
@@ -185,6 +196,7 @@
         .badge-remaining{background:rgba(231,76,60,.15);color:#e74c3c}
         .badge-cancelled{background:rgba(149,165,166,.2);color:#95a5a6}
         .invoice-card .actions{display:flex;gap:6px}
+
         /* ===== RETAIL POS ===== */
         .retail-grid{display:grid;grid-template-columns:1fr;gap:14px}
         .pos-search-area .form-group{position:relative}
@@ -211,6 +223,7 @@
         .pos-totals .value{font-weight:700;color:var(--text2)}
         .pos-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
         .pos-actions .btn{flex:1;min-width:70px}
+
         /* ===== TOGGLE SWITCH ===== */
         .switch-container{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
         .switch-container label{color:#b8b4b0;font-size:13px;cursor:pointer;user-select:none}
@@ -220,18 +233,21 @@
         .slider::before{content:"";position:absolute;height:16px;width:16px;left:4px;bottom:4px;background:#fff;border-radius:50%;transition:.3s}
         .switch input:checked+.slider{background:var(--gold)}
         .switch input:checked+.slider::before{transform:translateX(20px)}
+
         /* ===== QUICK MODE ===== */
-        #quickModeSearchContainer{display:none;margin-bottom:10px}
+        #quickModeSearchContainer{display:none;margin-bottom:10px;position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0}
         #quickModeSearchContainer .search-wrapper{display:flex;gap:8px;align-items:center}
         #quickModeSearchContainer input{flex:1;padding:10px 16px;border-radius:40px;background:var(--bg3);border:1px solid var(--border2);color:#fff;outline:none;font-size:14px}
         #quickModeSearchContainer input:focus{border-color:var(--gold)}
         #quickModeSearchContainer .btn{min-height:40px;min-width:44px;flex-shrink:0;font-size:18px}
+
         #quickModeChipsContainer{display:none;background:var(--bg2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;border:1px solid var(--border);max-height:120px;overflow-y:auto;flex-wrap:wrap;gap:8px;align-items:center}
         #quickModeChipsContainer .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);padding:4px 12px 4px 8px;border-radius:30px;font-size:13px;border:1px solid rgba(255,215,0,.15)}
         #quickModeChipsContainer .chip .chip-name{font-weight:500;color:var(--text2)}
         #quickModeChipsContainer .chip .chip-qty{font-weight:700;color:var(--gold);background:rgba(245,166,35,.15);padding:0 8px;border-radius:20px}
         #quickModeChipsContainer .chip .chip-remove{background:none;border:none;color:#ff6b6b;font-size:14px;cursor:pointer;padding:0 2px;font-weight:700}
-        #quickModeContainer{display:none;padding:10px 0 80px 0;max-height:calc(100vh-280px);overflow-y:auto}
+
+        #quickModeContainer{display:none;padding:10px 0 0;flex:1;overflow-y:auto;max-height:calc(100vh - 380px);scroll-behavior:smooth}
         #quickModeContainer .quick-item-btn{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:8px 4px;text-align:center;cursor:pointer;transition:var(--transition);min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;touch-action:manipulation}
         #quickModeContainer .quick-item-btn:hover{background:rgba(245,166,35,.08);border-color:var(--gold)}
         #quickModeContainer .quick-item-btn .qty-badge{position:absolute;top:-6px;right:-6px;background:var(--gold);color:var(--bg);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
@@ -240,13 +256,15 @@
         #quickModeContainer .quick-item-btn .item-qty-label.has-qty{color:#2ecc71;font-weight:600}
         #quickModeContainer .quick-item-btn .item-name{font-size:14px;font-weight:600;color:var(--text2)}
         #quickModeContainer .quick-item-btn .item-price{font-size:13px;color:var(--gold)}
-        #quickModeBottomBar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(11,11,14,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,215,0,0.15);padding:10px 16px 16px;z-index:100;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;max-width:560px;margin:0 auto;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.5)}
+
+        #quickModeBottomBar{display:none;position:sticky;bottom:0;background:var(--bg);border-top:1px solid rgba(255,215,0,0.15);padding:10px 0 16px;z-index:10;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;max-width:100%;margin:0 auto;border-radius:0;box-shadow:0 -4px 20px rgba(0,0,0,0.5)}
         #quickModeBottomBar .quick-sell-btn{height:48px;font-size:16px;padding:0 24px;border-radius:40px;background:linear-gradient(135deg,var(--gold2),var(--gold3));color:var(--bg);font-weight:700;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(245,166,35,0.3);transition:var(--transition);display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:100px;justify-content:center}
         #quickModeBottomBar .quick-sell-btn:active{transform:scale(0.95)}
         #quickModeBottomBar .quick-undo-btn{height:36px;font-size:13px;padding:0 12px;border-radius:40px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text3);font-weight:600;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:4px;flex-shrink:0}
         #quickModeBottomBar .quick-undo-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
         #quickModeBottomBar .quick-undo-btn:active{transform:scale(0.95)}
-        @media (max-width:480px){#quickModeBottomBar{padding:8px 12px 12px;gap:8px}#quickModeBottomBar .quick-sell-btn{height:44px;font-size:14px;padding:0 16px;min-width:80px}#quickModeBottomBar .quick-undo-btn{height:32px;font-size:12px;padding:0 10px}}
+        @media (max-width:480px){#quickModeBottomBar{padding:8px 0 12px;gap:8px}#quickModeBottomBar .quick-sell-btn{height:44px;font-size:14px;padding:0 16px;min-width:80px}#quickModeBottomBar .quick-undo-btn{height:32px;font-size:12px;padding:0 10px}}
+
         /* ===== INVOICE EDITOR ===== */
         #invoiceEditor .invoice-entry-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;background:var(--bg3);padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);margin-bottom:12px}
         #invoiceEditor .invoice-entry-row .form-group{flex:1 0 100px;min-width:80px}
@@ -288,6 +306,7 @@
         #invoiceEditor .invoice-summary-new .summary-item.total .value{font-size:20px;color:var(--gold)}
         #invoiceEditor .invoice-actions-new{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
         #invoiceEditor .invoice-actions-new .btn{flex:1;min-width:70px}
+
         /* ===== PRICING MODAL ITEMS ===== */
         .pricing-modal-item{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
         .pricing-modal-item .item-name{flex:1;min-width:80px;font-weight:600;color:var(--text2)}
@@ -296,6 +315,7 @@
         .pricing-modal-item .price-field input{width:100%;padding:6px 8px;border-radius:8px;background:var(--bg3);border:1px solid rgba(255,255,255,.10);color:#fff;font-size:13px;outline:none}
         .pricing-modal-item .price-field input:focus{border-color:var(--gold)}
         .pricing-modal-item .price-field .currency-label{font-size:10px;color:var(--text4);margin-top:2px}
+
         /* ===== REPORTS ===== */
         .report-period{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
         .report-period .form-group{flex:1;min-width:120px}
@@ -311,21 +331,24 @@
         #financialAlert{padding:12px 16px;border-radius:14px;margin-bottom:14px;font-weight:600;display:none;font-size:14px}
         #financialAlert.good{background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.2);color:#2ecc71;display:block}
         #financialAlert.danger{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.2);color:#e74c3c;display:block}
-        /* ===== SETTINGS ===== */
-        .settings-group{margin-bottom:18px}
-        .settings-group h4{font-size:15px;color:var(--text2);margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:6px}
-        .settings-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-        .settings-row .form-group{flex:1;min-width:100px}
-        .settings-row .btn{flex-shrink:0;min-height:40px}
-        .expense-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:14px;align-items:center;flex-wrap:wrap;gap:4px}
-        .expense-item .del-expense{color:#ff6b6b;cursor:pointer;background:none;border:none;font-size:16px}
-        .expense-item .pay-expense{color:#2ecc71;cursor:pointer;background:none;border:none;font-size:16px;font-weight:700}
-        .cash-display{background:rgba(255,215,0,.06);border-radius:var(--radius);padding:14px 16px;border:1px solid rgba(255,215,0,.10);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-        .cash-display .label{font-size:14px;color:#b8b4b0}
-        .cash-display .value{font-size:24px;font-weight:800;color:var(--gold)}
-        .equity-display{background:rgba(142,68,173,.08);border-radius:var(--radius);padding:14px 16px;border:1px solid rgba(142,68,173,.15);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-        .equity-display .label{font-size:14px;color:#b8b4b0}
-        .equity-display .value{font-size:24px;font-weight:800;color:#af7ac5}
+
+        /* ===== SETTINGS ACCORDION ===== */
+        .settings-accordion{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+        .accordion-item{background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+        .accordion-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;font-weight:600;font-size:15px;color:var(--text2);transition:background .2s;user-select:none;gap:8px}
+        .accordion-header:hover{background:rgba(255,255,255,.04)}
+        .accordion-icon{font-size:14px;transition:transform .3s ease;color:var(--gold)}
+        .accordion-item.open .accordion-icon{transform:rotate(180deg)}
+        .accordion-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1),padding .3s ease;padding:0 16px;background:rgba(255,255,255,.02)}
+        .accordion-item.open .accordion-body{max-height:2000px;padding:16px 16px 20px}
+        .accordion-body .settings-group{margin-bottom:12px}
+        .accordion-body .settings-group:last-child{margin-bottom:0}
+        .accordion-body h4{font-size:14px;color:var(--text2);margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:4px}
+        .accordion-body .settings-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+        .accordion-body .settings-row .form-group{flex:1;min-width:100px}
+        .accordion-body .settings-row .btn{min-height:40px}
+
+        /* ===== FAVORITES ===== */
         #favoriteItemsList{max-height:250px;overflow-y:auto;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px;margin-bottom:10px}
         .favorite-item-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);transition:var(--transition)}
         .favorite-item-row:last-child{border-bottom:none}
@@ -333,6 +356,7 @@
         .favorite-item-row .item-name.fav{color:var(--gold);font-weight:600}
         .favorite-toggle-btn{background:rgba(255,255,255,.1);border:none;color:var(--text3);padding:4px 14px;border-radius:30px;font-weight:600;font-size:13px;cursor:pointer;min-width:60px;transition:var(--transition);touch-action:manipulation}
         .favorite-toggle-btn.is-fav{background:var(--gold);color:var(--bg)}
+
         /* ===== MODALS ===== */
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;justify-content:center;align-items:center;z-index:999;padding:16px}
         .modal-overlay.open{display:flex}
@@ -343,25 +367,29 @@
         .modal-box .detail-row .label{color:var(--text3)}
         .modal-box .detail-row .value{font-weight:600;color:var(--text2)}
         .modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+
         /* ===== TOAST ===== */
         .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(22,22,26,.94);backdrop-filter:blur(14px);padding:14px 24px;border-radius:60px;border:1px solid rgba(255,215,0,.1);color:#f0ede8;font-weight:500;box-shadow:0 16px 40px rgba(0,0,0,.6);z-index:9999;display:none;font-size:14px;max-width:90%;text-align:center}
         .toast.show{display:block;animation:toastIn .4s ease}
         @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(30px)}100%{opacity:1;transform:translateX(-50%) translateY(0)}}
+
         /* ===== BOTTOM NAV ===== */
-        .bottom-nav{position:sticky;bottom:0;background:rgba(245,166,35,.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:2px solid rgba(245,166,35,.12);display:flex;justify-content:space-around;padding:6px 4px 10px;margin-top:16px;border-radius:20px 20px 0 0;z-index:50}
+        .bottom-nav{position:sticky;bottom:0;background:#0a0a0a;border-top:2px solid rgba(245,166,35,0.25);display:flex;justify-content:space-around;padding:6px 4px 10px;margin-top:16px;border-radius:0;z-index:50;box-shadow:0 -4px 20px rgba(0,0,0,0.6)}
         .nav-item{background:transparent;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text4);font-size:11px;cursor:pointer;padding:4px 6px;transition:var(--transition);font-family:inherit;position:relative;flex:1;min-width:40px;min-height:52px;justify-content:center}
         .nav-item .nav-icon{font-size:22px;line-height:1}
         .nav-item .nav-label{font-size:11px;font-weight:500}
-        .nav-item.active{color:var(--gold);text-shadow:0 0 25px rgba(245,166,35,.7)}
+        .nav-item.active{color:var(--gold);text-shadow:0 0 30px rgba(245,166,35,0.9)}
         .nav-item.active .nav-icon{transform:scale(1.05)}
-        .nav-item.active::after{content:'';position:absolute;top:-6px;width:24px;height:4px;background:var(--gold);border-radius:10px;box-shadow:0 0 20px var(--gold)}
+        .nav-item.active::after{content:'';position:absolute;top:-6px;width:24px;height:4px;background:var(--gold);border-radius:10px;box-shadow:0 0 30px var(--gold)}
+
         /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar{width:6px;height:6px}
         ::-webkit-scrollbar-track{background:rgba(255,255,255,.02);border-radius:10px}
         ::-webkit-scrollbar-thumb{background:rgba(245,166,35,.25);border-radius:10px}
         ::-webkit-scrollbar-thumb:hover{background:rgba(245,166,35,.4)}
+
         /* ===== RESPONSIVE ===== */
-        @media(max-width:480px){.app-container{padding:10px 10px 12px;border-radius:20px}.glass-card{padding:14px 14px}.modal-box{padding:18px 14px}.invoice-card{flex-direction:column;align-items:stretch}.invoice-card .info{flex-direction:column;align-items:stretch;gap:6px}th,td{padding:6px 8px;font-size:12px}.bottom-nav{padding:4px 4px 8px}.nav-item{padding:4px 6px;min-width:36px}.nav-item .nav-icon{font-size:20px}.nav-item .nav-label{font-size:10px}.welcome-box,.pin-box{padding:20px 16px}.pin-box .pin-dots input{width:40px;height:40px;font-size:20px}.pos-actions .btn{min-width:60px;font-size:13px;padding:10px 12px}#quickModeContainer .quick-item-btn{min-height:60px}#quickModeContainer{grid-template-columns:repeat(2,1fr)!important}.pricing-grid{grid-template-columns:1fr 1fr;gap:8px}.pricing-card{padding:12px 6px}#invoiceEditor .invoice-table-wrap table{min-width:400px}#invoiceEditor .invoice-fields{grid-template-columns:1fr}#invoiceEditor .invoice-summary-new{grid-template-columns:1fr}.floating-install-btn{bottom:16px;right:16px;padding:12px 18px;font-size:14px;min-height:44px;min-width:44px}}
+        @media(max-width:480px){.app-container{padding:10px 8px 0}.glass-card{padding:14px 12px}.modal-box{padding:18px 14px}.invoice-card{flex-direction:column;align-items:stretch}.invoice-card .info{flex-direction:column;align-items:stretch;gap:6px}th,td{padding:6px 8px;font-size:12px}.bottom-nav{padding:4px 4px 8px}.nav-item{padding:4px 6px;min-width:36px}.nav-item .nav-icon{font-size:20px}.nav-item .nav-label{font-size:10px}.welcome-box,.pin-box{padding:20px 16px}.pin-box .pin-dots input{width:40px;height:40px;font-size:20px}.pos-actions .btn{min-width:60px;font-size:13px;padding:10px 12px}#quickModeContainer .quick-item-btn{min-height:60px}#quickModeContainer{grid-template-columns:repeat(2,1fr)!important}.pricing-grid{grid-template-columns:1fr 1fr;gap:8px}.pricing-card{padding:12px 6px}#invoiceEditor .invoice-table-wrap table{min-width:400px}#invoiceEditor .invoice-fields{grid-template-columns:1fr}#invoiceEditor .invoice-summary-new{grid-template-columns:1fr}}
         @media(max-width:400px){.app-title{font-size:18px}.report-cards{grid-template-columns:1fr 1fr}}
     </style>
 </head>
@@ -373,9 +401,6 @@
         <div class="splash-logo"><img src="icon_512.png" alt="احسبلي+" /></div>
         <div class="splash-progress-wrap"><div class="splash-progress-bar" id="splashProgress"></div></div>
     </div>
-
-    <!-- ===== FLOATING INSTALL ===== -->
-    <button id="floatingInstallBtn" class="floating-install-btn" style="display:none;">📲 تثبيت التطبيق</button>
 
     <!-- ===== WELCOME ===== -->
     <div id="welcomeScreen">
@@ -426,7 +451,7 @@
     <div class="app-container" id="app" style="display:none;">
 
         <header class="app-header">
-            <div class="app-title">احسبلي+ <small>v2.5</small></div>
+            <div class="app-title">احسبلي+ <small>v2.6</small></div>
             <div class="currency-toggle" id="currencyToggle">
                 <button class="active-currency" data-cur="old">ل.س</button>
                 <button data-cur="new">ل.س.ج</button>
@@ -510,7 +535,7 @@
                                     <button class="qty-btn" data-qty="4">4</button>
                                     <button class="qty-btn" data-qty="5">5</button>
                                     <button class="qty-btn" data-qty="6">6</button>
-                                    <input type="number" id="customQtyInput" min="1" value="1" placeholder="كمية" step="1" />
+                                    <input type="text" id="customQtyInput" value="1" placeholder="كمية" />
                                 </div>
                                 <button class="btn btn-gold-outline btn-sm" id="addToTempBtn" style="margin-top:4px;">➕ إضافة إلى الفاتورة</button>
                             </div>
@@ -574,8 +599,18 @@
                         </div>
                     </div>
                     <div class="invoice-fields">
-                        <div class="form-group"><label>📅 التاريخ</label><input type="date" id="invoiceDateNew" /></div>
-                        <div class="form-group"><label id="customerFieldLabel">👤 العميل</label><input type="text" id="invoiceCustomerName" placeholder="اكتب الاسم..." /></div>
+                        <div class="form-group" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:150px;">
+                                <label id="customerFieldLabel">👤 العميل</label>
+                                <input type="text" id="invoiceCustomerName" placeholder="اكتب الاسم..." list="customerDatalist" />
+                                <datalist id="customerDatalist"></datalist>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-gold" id="addCustomerFromInvoiceBtn" style="margin-top:18px;min-height:36px;min-width:44px;" title="إضافة عميل جديد">➕</button>
+                        </div>
+                        <div class="form-group">
+                            <label>📅 التاريخ</label>
+                            <input type="date" id="invoiceDateNew" />
+                        </div>
                     </div>
 
                     <div class="invoice-entry-row">
@@ -583,26 +618,24 @@
                             <label>اسم الصنف</label>
                             <input type="text" id="invoiceRowName" list="invoiceItemsDatalist" placeholder="اكتب اسم الصنف..." />
                         </div>
-                        <div class="form-group" style="flex: 1 0 100px; min-width: 80px;">
+                        <div class="form-group">
                             <label>الوحدة</label>
-                            <select id="invoiceRowUnit">
-                                <option value="piece">قطعة</option>
-                            </select>
+                            <input type="text" id="invoiceRowUnit" list="unitSuggestions" placeholder="قطعة، كيلو..." />
                         </div>
                         <div class="form-group">
                             <label>الكمية</label>
-                            <input type="number" id="invoiceRowQty" value="1" min="0.01" step="0.01" />
+                            <input type="text" id="invoiceRowQty" value="1" />
                         </div>
                         <div class="form-group">
                             <label>سعر الوحدة</label>
-                            <input type="number" id="invoiceRowPrice" step="0.01" inputmode="decimal" min="0" placeholder="0.00" />
+                            <input type="text" id="invoiceRowPrice" step="0.01" placeholder="0.00" />
                         </div>
                         <button class="btn btn-gold" id="addInvoiceRowBtn">➕ إضافة</button>
                     </div>
 
                     <div class="invoice-table-wrap">
                         <table>
-                            <thead><tr><th style="width:40px;">#</th><th>الاسم</th><th style="width:120px;">الكمية</th><th style="width:100px;">سعر الوحدة</th><th style="width:90px;">الإجمالي</th><th style="width:40px;"></th></tr></thead>
+                            <thead><tr><th style="width:40px;">#</th><th>الاسم / الوحدة</th><th style="width:120px;">الكمية</th><th style="width:100px;">سعر الوحدة</th><th style="width:90px;">الإجمالي</th><th style="width:40px;"></th></tr></thead>
                             <tbody id="invoiceRowsBody"></tbody>
                         </table>
                     </div>
@@ -686,75 +719,140 @@
         <section class="panel" id="panel-settings">
             <div class="glass-card">
                 <h3>⚙️ الإعدادات</h3>
-                <div class="settings-group">
-                    <h4>💰 رأس المال والسيولة النقدية</h4>
-                    <div class="cash-display"><span class="label">💵 الرصيد النقدي الحالي</span><span class="value" id="settingsCashDisplay">0.00</span></div>
-                    <div class="equity-display"><span class="label">🏦 إجمالي رأس المال</span><span class="value" id="settingsEquityDisplay">0.00</span></div>
-                    <div class="settings-row" style="margin-top:8px;">
-                        <div class="form-group" style="flex:2;"><label>الوصف (سبب الإيداع أو السحب)</label><input type="text" id="manualCashDesc" placeholder="مثل: إيداع رأس مال افتتاحي" /></div>
-                        <div class="form-group" style="flex:1;"><label>المبلغ</label><input type="number" id="manualCashAmount" step="0.01" inputmode="decimal" min="0" placeholder="0.00" /></div>
-                        <button class="btn btn-gold" id="manualCashAddBtn" style="min-height:40px;">➕ إيداع</button>
-                        <button class="btn btn-danger" id="manualCashWithdrawBtn" style="min-height:40px;">➖ سحب</button>
+
+                <div class="settings-accordion">
+
+                    <!-- 1. الأموال -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" data-target="acc-money">
+                            <span>💰 الأموال</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-body" id="acc-money">
+                            <div class="settings-group">
+                                <h4>💵 الرصيد النقدي ورأس المال</h4>
+                                <div class="cash-display"><span class="label">💵 الرصيد النقدي الحالي</span><span class="value" id="settingsCashDisplay">0.00</span></div>
+                                <div class="equity-display"><span class="label">🏦 إجمالي رأس المال</span><span class="value" id="settingsEquityDisplay">0.00</span></div>
+                                <div class="settings-row">
+                                    <div class="form-group" style="flex:2;"><label>الوصف (سبب الإيداع أو السحب)</label><input type="text" id="manualCashDesc" placeholder="مثل: إيداع رأس مال افتتاحي" /></div>
+                                    <div class="form-group" style="flex:1;"><label>المبلغ</label><input type="number" id="manualCashAmount" step="0.01" inputmode="decimal" min="0" placeholder="0.00" /></div>
+                                    <button class="btn btn-gold" id="manualCashAddBtn" style="min-height:40px;">➕ إيداع</button>
+                                    <button class="btn btn-danger" id="manualCashWithdrawBtn" style="min-height:40px;">➖ سحب</button>
+                                </div>
+                                <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
+                                    <button class="btn btn-danger" id="resetCashBalanceBtn" style="min-height:40px;">🔄 إعادة تعيين الرصيد (للتطوير)</button>
+                                </div>
+                                <div style="margin-top:10px;font-size:12px;color:var(--text4);">
+                                    <span>آخر تعديل يدوي: <span id="lastManualAdjustDate">غير متاح</span></span>
+                                </div>
+                            </div>
+
+                            <div class="settings-group" style="margin-top:20px;">
+                                <h4>📦 المصاريف الثابتة</h4>
+                                <div class="settings-row">
+                                    <div class="form-group"><label>اسم المصروف</label><input type="text" id="fixedExpenseName" placeholder="مثل: إيجار" /></div>
+                                    <div class="form-group"><label>المبلغ الشهري</label><input type="number" id="fixedExpenseAmount" step="0.01" inputmode="decimal" min="0" placeholder="0.00" /></div>
+                                    <div class="form-group"><label>المدة</label><select id="fixedExpensePeriod"><option value="month">شهري</option><option value="week">أسبوعي</option><option value="year">سنوي</option></select></div>
+                                    <button class="btn btn-gold" id="addFixedExpenseBtn">➕ إضافة</button>
+                                </div>
+                                <div id="fixedExpenseList" style="margin-top:10px;"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
-                        <button class="btn btn-danger" id="resetCashBalanceBtn" style="min-height:40px;">🔄 إعادة تعيين الرصيد (للتطوير)</button>
+
+                    <!-- 2. الأصناف المميزة -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" data-target="acc-favorites">
+                            <span>⭐ الأصناف المميزة</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-body" id="acc-favorites">
+                            <div class="settings-group">
+                                <h4>⭐ الأصناف المميزة (تظهر أولاً في الوضع السريع)</h4>
+                                <div id="favoriteItemsList"></div>
+                                <button class="btn btn-gold" id="saveFavoritesBtn" style="min-height:40px;">💾 حفظ المميزة</button>
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-top:10px;font-size:12px;color:var(--text4);">
-                        <span>آخر تعديل يدوي: <span id="lastManualAdjustDate">غير متاح</span></span>
+
+                    <!-- 3. الخصوصية -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" data-target="acc-privacy">
+                            <span>🔒 الخصوصية</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-body" id="acc-privacy">
+                            <div class="settings-group">
+                                <h4>🔒 قفل PIN</h4>
+                                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                                    <div class="form-group" style="flex:1;"><label>رمز PIN (4 أرقام)</label><input type="password" id="pinInput" maxlength="4" placeholder="أدخل 4 أرقام" /></div>
+                                    <button class="btn btn-gold-outline" id="pinEnableBtn">تفعيل</button>
+                                    <button class="btn btn-danger" id="pinDisableBtn">تعطيل</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="settings-group">
-                    <h4>⭐ الأصناف المميزة (تظهر أولاً في الوضع السريع)</h4>
-                    <div id="favoriteItemsList"></div>
-                    <button class="btn btn-gold" id="saveFavoritesBtn" style="min-height:40px;">💾 حفظ المميزة</button>
-                </div>
-                <div class="settings-group" style="display:none;">
-                    <h4>💵 سعر صرف الدولار اليومي</h4>
-                    <div class="settings-row">
-                        <div class="form-group"><label>سعر الصرف (ل.س)</label><input type="number" id="exchangeRateInput" step="0.01" inputmode="decimal" min="0" placeholder="13000" /></div>
-                        <button class="btn btn-gold" id="saveExchangeRateBtn">تحديث</button>
+
+                    <!-- 4. النسخ الاحتياطي -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" data-target="acc-backup">
+                            <span>💾 النسخ الاحتياطي</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-body" id="acc-backup">
+                            <div class="settings-group">
+                                <h4>💾 النسخ الاحتياطي السحابي</h4>
+                                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                                    <span id="backupDateDisplay" style="color:var(--text3);font-size:13px;">📅 آخر نسخ احتياطي: غير متاح</span>
+                                    <button class="btn btn-gold-outline" id="manualBackupBtn">📤 نسخ احتياطي سحابي</button>
+                                    <button class="btn btn-gold-outline" id="restoreBackupBtn">📂 استعادة من السحاب</button>
+                                </div>
+                                <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="settings-group">
-                    <h4>📦 وحدات الشراء</h4>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
-                        <input type="text" id="newUnitName" placeholder="اسم الوحدة (كرتونة)" style="flex:1;min-width:120px;padding:8px 12px;border-radius:40px;background:var(--bg3);border:1px solid var(--border2);color:#fff;">
-                        <input type="number" id="newUnitFactor" placeholder="تحتوي على ___ قطعة" style="width:120px;padding:8px 12px;border-radius:40px;background:var(--bg3);border:1px solid var(--border2);color:#fff;" step="1" min="1">
-                        <button class="btn btn-gold" id="addPurchaseUnitBtn">➕ إضافة</button>
+
+                    <!-- 5. العملاء -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" data-target="acc-customers">
+                            <span>👥 العملاء</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-body" id="acc-customers">
+                            <div class="settings-group">
+                                <h4>👥 إدارة العملاء</h4>
+                                <button class="btn btn-gold" id="manageCustomersBtn" style="min-height:40px;">👥 إدارة العملاء</button>
+                            </div>
+                        </div>
                     </div>
-                    <div id="purchaseUnitsList"></div>
-                </div>
-                <div class="settings-group">
-                    <h4>🔒 قفل PIN</h4>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-                        <div class="form-group" style="flex:1;"><label>رمز PIN (4 أرقام)</label><input type="password" id="pinInput" maxlength="4" placeholder="أدخل 4 أرقام" /></div>
-                        <button class="btn btn-gold-outline" id="pinEnableBtn">تفعيل</button>
-                        <button class="btn btn-danger" id="pinDisableBtn">تعطيل</button>
+
+                    <!-- 6. العملات -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" data-target="acc-currency">
+                            <span>💵 العملات</span>
+                            <span class="accordion-icon">▼</span>
+                        </div>
+                        <div class="accordion-body" id="acc-currency">
+                            <div class="settings-group">
+                                <h4>💵 سعر صرف الدولار</h4>
+                                <div class="settings-row">
+                                    <div class="form-group">
+                                        <label>سعر الصرف (ل.س/$)</label>
+                                        <input type="number" id="exchangeRateInput" step="0.01" inputmode="decimal" min="0" placeholder="13000" />
+                                    </div>
+                                    <button class="btn btn-gold" id="saveExchangeRateBtn">تحديث</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="settings-group">
-                    <h4>📦 المصاريف الثابتة</h4>
-                    <div class="settings-row">
-                        <div class="form-group"><label>اسم المصروف</label><input type="text" id="fixedExpenseName" placeholder="مثل: إيجار" /></div>
-                        <div class="form-group"><label>المبلغ الشهري</label><input type="number" id="fixedExpenseAmount" step="0.01" inputmode="decimal" min="0" placeholder="0.00" /></div>
-                        <div class="form-group"><label>المدة</label><select id="fixedExpensePeriod"><option value="month">شهري</option><option value="week">أسبوعي</option><option value="year">سنوي</option></select></div>
-                        <button class="btn btn-gold" id="addFixedExpenseBtn">➕ إضافة</button>
-                    </div>
-                    <div id="fixedExpenseList" style="margin-top:10px;"></div>
-                </div>
-                <div class="settings-group">
-                    <h4>📋 إدارة الاشتراك</h4>
+
+                </div><!-- end accordion -->
+
+                <div style="margin-top:20px;border-top:1px solid var(--border2);padding-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;">
                     <button class="btn btn-gold-outline" id="manageSubscriptionBtn">📋 إدارة الاشتراك</button>
+                    <span style="color:var(--text4);font-size:12px;">احسبلي+ v2.6</span>
                 </div>
-                <div class="settings-group">
-                    <h4>💾 النسخ الاحتياطي السحابي</h4>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                        <span id="backupDateDisplay" style="color:var(--text3);font-size:13px;">📅 آخر نسخ احتياطي: غير متاح</span>
-                        <button class="btn btn-gold-outline" id="manualBackupBtn">📤 نسخ احتياطي سحابي</button>
-                        <button class="btn btn-gold-outline" id="restoreBackupBtn">📂 استعادة من السحاب</button>
-                    </div>
-                    <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
-                </div>
+
             </div>
         </section>
 
@@ -768,15 +866,19 @@
             <button class="nav-item" data-tab="settings"><span class="nav-icon">⚙️</span><span class="nav-label">الإعدادات</span></button>
         </nav>
 
+        <!-- زر تثبيت التطبيق الذكي -->
+        <button id="installAppBtn" style="display:none; position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#f7d875,#e8a317); color:#0a0a0a; border:none; border-radius:60px; padding:14px 28px; font-weight:700; font-size:16px; box-shadow:0 8px 32px rgba(245,166,35,0.6); z-index:9999; cursor:pointer; touch-action:manipulation; white-space:nowrap; border:1px solid rgba(255,255,255,0.2);">
+            ⬇️ تثبيت التطبيق
+        </button>
+
     </div><!-- /app -->
 
     <!-- ===== MODALS ===== -->
 
-    <!-- Item Modal (NEW: View + Edit) -->
+    <!-- Item Modal -->
     <div class="modal-overlay" id="itemModal">
         <div class="modal-box">
             <h3 id="itemModalTitle">📦 تفاصيل الصنف</h3>
-
             <div id="itemViewMode">
                 <div class="item-detail-view">
                     <div class="detail-row"><span class="label">🏷️ الاسم</span><span class="value" id="viewName">—</span></div>
@@ -794,19 +896,16 @@
                     </div>
                 </div>
             </div>
-
             <div id="itemEditMode">
                 <form id="itemForm">
                     <div class="form-grid">
                         <div class="form-group"><label>اسم الصنف *</label><input type="text" id="itemName" required /></div>
-                        <div class="form-group"><label>الوحدة</label><input type="text" id="itemUnit" list="unitSuggestions" placeholder="قطعة، كيلو..." /><datalist id="unitSuggestions"><option value="قطعة"><option value="كيلو"><option value="علبة"><option value="حبة"><option value="لتر"><option value="طن"><option value="صندوق"><option value="كرتون"><option value="متر"><option value="ساعة"></datalist></div>
+                        <div class="form-group"><label>الوحدة</label><input type="text" id="itemUnit" list="unitSuggestions" placeholder="قطعة، كيلو..." /></div>
                         <div class="form-group"><label>سعر الشراء</label><input type="number" id="itemPurchase" step="0.01" inputmode="decimal" min="0" /></div>
                         <div class="form-group"><label>سعر المفرق *</label><input type="number" id="itemRetail" step="0.01" inputmode="decimal" min="0" required /></div>
                         <div class="form-group"><label>سعر الجملة</label><input type="number" id="itemWholesale" step="0.01" inputmode="decimal" min="0" /></div>
                         <div class="form-group"><label>الكمية المتوفرة</label><input type="number" id="itemQty" step="1" min="0" value="0" /></div>
                         <div class="form-group"><label>حد التنبيه</label><input type="number" id="itemMinQty" step="1" min="0" value="5" /></div>
-                        <div class="form-group"><label>وحدة الشراء المخصصة</label><input type="text" id="itemCustomUnit" placeholder="كرتونة، شوال..." /></div>
-                        <div class="form-group"><label>تحتوي على ___ قطعة</label><input type="number" id="itemCustomUnitFactor" step="1" min="1" placeholder="10" /></div>
                         <div class="form-group full-width">
                             <label>📷 الباركود (اختياري)</label>
                             <div style="display:flex;gap:8px;align-items:center;">
@@ -983,7 +1082,7 @@
             <p style="color:var(--text3);font-size:14px;margin-bottom:12px;">يرجى تحديد أسعار البيع للأصناف التي تم إدخالها في الفاتورة.</p>
             <div id="pricingItemsContainer"></div>
             <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">
-                <button class="btn btn-gold-outline" id="pricingLaterBtn">⏰ لاحقاً</button>
+                <button class="btn btn-gold-outline" id="pricingLaterBtn">⏰ تخطي الآن</button>
                 <button class="btn btn-gold" id="pricingSaveBtn">💾 حفظ</button>
             </div>
         </div>
@@ -1137,8 +1236,7 @@
             debtPaymentInvoiceId: null,
             editingItemId: null,
             viewingItemId: null,
-            isEditMode: false,
-            purchaseUnits: []
+            isEditMode: false
         };
 
         // =====================================================================
@@ -1214,6 +1312,8 @@
                 ItemsModule.render();
                 ItemsModule.populateFavorites();
                 InvoiceModule.buildDatalist();
+                ItemsModule._updateUnitDatalist();
+                App.updateCustomerDatalist();
             },
             render: () => {
                 const container = document.getElementById('itemsList');
@@ -1245,25 +1345,10 @@
                     const retail = Currency.displayPrice(it.retailPrice);
                     const unit = it.unit || 'قطعة';
                     const favIcon = favs.includes(it.id) ? '⭐ ' : '';
-                    // عرض معلومات الوحدة المخصصة إن وجدت
-                    let unitInfo = '';
-                    if (it.customUnit && it.customUnitFactor > 0) {
-                        unitInfo = `<span class="item-unit-info">🛒 شراء: ${Utils.escape(it.customUnit)} (${it.customUnitFactor} قطعة)</span>`;
-                    } else {
-                        // التحقق من وحدات عامة مطبقة
-                        const generalUnits = AppState.purchaseUnits.filter(u => u.appliesTo && u.appliesTo.includes(it
-                        .id));
-                        if (generalUnits.length > 0) {
-                            const u = generalUnits[0];
-                            unitInfo =
-                                `<span class="item-unit-info">🛒 شراء: ${Utils.escape(u.name)} (${u.factor} قطعة)</span>`;
-                        }
-                    }
                     html += `<div class="item-row ${cls}" data-id="${it.id}">
                                 <div class="item-main">
                                     <span class="item-name">${favIcon}${Utils.escape(it.name)}</span>
                                     <span class="item-unit">(${Utils.escape(unit)})</span>
-                                    ${unitInfo}
                                 </div>
                                 <div class="item-meta">
                                     <span><span class="meta-label">شراء</span> <span class="meta-value">${purchase}</span></span>
@@ -1332,13 +1417,12 @@
                 document.getElementById('itemQty').value = 0;
                 document.getElementById('itemMinQty').value = 5;
                 document.getElementById('itemBarcode').value = '';
-                document.getElementById('itemCustomUnit').value = '';
-                document.getElementById('itemCustomUnitFactor').value = '';
                 document.getElementById('itemSubmitBtn').textContent = '➕ إضافة';
                 document.getElementById('itemModalTitle').textContent = '➕ إضافة صنف جديد';
                 ItemsModule._setModalMode('edit');
                 document.getElementById('itemModal').classList.add('open');
                 document.getElementById('itemName').focus();
+                ItemsModule._updateUnitDatalist();
             },
 
             _fillView: (item) => {
@@ -1364,11 +1448,10 @@
                 document.getElementById('itemQty').value = item.quantity || 0;
                 document.getElementById('itemMinQty').value = item.minQuantity || 5;
                 document.getElementById('itemBarcode').value = item.barcode || '';
-                document.getElementById('itemCustomUnit').value = item.customUnit || '';
-                document.getElementById('itemCustomUnitFactor').value = item.customUnitFactor || '';
                 document.getElementById('itemSubmitBtn').textContent = '💾 حفظ';
                 document.getElementById('itemModalTitle').textContent = `✏️ تعديل ${Utils.escape(item.name)}`;
                 document.getElementById('itemSubmitBtn').dataset.id = item.id;
+                ItemsModule._updateUnitDatalist();
             },
 
             _setModalMode: (mode) => {
@@ -1404,8 +1487,6 @@
                 const quantity = parseInt(document.getElementById('itemQty').value) || 0;
                 const minQuantity = parseInt(document.getElementById('itemMinQty').value) || 5;
                 const barcode = document.getElementById('itemBarcode').value.trim();
-                const customUnit = document.getElementById('itemCustomUnit').value.trim();
-                const customUnitFactor = parseInt(document.getElementById('itemCustomUnitFactor').value) || 0;
 
                 if (!name) { Utils.toast('⚠️ يرجى إدخال اسم الصنف'); return; }
                 if (retail <= 0) { Utils.toast('⚠️ يرجى إدخال سعر مفرق صحيح'); return; }
@@ -1419,8 +1500,6 @@
                     quantity,
                     minQuantity,
                     barcode,
-                    customUnit,
-                    customUnitFactor,
                     newItem: false,
                     priceUpdated: false
                 };
@@ -1493,6 +1572,22 @@
                 AppState.viewingItemId = null;
                 AppState.isEditMode = false;
                 AppState.editingItemId = null;
+            },
+
+            _updateUnitDatalist: () => {
+                const datalist = document.getElementById('unitSuggestions');
+                if (!datalist) return;
+                const units = new Set();
+                ['قطعة', 'كيلو', 'علبة', 'حبة', 'لتر', 'طن', 'صندوق', 'كرتون', 'متر', 'ساعة'].forEach(u => units.add(u));
+                AppState.items.forEach(item => {
+                    if (item.unit) units.add(item.unit);
+                });
+                datalist.innerHTML = '';
+                units.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u;
+                    datalist.appendChild(opt);
+                });
             }
         };
 
@@ -1501,26 +1596,33 @@
         // =====================================================================
         const RetailModule = {
             init: () => {
-                document.getElementById('quickModeToggle').addEventListener('change', function() {
-                    AppState.quickModeEnabled = this.checked;
-                    localStorage.setItem('quickModeEnabled', JSON.stringify(AppState.quickModeEnabled));
-                    if (!AppState.quickModeEnabled) { AppState.quickModeQty = {};
-                        AppState.quickModeTotal = 0;
-                        AppState.quickModeHistory = []; }
-                    RetailModule.applyMode();
-                    if (AppState.quickModeEnabled) RetailModule.renderQuick();
-                    else {
-                        document.getElementById('quickModeContainer').style.display = 'none';
-                        document.getElementById('quickModeChipsContainer').style.display = 'none';
-                        document.getElementById('quickModeBottomBar').style.display = 'none';
-                        document.getElementById('quickModeSearchContainer').style.display = 'none';
-                    }
-                });
-                document.getElementById('quickModeSearch').addEventListener('input', function() { AppState
-                        .quickModeSearch = this.value;
-                    RetailModule.renderQuick(); });
-                document.getElementById('quickModeScanBarcodeBtn').addEventListener('click', () => { RetailModule
-                        .startScanner('quickModeSearch', (result) => {
+                const quickModeToggle = document.getElementById('quickModeToggle');
+                if (quickModeToggle) {
+                    quickModeToggle.addEventListener('change', function() {
+                        AppState.quickModeEnabled = this.checked;
+                        localStorage.setItem('quickModeEnabled', JSON.stringify(AppState.quickModeEnabled));
+                        if (!AppState.quickModeEnabled) { AppState.quickModeQty = {};
+                            AppState.quickModeTotal = 0;
+                            AppState.quickModeHistory = []; }
+                        RetailModule.applyMode();
+                        if (AppState.quickModeEnabled) RetailModule.renderQuick();
+                        else {
+                            document.getElementById('quickModeContainer').style.display = 'none';
+                            document.getElementById('quickModeChipsContainer').style.display = 'none';
+                            document.getElementById('quickModeBottomBar').style.display = 'none';
+                            document.getElementById('quickModeSearchContainer').style.display = 'none';
+                        }
+                    });
+                }
+                const quickSearch = document.getElementById('quickModeSearch');
+                if (quickSearch) {
+                    quickSearch.addEventListener('input', function() { AppState.quickModeSearch = this.value;
+                        RetailModule.renderQuick(); });
+                }
+                const scanBarcode = document.getElementById('quickModeScanBarcodeBtn');
+                if (scanBarcode) {
+                    scanBarcode.addEventListener('click', () => { RetailModule.startScanner('quickModeSearch', (
+                        result) => {
                             const item = AppState.items.find(it => it.barcode === result);
                             if (item) {
                                 const cur = AppState.quickModeQty[item.id] || 0;
@@ -1535,178 +1637,214 @@
                             } else { Utils.toast('⚠️ لا يوجد صنف بهذا الباركود');
                                 document.getElementById('quickModeSearch').value = result; }
                         }); });
-                document.getElementById('quickModeUndoBtn').addEventListener('click', () => {
-                    if (!AppState.quickModeHistory.length) { Utils.toast('⚠️ لا توجد عمليات للتراجع'); return; }
-                    const last = AppState.quickModeHistory.pop();
-                    if (last.oldQty === 0) delete AppState.quickModeQty[last.id];
-                    else AppState.quickModeQty[last.id] = last.oldQty;
-                    RetailModule.calcTotal();
-                    RetailModule.renderQuick();
-                    Utils.toast('↩️ تم التراجع');
-                });
-                document.getElementById('quickModeFloatBtn').addEventListener('click', () => {
-                    if (AppState.quickModeTotal === 0) {
-                        Utils.toast('⚠️ لم تقم بإضافة أي صنف');
-                        return;
-                    }
-                    for (const [id, qty] of Object.entries(AppState.quickModeQty)) {
-                        if (qty <= 0) continue;
-                        const chk = RetailModule.validateStock(Number(id), qty);
-                        if (!chk.valid) { Utils.toast(chk.msg); return; }
-                    }
-                    AppState.tempLines = [];
-                    for (const [id, qty] of Object.entries(AppState.quickModeQty)) {
-                        if (qty <= 0) continue;
-                        const item = AppState.items.find(it => it.id == id);
-                        if (item) {
-                            const price = Currency.getPrice(item.retailPrice);
-                            AppState.tempLines.push({
-                                id: ++AppState.tempLineId,
-                                itemId: item.id,
-                                itemName: item.name,
-                                quantity: qty,
-                                unitPrice: price,
-                                total: price * qty
-                            });
+                }
+                const undoBtn = document.getElementById('quickModeUndoBtn');
+                if (undoBtn) {
+                    undoBtn.addEventListener('click', () => {
+                        if (!AppState.quickModeHistory.length) { Utils.toast('⚠️ لا توجد عمليات للتراجع'); return; }
+                        const last = AppState.quickModeHistory.pop();
+                        if (last.oldQty === 0) delete AppState.quickModeQty[last.id];
+                        else AppState.quickModeQty[last.id] = last.oldQty;
+                        RetailModule.calcTotal();
+                        RetailModule.renderQuick();
+                        Utils.toast('↩️ تم التراجع');
+                    });
+                }
+                const floatBtn = document.getElementById('quickModeFloatBtn');
+                if (floatBtn) {
+                    floatBtn.addEventListener('click', () => {
+                        if (AppState.quickModeTotal === 0) {
+                            Utils.toast('⚠️ لم تقم بإضافة أي صنف');
+                            return;
                         }
-                    }
-                    AppState.quickModeQty = {};
-                    AppState.quickModeTotal = 0;
-                    AppState.quickModeHistory = [];
-                    RetailModule.renderQuick();
-                    RetailModule.processPayment('كاش');
-                });
-                document.getElementById('posSearch').addEventListener('input', () => {
-                    const q = document.getElementById('posSearch').value.trim().toLowerCase();
-                    const results = q ? AppState.items.filter(it => it.name.toLowerCase().includes(q) || (it
-                        .barcode && it.barcode.includes(q))) : [];
-                    RetailModule.renderSuggestions(results);
-                });
-                document.getElementById('posSearch').addEventListener('blur', () => setTimeout(() => document
-                        .getElementById('suggestionsBox').classList.remove('show'), 180));
-                document.getElementById('posSearch').addEventListener('focus', () => {
-                    const q = document.getElementById('posSearch').value.trim();
-                    if (q) RetailModule.renderSuggestions(AppState.items.filter(it => it.name.toLowerCase()
-                        .includes(q) || (it.barcode && it.barcode.includes(q))));
-                });
-                document.getElementById('posSearch').addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        const val = this.value.trim();
-                        if (val && !AppState.items.some(it => it.name === val)) { Utils.toast(
-                                '⚠️ هذا الصنف غير مسجل');
-                            this.value = '';
-                            RetailModule.clearPos();
-                            e.preventDefault(); }
-                    }
-                });
-                document.querySelectorAll('#qtyButtons .qty-btn').forEach(b => b.addEventListener('click',
-                    function() {
+                        for (const [id, qty] of Object.entries(AppState.quickModeQty)) {
+                            if (qty <= 0) continue;
+                            const chk = RetailModule.validateStock(Number(id), qty);
+                            if (!chk.valid) { Utils.toast(chk.msg); return; }
+                        }
+                        AppState.tempLines = [];
+                        for (const [id, qty] of Object.entries(AppState.quickModeQty)) {
+                            if (qty <= 0) continue;
+                            const item = AppState.items.find(it => it.id == id);
+                            if (item) {
+                                const price = Currency.getPrice(item.retailPrice);
+                                AppState.tempLines.push({
+                                    id: ++AppState.tempLineId,
+                                    itemId: item.id,
+                                    itemName: item.name,
+                                    quantity: qty,
+                                    unitPrice: price,
+                                    total: price * qty
+                                });
+                            }
+                        }
+                        AppState.quickModeQty = {};
+                        AppState.quickModeTotal = 0;
+                        AppState.quickModeHistory = [];
+                        RetailModule.renderQuick();
+                        RetailModule.processPayment('كاش');
+                    });
+                }
+
+                const posSearch = document.getElementById('posSearch');
+                if (posSearch) {
+                    posSearch.addEventListener('input', () => {
+                        const q = posSearch.value.trim().toLowerCase();
+                        const results = q ? AppState.items.filter(it => it.name.toLowerCase().includes(q) || (it
+                            .barcode && it.barcode.includes(q))) : [];
+                        RetailModule.renderSuggestions(results);
+                    });
+                    posSearch.addEventListener('blur', () => setTimeout(() => document.getElementById(
+                        'suggestionsBox').classList.remove('show'), 180));
+                    posSearch.addEventListener('focus', () => {
+                        const q = posSearch.value.trim();
+                        if (q) RetailModule.renderSuggestions(AppState.items.filter(it => it.name
+                            .toLowerCase().includes(q) || (it.barcode && it.barcode.includes(q))));
+                    });
+                    posSearch.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            const val = this.value.trim();
+                            if (val && !AppState.items.some(it => it.name === val)) { Utils.toast(
+                                    '⚠️ هذا الصنف غير مسجل');
+                                this.value = '';
+                                RetailModule.clearPos();
+                                e.preventDefault(); }
+                        }
+                    });
+                }
+                document.querySelectorAll('#qtyButtons .qty-btn').forEach(b => {
+                    b.addEventListener('click', function() {
                         AppState.posSelectedQty = Number(this.dataset.qty);
                         document.querySelectorAll('#qtyButtons .qty-btn').forEach(b2 => b2.classList.toggle(
                             'active', Number(b2.dataset.qty) === AppState.posSelectedQty));
                         document.getElementById('customQtyInput').value = AppState.posSelectedQty;
                         RetailModule.updatePosDisplay();
-                    }));
-                document.getElementById('customQtyInput').addEventListener('input', function() {
-                    let val = parseInt(this.value) || 1;
-                    if (val < 1) val = 1;
-                    AppState.posSelectedQty = val;
-                    document.querySelectorAll('#qtyButtons .qty-btn').forEach(b => b.classList.remove(
-                        'active'));
-                    RetailModule.updatePosDisplay();
+                    });
                 });
-                document.getElementById('addToTempBtn').addEventListener('click', () => {
-                    if (!AppState.posSelectedItem) { Utils.toast('⚠️ اختر صنفاً أولاً'); return; }
-                    const qty = AppState.posSelectedQty;
-                    if (qty < 1) { Utils.toast('⚠️ الكمية يجب أن تكون 1 على الأقل'); return; }
-                    const chk = RetailModule.validateStock(AppState.posSelectedItem.id, qty);
-                    if (!chk.valid) { Utils.toast(chk.msg); return; }
-                    const item = AppState.posSelectedItem;
-                    const price = Currency.getPrice(item.retailPrice);
-                    AppState.tempLines.push({ id: ++AppState.tempLineId, itemId: item.id, itemName: item
-                            .name, quantity: qty, unitPrice: price, total: price * qty });
-                    RetailModule.renderTemp();
-                    Utils.toast(`✅ تم إضافة ${qty} × ${item.name}`);
-                    RetailModule.clearPos();
-                });
-                document.getElementById('posCancelBtn').addEventListener('click', RetailModule.clearPos);
-                document.getElementById('posCashBtn').addEventListener('click', () => {
-                    if (!AppState.tempLines.length && !AppState.posSelectedItem) { Utils.toast(
-                            '⚠️ اختر صنفاً أو أضف أصنافاً'); return; }
-                    if (!AppState.tempLines.length && AppState.posSelectedItem) {
-                        const item = AppState.posSelectedItem;
+                // remove numpad click for customQtyInput - now uses native keyboard
+
+                const addTemp = document.getElementById('addToTempBtn');
+                if (addTemp) {
+                    addTemp.addEventListener('click', () => {
+                        if (!AppState.posSelectedItem) { Utils.toast('⚠️ اختر صنفاً أولاً'); return; }
                         const qty = AppState.posSelectedQty;
-                        const chk = RetailModule.validateStock(item.id, qty);
+                        if (qty < 1) { Utils.toast('⚠️ الكمية يجب أن تكون 1 على الأقل'); return; }
+                        const chk = RetailModule.validateStock(AppState.posSelectedItem.id, qty);
                         if (!chk.valid) { Utils.toast(chk.msg); return; }
+                        const item = AppState.posSelectedItem;
                         const price = Currency.getPrice(item.retailPrice);
                         AppState.tempLines.push({ id: ++AppState.tempLineId, itemId: item.id,
                             itemName: item.name, quantity: qty, unitPrice: price, total: price *
                                 qty });
                         RetailModule.renderTemp();
-                    }
-                    RetailModule.processPayment('كاش');
-                });
-                document.getElementById('posCreditBtn').addEventListener('click', () => {
-                    if (!AppState.tempLines.length && !AppState.posSelectedItem) { Utils.toast(
-                            '⚠️ اختر صنفاً أو أضف أصنافاً'); return; }
-                    if (!AppState.tempLines.length && AppState.posSelectedItem) {
-                        const item = AppState.posSelectedItem;
-                        const qty = AppState.posSelectedQty;
-                        const chk = RetailModule.validateStock(item.id, qty);
-                        if (!chk.valid) { Utils.toast(chk.msg); return; }
-                        const price = Currency.getPrice(item.retailPrice);
-                        AppState.tempLines.push({ id: ++AppState.tempLineId, itemId: item.id,
-                            itemName: item.name, quantity: qty, unitPrice: price, total: price *
-                                qty });
-                        RetailModule.renderTemp();
-                    }
-                    const subtotal = AppState.tempLines.reduce((s, l) => s + l.total, 0);
-                    const disc = parseFloat(document.getElementById('retailDiscountPercent').value) || 0;
-                    const net = subtotal - (subtotal * (disc / 100));
-                    document.getElementById('retailCreditPaid').value = 0;
-                    document.getElementById('retailCreditRemaining').textContent = Currency.format(net);
-                    document.getElementById('retailCreditCustomerName').value = '';
-                    document.getElementById('retailCreditModal').classList.add('open');
-                    document.getElementById('retailCreditConfirm').onclick = async function() {
-                        const name = document.getElementById('retailCreditCustomerName').value
-                            .trim();
-                        if (!name) { Utils.toast('⚠️ يرجى إدخال اسم العميل'); return; }
-                        const paid = parseFloat(document.getElementById('retailCreditPaid')
+                        Utils.toast(`✅ تم إضافة ${qty} × ${item.name}`);
+                        RetailModule.clearPos();
+                    });
+                }
+                const cancelBtn = document.getElementById('posCancelBtn');
+                if (cancelBtn) cancelBtn.addEventListener('click', RetailModule.clearPos);
+
+                const cashBtn = document.getElementById('posCashBtn');
+                if (cashBtn) {
+                    cashBtn.addEventListener('click', () => {
+                        if (!AppState.tempLines.length && !AppState.posSelectedItem) { Utils.toast(
+                                '⚠️ اختر صنفاً أو أضف أصنافاً'); return; }
+                        if (!AppState.tempLines.length && AppState.posSelectedItem) {
+                            const item = AppState.posSelectedItem;
+                            const qty = AppState.posSelectedQty;
+                            const chk = RetailModule.validateStock(item.id, qty);
+                            if (!chk.valid) { Utils.toast(chk.msg); return; }
+                            const price = Currency.getPrice(item.retailPrice);
+                            AppState.tempLines.push({ id: ++AppState.tempLineId, itemId: item.id,
+                                itemName: item.name, quantity: qty, unitPrice: price,
+                                total: price * qty });
+                            RetailModule.renderTemp();
+                        }
+                        RetailModule.processPayment('كاش');
+                    });
+                }
+
+                const creditBtn = document.getElementById('posCreditBtn');
+                if (creditBtn) {
+                    creditBtn.addEventListener('click', () => {
+                        if (!AppState.tempLines.length && !AppState.posSelectedItem) { Utils.toast(
+                                '⚠️ اختر صنفاً أو أضف أصنافاً'); return; }
+                        if (!AppState.tempLines.length && AppState.posSelectedItem) {
+                            const item = AppState.posSelectedItem;
+                            const qty = AppState.posSelectedQty;
+                            const chk = RetailModule.validateStock(item.id, qty);
+                            if (!chk.valid) { Utils.toast(chk.msg); return; }
+                            const price = Currency.getPrice(item.retailPrice);
+                            AppState.tempLines.push({ id: ++AppState.tempLineId, itemId: item.id,
+                                itemName: item.name, quantity: qty, unitPrice: price,
+                                total: price * qty });
+                            RetailModule.renderTemp();
+                        }
+                        const subtotal = AppState.tempLines.reduce((s, l) => s + l.total, 0);
+                        const disc = parseFloat(document.getElementById('retailDiscountPercent')
                             .value) || 0;
-                        const paidOld = Currency.toOld(paid);
-                        if (paidOld > net) { Utils.toast('⚠️ المدفوع يتجاوز الصافي'); return; }
-                        document.getElementById('retailCreditModal').classList.remove('open');
-                        await RetailModule.processPayment('آجل', { name, paidAmount: paidOld });
-                    };
-                    document.getElementById('retailCreditCancel').onclick = () => document
-                        .getElementById('retailCreditModal').classList.remove('open');
-                });
-                document.getElementById('dailyExpenseBtn').addEventListener('click', () => {
-                    document.getElementById('expenseDesc').value = '';
-                    document.getElementById('expenseAmount').value = '';
-                    document.getElementById('dailyExpenseModal').classList.add('open');
-                });
-                document.getElementById('expenseModalCancel').addEventListener('click', () => document
-                    .getElementById('dailyExpenseModal').classList.remove('open'));
-                document.getElementById('expenseModalSave').addEventListener('click', async () => {
-                    const desc = document.getElementById('expenseDesc').value.trim();
-                    const amt = parseFloat(document.getElementById('expenseAmount').value);
-                    if (!desc || amt <= 0) { Utils.toast('⚠️ وصف ومبلغ صحيح'); return; }
-                    document.getElementById('dailyExpenseModal').classList.remove('open');
-                    const ok = await RetailModule.addExpense(desc, amt);
-                    if (ok) { RecordsModule.load();
-                        App.updateQuickStats(); }
-                });
-                document.getElementById('posScanBarcodeBtn').addEventListener('click', () => { RetailModule
-                        .startScanner('posSearch', (result) => {
+                        const net = subtotal - (subtotal * (disc / 100));
+                        document.getElementById('retailCreditPaid').value = 0;
+                        document.getElementById('retailCreditRemaining').textContent = Currency
+                            .format(net);
+                        document.getElementById('retailCreditCustomerName').value = '';
+                        document.getElementById('retailCreditModal').classList.add('open');
+                        document.getElementById('retailCreditConfirm').onclick = async function() {
+                            const name = document.getElementById('retailCreditCustomerName')
+                                .value.trim();
+                            if (!name) { Utils.toast('⚠️ يرجى إدخال اسم العميل'); return; }
+                            const paid = parseFloat(document.getElementById('retailCreditPaid')
+                                .value) || 0;
+                            const paidOld = Currency.toOld(paid);
+                            if (paidOld > net) { Utils.toast('⚠️ المدفوع يتجاوز الصافي'); return; }
+                            document.getElementById('retailCreditModal').classList.remove(
+                                'open');
+                            await RetailModule.processPayment('آجل', { name, paidAmount: paidOld });
+                        };
+                        document.getElementById('retailCreditCancel').onclick = () => document
+                            .getElementById('retailCreditModal').classList.remove('open');
+                    });
+                }
+
+                const expenseBtn = document.getElementById('dailyExpenseBtn');
+                if (expenseBtn) {
+                    expenseBtn.addEventListener('click', () => {
+                        document.getElementById('expenseDesc').value = '';
+                        document.getElementById('expenseAmount').value = '';
+                        document.getElementById('dailyExpenseModal').classList.add('open');
+                    });
+                }
+                const expCancel = document.getElementById('expenseModalCancel');
+                if (expCancel) expCancel.addEventListener('click', () => document.getElementById(
+                    'dailyExpenseModal').classList.remove('open'));
+                const expSave = document.getElementById('expenseModalSave');
+                if (expSave) {
+                    expSave.addEventListener('click', async () => {
+                        const desc = document.getElementById('expenseDesc').value.trim();
+                        const amt = parseFloat(document.getElementById('expenseAmount').value);
+                        if (!desc || amt <= 0) { Utils.toast('⚠️ وصف ومبلغ صحيح'); return; }
+                        document.getElementById('dailyExpenseModal').classList.remove('open');
+                        const ok = await RetailModule.addExpense(desc, amt);
+                        if (ok) { RecordsModule.load();
+                            App.updateQuickStats(); }
+                    });
+                }
+
+                const posScan = document.getElementById('posScanBarcodeBtn');
+                if (posScan) {
+                    posScan.addEventListener('click', () => { RetailModule.startScanner('posSearch', (
+                        result) => {
                             const item = AppState.items.find(it => it.barcode === result);
                             if (item) { RetailModule.selectItem(item.id);
                                 Utils.toast('✅ ' + item.name); } else { Utils.toast(
                                     '⚠️ لا يوجد صنف');
                                 document.getElementById('posSearch').value = result; }
                         }); });
-                document.getElementById('retailDiscountPercent').addEventListener('input', RetailModule
-                    .renderTemp);
+                }
+
+                const discInput = document.getElementById('retailDiscountPercent');
+                if (discInput) discInput.addEventListener('input', RetailModule.renderTemp);
+
                 const saved = localStorage.getItem('quickModeEnabled');
                 if (saved === 'true') { AppState.quickModeEnabled = true;
                     document.getElementById('quickModeToggle').checked = true;
@@ -1714,6 +1852,8 @@
                     RetailModule.renderQuick(); } else { document.getElementById('quickModeToggle').checked =
                         false;
                     RetailModule.applyMode(); }
+
+                // Numpad removed - no longer attach click events to quantity/price fields
             },
 
             applyMode: () => {
@@ -1992,6 +2132,8 @@
                             invoiceId: inv.id, amount: paidAmount, remaining: net - paidAmount,
                             description: `فاتورة آجل للمفرق - ${customerData.name}` }); }
                     Utils.toast(`✅ تم البيع (${paymentMethod}) · ${Currency.format(net)}`);
+                    if (navigator.vibrate) navigator.vibrate(50);
+                    Utils.playBeep();
                     AppState.tempLines = [];
                     AppState.tempLineId = 0;
                     RetailModule.renderTemp();
@@ -2107,82 +2249,107 @@
         // =====================================================================
         const InvoiceModule = {
             init: () => {
-                document.getElementById('newSalesInvoiceBtn').addEventListener('click', () => InvoiceModule.show(
-                    'sales'));
-                document.getElementById('newPurchaseInvoiceBtn').addEventListener('click', () => InvoiceModule.show(
-                    'purchases'));
-                document.getElementById('invoiceEditorBackBtn').addEventListener('click', () => {
-                    if (AppState.invoiceRows.some(r => r.itemName.trim() !== '') && !confirm(
-                            'العودة؟ سيتم مسح البيانات.')) return;
-                    InvoiceModule.resetUI();
-                });
-                document.getElementById('invoiceCancelBtn').addEventListener('click', () => {
-                    if (AppState.invoiceRows.some(r => r.itemName.trim() !== '') && !confirm(
-                            'إلغاء الفاتورة؟ سيتم مسح البيانات.')) return;
-                    InvoiceModule.resetUI();
+                const salesBtn = document.getElementById('newSalesInvoiceBtn');
+                if (salesBtn) salesBtn.addEventListener('click', () => InvoiceModule.show('sales'));
+                const purchaseBtn = document.getElementById('newPurchaseInvoiceBtn');
+                if (purchaseBtn) purchaseBtn.addEventListener('click', () => InvoiceModule.show('purchases'));
+
+                const backBtn = document.getElementById('invoiceEditorBackBtn');
+                if (backBtn) {
+                    backBtn.addEventListener('click', () => {
+                        if (AppState.invoiceRows.some(r => r.itemName.trim() !== '') && !confirm(
+                                'العودة؟ سيتم مسح البيانات.')) return;
+                        InvoiceModule.resetUI();
+                    });
+                }
+                const cancelBtn = document.getElementById('invoiceCancelBtn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        if (AppState.invoiceRows.some(r => r.itemName.trim() !== '') && !confirm(
+                                'إلغاء الفاتورة؟ سيتم مسح البيانات.')) return;
+                        InvoiceModule.resetUI();
+                    });
+                }
+
+                const addRowBtn = document.getElementById('addInvoiceRowBtn');
+                if (addRowBtn) addRowBtn.addEventListener('click', InvoiceModule.addRowFromInput);
+
+                ['invoiceRowName', 'invoiceRowQty', 'invoiceRowPrice', 'invoiceRowUnit'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                InvoiceModule.addRowFromInput();
+                            }
+                        });
+                    }
                 });
 
-                document.getElementById('addInvoiceRowBtn').addEventListener('click', InvoiceModule
-                    .addRowFromInput);
-                ['invoiceRowName', 'invoiceRowQty', 'invoiceRowPrice'].forEach(id => {
-                    document.getElementById(id).addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            InvoiceModule.addRowFromInput();
+                const rowName = document.getElementById('invoiceRowName');
+                if (rowName) {
+                    rowName.addEventListener('input', function() {
+                        const val = this.value.trim();
+                        const opt = document.querySelector(
+                            `#invoiceItemsDatalist option[value="${Utils.escape(val)}"]`);
+                        if (opt) {
+                            const priceKey = AppState.currentInvoiceType === 'sales' ? (AppState
+                                .currentPriceType === 'retail' ? 'retail' : 'wholesale') : 'purchase';
+                            const price = parseFloat(opt.dataset[priceKey]) || 0;
+                            document.getElementById('invoiceRowPrice').value = Currency.fromOld(price);
+                            // also set unit if available
+                            const item = AppState.items.find(i => i.id == opt.dataset.id);
+                            if (item && item.unit) {
+                                document.getElementById('invoiceRowUnit').value = item.unit;
+                            }
                         }
                     });
-                });
-                document.getElementById('invoiceRowName').addEventListener('input', function() {
-                    const val = this.value.trim();
-                    const opt = document.querySelector(
-                        `#invoiceItemsDatalist option[value="${Utils.escape(val)}"]`);
-                    if (opt) {
-                        const priceKey = AppState.currentInvoiceType === 'sales' ? (AppState
-                            .currentPriceType === 'retail' ? 'retail' : 'wholesale') : 'purchase';
-                        const price = parseFloat(opt.dataset[priceKey]) || 0;
-                        document.getElementById('invoiceRowPrice').value = Currency.fromOld(price);
-                        InvoiceModule._populateUnitDropdown(Number(opt.dataset.id));
-                    } else {
-                        InvoiceModule._populateUnitDropdown(null);
-                    }
-                });
+                }
 
-                document.getElementById('invoiceCashBtn').addEventListener('click', async () => {
-                    if (AppState.currentInvoiceType === 'sales') {
-                        const warn = AppState.invoiceRows.some(r => r.warning && r.itemName.trim() !==
-                            '');
-                        if (warn) { Utils.toast('⚠️ توجد تحذيرات في الكميات'); return; }
-                    }
-                    await InvoiceModule.save('كاش', 0);
-                });
-                document.getElementById('invoiceCreditBtn').addEventListener('click', () => {
-                    if (AppState.currentInvoiceType === 'sales') {
-                        const warn = AppState.invoiceRows.some(r => r.warning && r.itemName.trim() !==
-                            '');
-                        if (warn) { Utils.toast('⚠️ توجد تحذيرات في الكميات'); return; }
-                    }
-                    const netText = document.getElementById('newNetTotal').textContent;
-                    const net = parseFloat(netText.replace(/[^0-9.]/g, '')) || 0;
-                    if (net <= 0) { Utils.toast('⚠️ الصافي يجب أن يكون أكبر من صفر'); return; }
-                    document.getElementById('creditNetDisplay').textContent = Currency.format(net);
-                    document.getElementById('creditPaidAmount').value = '0';
-                    document.getElementById('creditRemainingDisplay').textContent = Currency.format(net);
-                    document.getElementById('creditPaymentModal').classList.add('open');
-                    document.getElementById('creditPaymentConfirm').onclick = async function() {
-                        const netVal = parseFloat(document.getElementById('creditNetDisplay')
-                            .textContent.replace(/[^0-9.]/g, '')) || 0;
-                        const paid = parseFloat(document.getElementById('creditPaidAmount')
-                            .value) || 0;
-                        const paidOld = Currency.toOld(paid);
-                        if (paidOld > netVal) { Utils.toast('⚠️ المدفوع لا يتجاوز الصافي'); return; }
-                        document.getElementById('creditPaymentModal').classList.remove('open');
-                        await InvoiceModule.save('آجل', paidOld);
-                    };
-                    document.getElementById('creditPaymentCancel').onclick = () => document
-                        .getElementById('creditPaymentModal').classList.remove('open');
-                });
-                document.querySelectorAll('#priceToggleGroup button').forEach(b => b.addEventListener('click',
-                    function() {
+                const cashInvoiceBtn = document.getElementById('invoiceCashBtn');
+                if (cashInvoiceBtn) {
+                    cashInvoiceBtn.addEventListener('click', async () => {
+                        if (AppState.currentInvoiceType === 'sales') {
+                            const warn = AppState.invoiceRows.some(r => r.warning && r.itemName.trim() !==
+                                '');
+                            if (warn) { Utils.toast('⚠️ توجد تحذيرات في الكميات'); return; }
+                        }
+                        await InvoiceModule.save('كاش', 0);
+                    });
+                }
+                const creditInvoiceBtn = document.getElementById('invoiceCreditBtn');
+                if (creditInvoiceBtn) {
+                    creditInvoiceBtn.addEventListener('click', () => {
+                        if (AppState.currentInvoiceType === 'sales') {
+                            const warn = AppState.invoiceRows.some(r => r.warning && r.itemName.trim() !==
+                                '');
+                            if (warn) { Utils.toast('⚠️ توجد تحذيرات في الكميات'); return; }
+                        }
+                        const netText = document.getElementById('newNetTotal').textContent;
+                        const net = parseFloat(netText.replace(/[^0-9.]/g, '')) || 0;
+                        if (net <= 0) { Utils.toast('⚠️ الصافي يجب أن يكون أكبر من صفر'); return; }
+                        document.getElementById('creditNetDisplay').textContent = Currency.format(net);
+                        document.getElementById('creditPaidAmount').value = '0';
+                        document.getElementById('creditRemainingDisplay').textContent = Currency.format(net);
+                        document.getElementById('creditPaymentModal').classList.add('open');
+                        document.getElementById('creditPaymentConfirm').onclick = async function() {
+                            const netVal = parseFloat(document.getElementById('creditNetDisplay')
+                                .textContent.replace(/[^0-9.]/g, '')) || 0;
+                            const paid = parseFloat(document.getElementById('creditPaidAmount')
+                                .value) || 0;
+                            const paidOld = Currency.toOld(paid);
+                            if (paidOld > netVal) { Utils.toast('⚠️ المدفوع لا يتجاوز الصافي'); return; }
+                            document.getElementById('creditPaymentModal').classList.remove('open');
+                            await InvoiceModule.save('آجل', paidOld);
+                        };
+                        document.getElementById('creditPaymentCancel').onclick = () => document
+                            .getElementById('creditPaymentModal').classList.remove('open');
+                    });
+                }
+
+                const toggleBtns = document.querySelectorAll('#priceToggleGroup button');
+                toggleBtns.forEach(b => {
+                    b.addEventListener('click', function() {
                         const type = this.dataset.type;
                         if (type === AppState.currentPriceType) return;
                         AppState.currentPriceType = type;
@@ -2203,40 +2370,25 @@
                         InvoiceModule.renderRows();
                         InvoiceModule.calcSummary();
                         Utils.toast(`✅ ${type==='retail'?'المفرق':'الجملة'}`);
-                    }));
-                document.getElementById('newDiscountPercent').addEventListener('input', InvoiceModule
-                    .calcSummary);
-                document.getElementById('newTaxPercent').addEventListener('input', InvoiceModule.calcSummary);
+                    });
+                });
+
+                const discPercent = document.getElementById('newDiscountPercent');
+                if (discPercent) discPercent.addEventListener('input', InvoiceModule.calcSummary);
+                const taxPercent = document.getElementById('newTaxPercent');
+                if (taxPercent) taxPercent.addEventListener('input', InvoiceModule.calcSummary);
+
                 InvoiceModule.buildDatalist();
-                InvoiceModule._loadUnits();
-            },
 
-            _loadUnits: () => {
-                try {
-                    AppState.purchaseUnits = JSON.parse(localStorage.getItem('purchaseUnits')) || [];
-                } catch (e) { AppState.purchaseUnits = []; }
-            },
-
-            _populateUnitDropdown: (itemId) => {
-                const select = document.getElementById('invoiceRowUnit');
-                select.innerHTML = '';
-                const addOption = (label, value) => { const opt = document.createElement('option');
-                    opt.value = value;
-                    opt.textContent = label;
-                    select.appendChild(opt); };
-                addOption('قطعة', 'piece');
-                if (!itemId) return;
-                const item = AppState.items.find(i => i.id === itemId);
-                if (!item) return;
-                if (item.customUnit && item.customUnitFactor > 0) {
-                    addOption(`${item.customUnit} (${item.customUnitFactor} قطعة)`, item.customUnit);
-                }
-                for (let u of AppState.purchaseUnits) {
-                    if (u.appliesTo && u.appliesTo.includes(itemId)) {
-                        addOption(`${u.name} (${u.factor} قطعة)`, u.name);
-                    }
-                }
-                if (select.options.length === 1) {}
+                // زر إضافة عميل من الفاتورة
+                document.getElementById('addCustomerFromInvoiceBtn').addEventListener('click', function() {
+                    document.getElementById('customerAddModal').classList.add('open');
+                    document.getElementById('customerAddName').value = '';
+                    document.getElementById('customerAddPhone').value = '';
+                    document.getElementById('customerAddAddress').value = '';
+                    document.getElementById('customerAddSave').dataset.editId = '';
+                    document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
+                });
             },
 
             buildDatalist: () => {
@@ -2248,7 +2400,7 @@
                 let html = '';
                 for (let it of sorted) {
                     html +=
-                        `<option value="${Utils.escape(it.name)}" data-id="${it.id}" data-purchase="${Currency.getPrice(it.purchasePrice)}" data-retail="${Currency.getPrice(it.retailPrice)}" data-wholesale="${Currency.getPrice(it.wholesalePrice)}" data-qty="${it.quantity||0}"></option>`;
+                        `<option value="${Utils.escape(it.name)}" data-id="${it.id}" data-purchase="${Currency.getPrice(it.purchasePrice)}" data-retail="${Currency.getPrice(it.retailPrice)}" data-wholesale="${Currency.getPrice(it.wholesalePrice)}" data-qty="${it.quantity||0}" data-unit="${it.unit||'قطعة'}"></option>`;
                 }
                 dl.innerHTML = html;
             },
@@ -2269,7 +2421,6 @@
                     document.getElementById('priceToggleGroup').style.display = 'none';
                     document.getElementById('customerFieldLabel').textContent = '👤 المورد';
                     AppState.currentPriceType = 'retail';
-                    InvoiceModule._populateUnitDropdown(null);
                 }
                 document.getElementById('invoiceDateNew').value = Utils.today();
                 document.getElementById('invoiceCustomerName').value = '';
@@ -2281,9 +2432,10 @@
                 InvoiceModule.calcSummary();
                 InvoiceModule.buildDatalist();
                 document.getElementById('invoiceRowName').value = '';
+                document.getElementById('invoiceRowUnit').value = '';
                 document.getElementById('invoiceRowQty').value = '1';
                 document.getElementById('invoiceRowPrice').value = '';
-                document.getElementById('invoiceRowUnit').value = 'piece';
+                App.updateCustomerDatalist();
             },
 
             resetUI: () => {
@@ -2306,116 +2458,80 @@
                 document.getElementById('newTaxAmount').textContent = '0.00';
                 document.getElementById('newNetTotal').textContent = '0.00';
                 document.getElementById('invoiceRowName').value = '';
+                document.getElementById('invoiceRowUnit').value = '';
                 document.getElementById('invoiceRowQty').value = '1';
                 document.getElementById('invoiceRowPrice').value = '';
-                document.getElementById('invoiceRowUnit').value = 'piece';
             },
 
             addRowFromInput: () => {
                 const name = document.getElementById('invoiceRowName').value.trim();
+                const unit = document.getElementById('invoiceRowUnit').value.trim() || 'قطعة';
                 const qty = parseFloat(document.getElementById('invoiceRowQty').value) || 1;
                 let price = parseFloat(document.getElementById('invoiceRowPrice').value) || 0;
-                const selectedUnit = document.getElementById('invoiceRowUnit').value;
 
                 if (!name) { Utils.toast('⚠️ يرجى إدخال اسم الصنف'); return; }
                 const opt = document.querySelector(
                     `#invoiceItemsDatalist option[value="${Utils.escape(name)}"]`);
                 let itemId = null;
                 let item = null;
-                let factor = 1;
-                let displayUnit = 'قطعة';
-                let displayQty = qty;
+                let unitPrice = price;
                 let convertedQty = qty;
-                let unitPriceInPiece = price;
 
                 if (opt) {
                     itemId = Number(opt.dataset.id);
                     item = AppState.items.find(i => i.id === itemId);
-                    if (!item && AppState.currentInvoiceType === 'purchases') {} else if (!item) {
+                    if (!item) {
                         Utils.toast('⚠️ الصنف غير مسجل');
                         return;
                     }
 
-                    if (selectedUnit === 'piece') {
-                        factor = 1;
-                        displayUnit = 'قطعة';
-                    } else {
-                        if (item && item.customUnit === selectedUnit && item.customUnitFactor > 0) {
-                            factor = item.customUnitFactor;
-                        } else {
-                            const foundUnit = AppState.purchaseUnits.find(u => u.name === selectedUnit && u
-                                .appliesTo && u.appliesTo.includes(itemId));
-                            if (foundUnit) {
-                                factor = foundUnit.factor;
-                            } else {
-                                factor = 1;
-                            }
-                        }
-                        displayUnit = selectedUnit;
-                    }
-
                     if (AppState.currentInvoiceType === 'sales') {
-                        if (!item) { Utils.toast('⚠️ الصنف غير مسجل'); return; }
                         const avail = item.quantity || 0;
-                        const reqQty = qty * factor;
-                        if (reqQty > avail) { Utils.toast(`⚠️ الكمية غير كافية! المتوفر: ${avail}`); return; }
+                        if (qty > avail) { Utils.toast(`⚠️ الكمية غير كافية! المتوفر: ${avail}`); return; }
+                        const priceKey = AppState.currentPriceType === 'retail' ? 'retail' : 'wholesale';
+                        const basePrice = parseFloat(opt.dataset[priceKey]) || 0;
                         if (price === 0) {
-                            const priceKey = AppState.currentPriceType === 'retail' ? 'retail' : 'wholesale';
-                            const basePrice = parseFloat(opt.dataset[priceKey]) || 0;
                             price = Currency.fromOld(basePrice);
-                            unitPriceInPiece = basePrice;
-                            if (price === 0) {} else {
-                                unitPriceInPiece = Currency.toOld(price) / factor;
-                            }
+                            unitPrice = basePrice;
                         } else {
-                            unitPriceInPiece = Currency.toOld(price) / factor;
+                            unitPrice = Currency.toOld(price);
                         }
-                        convertedQty = qty * factor;
-                        displayQty = qty;
                     } else {
+                        // purchases
                         if (price === 0) {
-                            if (item) {
-                                const basePrice = Currency.getPrice(item.purchasePrice);
-                                unitPriceInPiece = basePrice / factor;
-                                price = Currency.fromOld(unitPriceInPiece * factor);
+                            const purchasePrice = parseFloat(opt.dataset.purchase) || 0;
+                            if (purchasePrice > 0) {
+                                price = Currency.fromOld(purchasePrice);
+                                unitPrice = purchasePrice;
                             } else {
                                 Utils.toast('⚠️ يرجى إدخال سعر الوحدة');
                                 return;
                             }
                         } else {
-                            unitPriceInPiece = Currency.toOld(price) / factor;
+                            unitPrice = Currency.toOld(price);
                         }
-                        convertedQty = qty * factor;
-                        displayQty = qty;
                     }
                 } else {
                     if (AppState.currentInvoiceType !== 'purchases') {
                         Utils.toast('⚠️ الصنف غير مسجل');
                         return;
                     }
-                    displayUnit = 'قطعة';
-                    displayQty = qty;
-                    convertedQty = qty;
-                    unitPriceInPiece = Currency.toOld(price);
+                    // new item in purchase
+                    unitPrice = Currency.toOld(price);
                 }
 
-                if (unitPriceInPiece <= 0 && AppState.currentInvoiceType === 'purchases') {
-                    Utils.toast('⚠️ يرجى تحديد سعر الوحدة');
-                    return;
-                }
-                const total = convertedQty * unitPriceInPiece;
+                if (unitPrice <= 0) { Utils.toast('⚠️ يرجى تحديد سعر الوحدة'); return; }
+                const total = convertedQty * unitPrice;
                 const row = {
                     id: ++AppState.rowCounter,
                     itemName: name,
+                    unit: unit,
                     itemId: itemId,
                     quantity: convertedQty,
-                    unitPrice: unitPriceInPiece,
+                    unitPrice: unitPrice,
                     total: total,
                     warning: false,
-                    warningMsg: '',
-                    displayQty: displayQty,
-                    displayUnit: displayUnit,
-                    factor: factor
+                    warningMsg: ''
                 };
                 if (AppState.currentInvoiceType === 'sales' && item) {
                     const avail = item.quantity || 0;
@@ -2428,9 +2544,9 @@
                 InvoiceModule.renderRows();
                 InvoiceModule.calcSummary();
                 document.getElementById('invoiceRowName').value = '';
+                document.getElementById('invoiceRowUnit').value = '';
                 document.getElementById('invoiceRowQty').value = '1';
                 document.getElementById('invoiceRowPrice').value = '';
-                document.getElementById('invoiceRowUnit').value = 'piece';
                 document.getElementById('invoiceRowName').focus();
             },
 
@@ -2450,15 +2566,8 @@
                     const warnHtml = row.warning ?
                         `<span style="color:#ff6b6b;font-size:11px;display:block;">⚠️ ${row.warningMsg}</span>` :
                         '';
-                    let qtyDisplay = row.displayQty || row.quantity;
-                    let unitDisplay = row.displayUnit || 'قطعة';
-                    let qtyPieces = row.quantity;
-                    let displayStr = `${qtyDisplay} ${unitDisplay}`;
-                    if (unitDisplay !== 'قطعة' && row.factor && row.factor > 1) {
-                        displayStr += ` (${qtyPieces} قطعة)`;
-                    }
                     html +=
-                        `<tr data-row-id="${row.id}"><td>${idx+1}</td><td>${Utils.escape(row.itemName)}</td><td>${displayStr} ${warnHtml}</td><td>${Currency.format(row.unitPrice)}</td><td class="total-cell">${Currency.format(row.total)}</td><td><button class="del-row" data-id="${row.id}">✕</button></td></tr>`;
+                        `<tr data-row-id="${row.id}"><td>${idx+1}</td><td>${Utils.escape(row.itemName)} <span style="color:var(--text4);font-size:11px;">(${Utils.escape(row.unit)})</span></td><td>${row.quantity} قطعة ${warnHtml}</td><td>${Currency.format(row.unitPrice)}</td><td class="total-cell">${Currency.format(row.total)}</td><td><button class="del-row" data-id="${row.id}">✕</button></td></tr>`;
                 });
                 tbody.innerHTML = html;
                 tbody.querySelectorAll('.del-row').forEach(el => el.addEventListener('click', function() {
@@ -2543,12 +2652,11 @@
                         if (itemId) item = AppState.items.find(i => i.id === itemId);
                         if (!item && AppState.currentInvoiceType === 'purchases') {
                             const purchasePrice = row.unitPrice || 0;
-                            const ni = { name: row.itemName.trim(), unit: 'قطعة',
+                            const ni = { name: row.itemName.trim(), unit: row.unit || 'قطعة',
                                 purchasePrice: Currency.makeObj(purchasePrice, 'old'),
                                 retailPrice: Currency.makeObj(0, 'old'), wholesalePrice: Currency
                                 .makeObj(0, 'old'), quantity: row.quantity, minQuantity: 5,
-                                barcode: '', newItem: true, priceUpdated: false, customUnit: '',
-                                customUnitFactor: 0 };
+                                barcode: '', newItem: true, priceUpdated: false };
                             itemId = await DB.add('items', ni);
                             item = { ...ni, id: itemId };
                             newItems.push({ id: itemId, name: row.itemName.trim(),
@@ -2574,9 +2682,7 @@
                         const costAtSale = item ? Currency.getPrice(item.purchasePrice) : 0;
                         addP.push(DB.add('invoiceItems', { invoiceId: inv.id, itemId: itemId || row
                                 .itemId, quantity: row.quantity, unitPrice: row.unitPrice,
-                            total: row.total, purchasePriceAtSale: costAtSale, displayQty: row
-                                .displayQty || row.quantity, displayUnit: row.displayUnit ||
-                                'قطعة', factor: row.factor || 1 }));
+                            total: row.total, purchasePriceAtSale: costAtSale }));
                         if (item) {
                             const chg = AppState.currentInvoiceType === 'sales' ? -row.quantity : row
                                 .quantity;
@@ -2586,6 +2692,8 @@
                     }
                     await Promise.all([...addP, ...updP, ...stkP]);
                     Utils.toast(`✅ تم حفظ الفاتورة ${inv.id}`);
+                    if (navigator.vibrate) navigator.vibrate(50);
+                    Utils.playBeep();
                     if (AppState.currentInvoiceType === 'purchases' && newItems.length) {
                         AppState.pendingPricingItems = newItems;
                         InvoiceModule.showPricing(newItems);
@@ -2785,14 +2893,8 @@
                     for (let it of items) {
                         const p = AppState.items.find(p2 => p2.id === it.itemId);
                         const name = p ? p.name : 'صنف غير معروف';
-                        let qtyDisplay = it.displayQty || it.quantity;
-                        let unitDisplay = it.displayUnit || 'قطعة';
-                        let displayStr = `${qtyDisplay} ${unitDisplay}`;
-                        if (unitDisplay !== 'قطعة' && it.factor && it.factor > 1) {
-                            displayStr += ` (${it.quantity} قطعة)`;
-                        }
                         itemHtml +=
-                            `<tr><td>${Utils.escape(name)}</td><td>${displayStr}</td><td>${Currency.format(it.unitPrice)}</td><td>${Currency.format(it.total)}</td></tr>`;
+                            `<tr><td>${Utils.escape(name)}</td><td>${it.quantity} قطعة</td><td>${Currency.format(it.unitPrice)}</td><td>${Currency.format(it.total)}</td></tr>`;
                     }
                 }
                 document.getElementById('detailItemsBody').innerHTML = itemHtml;
@@ -3110,8 +3212,7 @@
                             addP2.push(DB.add('invoiceItems', { invoiceId: retInv.id,
                                 itemId: r.itemId, quantity: r.quantity, unitPrice: r
                                 .unitPrice, total: r.quantity * r.unitPrice,
-                                purchasePriceAtSale: 0, displayQty: r.quantity,
-                                displayUnit: 'قطعة', factor: 1 }));
+                                purchasePriceAtSale: 0 }));
                         }
                         await Promise.all([...updP2, ...stkP2, ...addP2]);
                         await Cash.addAudit({ action: 'مرتجع جملة', invoiceId: retInv.id,
@@ -3343,148 +3444,176 @@
         // =====================================================================
         const SettingsModule = {
             init: () => {
-                document.getElementById('addFixedExpenseBtn').addEventListener('click', () => {
-                    const name = document.getElementById('fixedExpenseName').value.trim();
-                    const amt = parseFloat(document.getElementById('fixedExpenseAmount').value);
-                    const period = document.getElementById('fixedExpensePeriod').value;
-                    if (!name || amt <= 0) { Utils.toast('⚠️ اسم ومبلغ صحيح'); return; }
-                    FixedExp.add(name, Currency.toOld(amt), period, 'old');
-                    document.getElementById('fixedExpenseName').value = '';
-                    document.getElementById('fixedExpenseAmount').value = '';
-                    SettingsModule.renderFixedExpenses();
+                // ===== ACCORDION TOGGLE =====
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.addEventListener('click', function() {
+                        const targetId = this.dataset.target;
+                        const targetBody = document.getElementById(targetId);
+                        if (!targetBody) return;
+                        const parentItem = this.closest('.accordion-item');
+                        const isOpen = parentItem.classList.contains('open');
+                        document.querySelectorAll('.accordion-item').forEach(item => {
+                            if (item !== parentItem) item.classList.remove('open');
+                        });
+                        if (isOpen) {
+                            parentItem.classList.remove('open');
+                        } else {
+                            parentItem.classList.add('open');
+                        }
+                    });
                 });
-                document.getElementById('pinEnableBtn').addEventListener('click', () => {
-                    const pin = document.getElementById('pinInput').value.trim();
-                    if (!pin || pin.length !== 4) { Utils.toast('⚠️ 4 أرقام'); return; }
-                    localStorage.setItem('app_pin', pin);
-                    Utils.toast('✅ تم تفعيل PIN');
-                    document.getElementById('pinInput').value = '';
-                });
-                document.getElementById('pinDisableBtn').addEventListener('click', () => {
-                    localStorage.removeItem('app_pin');
-                    Utils.toast('🔓 تم تعطيل PIN');
-                });
-                document.getElementById('manualCashAddBtn').addEventListener('click', async () => {
-                    const desc = document.getElementById('manualCashDesc').value.trim();
-                    const amt = parseFloat(document.getElementById('manualCashAmount').value);
-                    if (!desc || amt <= 0) { Utils.toast('⚠️ وصف ومبلغ صحيح'); return; }
-                    const old = Currency.toOld(amt);
-                    const ok = await Cash.adjust(old, desc, 'deposit');
-                    if (ok) { document.getElementById('manualCashDesc').value = '';
-                        document.getElementById('manualCashAmount').value = '';
-                        SettingsModule.updateDisplays(); }
-                });
-                document.getElementById('manualCashWithdrawBtn').addEventListener('click', async () => {
-                    const desc = document.getElementById('manualCashDesc').value.trim();
-                    const amt = parseFloat(document.getElementById('manualCashAmount').value);
-                    if (!desc || amt <= 0) { Utils.toast('⚠️ وصف ومبلغ صحيح'); return; }
-                    const old = Currency.toOld(amt);
-                    if (Cash.get() < old) { Utils.toast('⚠️ الرصيد غير كافٍ'); return; }
-                    const ok = await Cash.adjust(old, desc, 'withdrawal');
-                    if (ok) { document.getElementById('manualCashDesc').value = '';
-                        document.getElementById('manualCashAmount').value = '';
-                        SettingsModule.updateDisplays(); }
-                });
-                document.getElementById('resetCashBalanceBtn').addEventListener('click', async () => {
-                    if (!confirm('⚠️ سيتم إعادة تعيين الرصيد إلى صفر. متابعة؟')) return;
-                    Cash.set(0);
-                    await DB.put('metadata', { key: 'cashLiquidity', value: 0 });
-                    Utils.toast('🔄 تم إعادة تعيين الرصيد');
-                    SettingsModule.updateDisplays();
-                });
-                document.getElementById('manualBackupBtn').addEventListener('click', async () => {
-                    Utils.toast('⏳ جاري النسخ الاحتياطي...');
-                    await App.performBackup();
-                    Utils.toast('✅ تم النسخ إلى السحاب');
-                });
-                document.getElementById('restoreBackupBtn').addEventListener('click', async () => {
-                    if (confirm('سيتم جلب أحدث نسخة سحابية واستبدال البيانات المحلية. متابعة?')) {
-                        const ok = await App.restoreBackup(null);
+                const firstAccordion = document.querySelector('.accordion-item');
+                if (firstAccordion) firstAccordion.classList.add('open');
+
+                const fixedExpBtn = document.getElementById('addFixedExpenseBtn');
+                if (fixedExpBtn) {
+                    fixedExpBtn.addEventListener('click', () => {
+                        const name = document.getElementById('fixedExpenseName').value.trim();
+                        const amt = parseFloat(document.getElementById('fixedExpenseAmount').value);
+                        const period = document.getElementById('fixedExpensePeriod').value;
+                        if (!name || amt <= 0) { Utils.toast('⚠️ اسم ومبلغ صحيح'); return; }
+                        FixedExp.add(name, Currency.toOld(amt), period, 'old');
+                        document.getElementById('fixedExpenseName').value = '';
+                        document.getElementById('fixedExpenseAmount').value = '';
+                        SettingsModule.renderFixedExpenses();
+                    });
+                }
+
+                const pinEnable = document.getElementById('pinEnableBtn');
+                if (pinEnable) {
+                    pinEnable.addEventListener('click', () => {
+                        const pin = document.getElementById('pinInput').value.trim();
+                        if (!pin || pin.length !== 4) { Utils.toast('⚠️ 4 أرقام'); return; }
+                        localStorage.setItem('app_pin', pin);
+                        Utils.toast('✅ تم تفعيل PIN');
+                        document.getElementById('pinInput').value = '';
+                    });
+                }
+                const pinDisable = document.getElementById('pinDisableBtn');
+                if (pinDisable) {
+                    pinDisable.addEventListener('click', () => {
+                        localStorage.removeItem('app_pin');
+                        Utils.toast('🔓 تم تعطيل PIN');
+                    });
+                }
+
+                const cashAdd = document.getElementById('manualCashAddBtn');
+                if (cashAdd) {
+                    cashAdd.addEventListener('click', async () => {
+                        const desc = document.getElementById('manualCashDesc').value.trim();
+                        const amt = parseFloat(document.getElementById('manualCashAmount').value);
+                        if (!desc || amt <= 0) { Utils.toast('⚠️ وصف ومبلغ صحيح'); return; }
+                        const old = Currency.toOld(amt);
+                        const ok = await Cash.adjust(old, desc, 'deposit');
+                        if (ok) { document.getElementById('manualCashDesc').value = '';
+                            document.getElementById('manualCashAmount').value = '';
+                            SettingsModule.updateDisplays(); }
+                    });
+                }
+                const cashWithdraw = document.getElementById('manualCashWithdrawBtn');
+                if (cashWithdraw) {
+                    cashWithdraw.addEventListener('click', async () => {
+                        const desc = document.getElementById('manualCashDesc').value.trim();
+                        const amt = parseFloat(document.getElementById('manualCashAmount').value);
+                        if (!desc || amt <= 0) { Utils.toast('⚠️ وصف ومبلغ صحيح'); return; }
+                        const old = Currency.toOld(amt);
+                        if (Cash.get() < old) { Utils.toast('⚠️ الرصيد غير كافٍ'); return; }
+                        const ok = await Cash.adjust(old, desc, 'withdrawal');
+                        if (ok) { document.getElementById('manualCashDesc').value = '';
+                            document.getElementById('manualCashAmount').value = '';
+                            SettingsModule.updateDisplays(); }
+                    });
+                }
+
+                const resetCash = document.getElementById('resetCashBalanceBtn');
+                if (resetCash) {
+                    resetCash.addEventListener('click', async () => {
+                        if (!confirm('⚠️ سيتم إعادة تعيين الرصيد إلى صفر. متابعة؟')) return;
+                        Cash.set(0);
+                        await DB.put('metadata', { key: 'cashLiquidity', value: 0 });
+                        Utils.toast('🔄 تم إعادة تعيين الرصيد');
+                        SettingsModule.updateDisplays();
+                    });
+                }
+
+                const backupBtn = document.getElementById('manualBackupBtn');
+                if (backupBtn) {
+                    backupBtn.addEventListener('click', async () => {
+                        Utils.toast('⏳ جاري النسخ الاحتياطي...');
+                        await App.performBackup();
+                        Utils.toast('✅ تم النسخ إلى السحاب');
+                    });
+                }
+
+                const restoreBtn = document.getElementById('restoreBackupBtn');
+                if (restoreBtn) {
+                    restoreBtn.addEventListener('click', async () => {
+                        if (confirm('سيتم جلب أحدث نسخة سحابية واستبدال البيانات المحلية. متابعة?')) {
+                            const ok = await App.restoreBackup(null);
+                            if (ok) { await ItemsModule.load();
+                                await RecordsModule.load();
+                                App.updateQuickStats();
+                                ReportsModule.generate();
+                                SettingsModule.updateDisplays();
+                                InvoiceModule.buildDatalist();
+                                Utils.toast('✅ تمت استعادة النسخة السحابية'); }
+                        }
+                    });
+                }
+
+                const restoreFileInput = document.getElementById('restoreFileInput');
+                if (restoreFileInput) {
+                    restoreFileInput.addEventListener('change', async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const ok = await App.restoreBackup(file);
                         if (ok) { await ItemsModule.load();
                             await RecordsModule.load();
                             App.updateQuickStats();
                             ReportsModule.generate();
                             SettingsModule.updateDisplays();
                             InvoiceModule.buildDatalist();
-                            Utils.toast('✅ تمت استعادة النسخة السحابية'); }
-                    }
-                });
-                document.getElementById('restoreFileInput').addEventListener('change', async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const ok = await App.restoreBackup(file);
-                    if (ok) { await ItemsModule.load();
-                        await RecordsModule.load();
-                        App.updateQuickStats();
-                        ReportsModule.generate();
-                        SettingsModule.updateDisplays();
-                        InvoiceModule.buildDatalist();
-                        Utils.toast('✅ تم استعادة الملف المحلي'); }
-                    document.getElementById('restoreFileInput').value = '';
-                });
-                document.getElementById('manageSubscriptionBtn').addEventListener('click', () => { document
-                        .getElementById('welcomeScreen').classList.add('open'); });
-                document.getElementById('saveFavoritesBtn').addEventListener('click', () => {
-                    Utils.toast('✅ تم حفظ المميزة');
-                    if (AppState.quickModeEnabled) RetailModule.renderQuick();
-                });
-                document.getElementById('saveExchangeRateBtn').addEventListener('click', () => {
-                    const val = parseFloat(document.getElementById('exchangeRateInput').value);
-                    if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
-                    Currency.rate = val;
-                    DB.put('metadata', { key: 'exchangeRate', value: val });
-                    document.getElementById('exchangeRateTop').value = val;
-                    App.updateAllDisplays();
-                    Utils.toast('✅ تم تحديث سعر الصرف');
-                });
+                            Utils.toast('✅ تم استعادة الملف المحلي'); }
+                        restoreFileInput.value = '';
+                    });
+                }
 
-                // Purchase Units
-                document.getElementById('addPurchaseUnitBtn').addEventListener('click', () => {
-                    const name = document.getElementById('newUnitName').value.trim();
-                    const factor = parseInt(document.getElementById('newUnitFactor').value);
-                    if (!name || factor < 1) { Utils.toast('⚠️ اسم وعامل صحيح'); return; }
-                    const units = JSON.parse(localStorage.getItem('purchaseUnits') || '[]');
-                    // Get all items for selection (for future, we'll also store appliesTo)
-                    // For now, we'll keep it simple: new units have appliesTo = []
-                    // The user can later edit to add items, or we can add a selector in the future.
-                    // For v2, we'll add a simple multi-select later, but for now we just store.
-                    units.push({ id: Date.now(), name, factor, appliesTo: [] });
-                    localStorage.setItem('purchaseUnits', JSON.stringify(units));
-                    document.getElementById('newUnitName').value = '';
-                    document.getElementById('newUnitFactor').value = '';
-                    SettingsModule.renderPurchaseUnits();
-                    InvoiceModule._loadUnits();
-                    // Re-render items list to show new units
-                    ItemsModule.render();
-                });
+                const manageSub = document.getElementById('manageSubscriptionBtn');
+                if (manageSub) {
+                    manageSub.addEventListener('click', () => { document.getElementById('welcomeScreen')
+                            .classList.add('open'); });
+                }
+
+                const saveFav = document.getElementById('saveFavoritesBtn');
+                if (saveFav) {
+                    saveFav.addEventListener('click', () => {
+                        Utils.toast('✅ تم حفظ المميزة');
+                        if (AppState.quickModeEnabled) RetailModule.renderQuick();
+                    });
+                }
+
+                const manageCustomersBtn = document.getElementById('manageCustomersBtn');
+                if (manageCustomersBtn) {
+                    manageCustomersBtn.addEventListener('click', () => {
+                        App._openCustomerManage();
+                    });
+                }
+
+                const saveRateBtn = document.getElementById('saveExchangeRateBtn');
+                if (saveRateBtn) {
+                    saveRateBtn.addEventListener('click', async () => {
+                        const val = parseFloat(document.getElementById('exchangeRateInput').value);
+                        if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
+                        Currency.rate = val;
+                        await DB.put('metadata', { key: 'exchangeRate', value: val });
+                        document.getElementById('exchangeRateTop').value = val;
+                        App.updateAllDisplays();
+                        Utils.toast('✅ تم تحديث سعر الصرف');
+                    });
+                }
 
                 SettingsModule.renderFixedExpenses();
-                SettingsModule.renderPurchaseUnits();
                 SettingsModule.updateDisplays();
-                // Add a note for user about applying units to items
-                Utils.toast('💡 يمكنك تخصيص وحدة شراء لكل صنف من تبويب الأصناف', 3000);
-            },
-
-            renderPurchaseUnits: () => {
-                const container = document.getElementById('purchaseUnitsList');
-                let units = JSON.parse(localStorage.getItem('purchaseUnits') || '[]');
-                if (!units.length) { container.innerHTML =
-                        '<div style="color:var(--text4);padding:6px 0;">لا توجد وحدات شراء</div>'; return; }
-                let html = '';
-                units.forEach(u => {
-                    const itemCount = u.appliesTo ? u.appliesTo.length : 0;
-                    html +=
-                        `<div class="expense-item"><span>${Utils.escape(u.name)} <span style="color:var(--gold);">${u.factor} قطعة</span> <span style="color:var(--text4);font-size:11px;">(${itemCount} صنف)</span></span><div><button class="del-expense" data-id="${u.id}">✕</button></div></div>`;
-                });
-                container.innerHTML = html;
-                container.querySelectorAll('.del-expense').forEach(b => b.addEventListener('click', function() {
-                    let units2 = JSON.parse(localStorage.getItem('purchaseUnits') || '[]');
-                    units2 = units2.filter(u => u.id !== Number(this.dataset.id));
-                    localStorage.setItem('purchaseUnits', JSON.stringify(units2));
-                    SettingsModule.renderPurchaseUnits();
-                    InvoiceModule._loadUnits();
-                    ItemsModule.render();
-                }));
             },
 
             renderFixedExpenses: () => {
@@ -3561,6 +3690,7 @@
                 } catch (e) { backupDate.textContent = '📅 آخر نسخ احتياطي: غير متاح'; }
                 document.getElementById('exchangeRateInput').value = Currency.rate;
                 document.getElementById('exchangeRateTop').value = Currency.rate;
+                App.updateCustomerDatalist();
             }
         };
 
@@ -3568,114 +3698,167 @@
         // 13. APP
         // =====================================================================
         const App = {
-            _deferredPrompt: null,
-            _installTimer: null,
             init: async () => {
-                await DB.open();
-                const meta = await DB.get('metadata', 'exchangeRate');
-                if (meta && meta.value) Currency.rate = meta.value;
-                const cashMeta = await DB.get('metadata', 'cashLiquidity');
-                if (cashMeta && cashMeta.value !== undefined) Cash.set(cashMeta.value);
+                try {
+                    await DB.open();
+                } catch (e) { console.error('DB open error:', e);
+                    Utils.toast('⚠️ خطأ في قاعدة البيانات'); return; }
+
+                try {
+                    const meta = await DB.get('metadata', 'exchangeRate');
+                    if (meta && meta.value) Currency.rate = meta.value;
+                    const cashMeta = await DB.get('metadata', 'cashLiquidity');
+                    if (cashMeta && cashMeta.value !== undefined) Cash.set(cashMeta.value);
+                } catch (e) { console.warn('Metadata load error:', e); }
+
                 const storedCur = localStorage.getItem('displayCurrency');
                 if (['old', 'new', 'usd'].includes(storedCur)) Currency.display = storedCur;
                 document.querySelectorAll('.currency-toggle button').forEach(b => { b.classList.toggle(
                         'active-currency', b.dataset.cur === Currency.display); });
-                const hasAccess = await App._checkAccess();
-                if (!hasAccess) { document.getElementById('welcomeScreen').classList.add('open');
-                    document.getElementById('app').style.display = 'none'; } else { document.getElementById(
-                        'welcomeScreen').classList.remove('open');
+
+                let hasAccess = false;
+                try {
+                    hasAccess = await App._checkAccess();
+                } catch (e) { console.warn('Access check error:', e); }
+
+                if (!hasAccess) {
+                    document.getElementById('welcomeScreen').classList.add('open');
+                    document.getElementById('app').style.display = 'none';
+                } else {
+                    document.getElementById('welcomeScreen').classList.remove('open');
                     document.getElementById('app').style.display = 'flex';
-                    App._checkPin(); }
-                await ItemsModule.load();
-                AppState.customers = await DB.getAll('contacts');
-                await RecordsModule.load();
+                    App._checkPin();
+                }
+
+                try {
+                    await ItemsModule.load();
+                    AppState.customers = await DB.getAll('contacts');
+                    await RecordsModule.load();
+                } catch (e) { console.warn('Data load error:', e); }
+
                 document.querySelector('.nav-item[data-tab="invoices"]')?.classList.add('active');
                 document.getElementById('panel-invoices').classList.add('active');
                 InvoiceModule.resetUI();
+
                 const now = new Date();
                 const first = new Date(now.getFullYear(), now.getMonth(), 1);
                 document.getElementById('reportDateFrom').value = first.toISOString().split('T')[0];
                 document.getElementById('reportDateTo').value = now.toISOString().split('T')[0];
-                await ReportsModule.generate();
-                App.updateQuickStats();
-                RetailModule.init();
-                InvoiceModule.init();
-                SettingsModule.init();
 
-                document.getElementById('openItemModalBtn').addEventListener('click', () => ItemsModule.openAdd());
-                document.getElementById('viewEditBtn').addEventListener('click', function() {
-                    const id = Number(this.dataset.id);
-                    if (id) ItemsModule.switchToEdit(id);
-                });
-                document.getElementById('viewDeleteBtn').addEventListener('click', function() {
-                    const id = Number(this.dataset.id);
-                    if (id) ItemsModule.deleteItem(id);
-                });
-                document.getElementById('viewCloseBtn').addEventListener('click', () => ItemsModule.closeView());
-                document.getElementById('editCancelBtn').addEventListener('click', () => ItemsModule.cancelEdit());
-                document.getElementById('itemForm').addEventListener('submit', (e) => ItemsModule.saveFromForm(e));
-                document.getElementById('scanBarcodeBtn').addEventListener('click', () => { RetailModule
-                        .startScanner('itemBarcode', (result) => {
+                try { await ReportsModule.generate(); } catch (e) { console.warn('Report generate error:', e); }
+                App.updateQuickStats();
+
+                try { RetailModule.init(); } catch (e) { console.warn('RetailModule init error:', e); }
+                try { InvoiceModule.init(); } catch (e) { console.warn('InvoiceModule init error:', e); }
+                try { SettingsModule.init(); } catch (e) { console.warn('SettingsModule init error:', e); }
+
+                const openItemBtn = document.getElementById('openItemModalBtn');
+                if (openItemBtn) openItemBtn.addEventListener('click', () => ItemsModule.openAdd());
+
+                const viewEditBtn = document.getElementById('viewEditBtn');
+                if (viewEditBtn) {
+                    viewEditBtn.addEventListener('click', function() {
+                        const id = Number(this.dataset.id);
+                        if (id) ItemsModule.switchToEdit(id);
+                    });
+                }
+                const viewDeleteBtn = document.getElementById('viewDeleteBtn');
+                if (viewDeleteBtn) {
+                    viewDeleteBtn.addEventListener('click', function() {
+                        const id = Number(this.dataset.id);
+                        if (id) ItemsModule.deleteItem(id);
+                    });
+                }
+                const viewCloseBtn = document.getElementById('viewCloseBtn');
+                if (viewCloseBtn) viewCloseBtn.addEventListener('click', () => ItemsModule.closeView());
+
+                const editCancelBtn = document.getElementById('editCancelBtn');
+                if (editCancelBtn) editCancelBtn.addEventListener('click', () => ItemsModule.cancelEdit());
+
+                const itemForm = document.getElementById('itemForm');
+                if (itemForm) itemForm.addEventListener('submit', (e) => ItemsModule.saveFromForm(e));
+
+                const scanBarcodeBtn = document.getElementById('scanBarcodeBtn');
+                if (scanBarcodeBtn) {
+                    scanBarcodeBtn.addEventListener('click', () => {
+                        RetailModule.startScanner('itemBarcode', (result) => {
                             document.getElementById('itemBarcode').value = result;
                             Utils.toast('✅ تم مسح الباركود');
-                        }); });
-                document.getElementById('itemModal').addEventListener('click', (e) => {
-                    if (e.target === e.currentTarget) {
-                        if (document.getElementById('itemViewMode').style.display !== 'none') {
-                            ItemsModule.closeView();
-                        } else {
-                            ItemsModule.cancelEdit();
+                        });
+                    });
+                }
+
+                const itemModal = document.getElementById('itemModal');
+                if (itemModal) {
+                    itemModal.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) {
+                            if (document.getElementById('itemViewMode').style.display !== 'none') {
+                                ItemsModule.closeView();
+                            } else {
+                                ItemsModule.cancelEdit();
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
-                document.getElementById('bottomNav').addEventListener('click', (e) => {
-                    const btn = e.target.closest('.nav-item');
-                    if (!btn) return;
-                    const tab = btn.dataset.tab;
-                    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                    document.getElementById('panel-' + tab).classList.add('active');
-                    document.getElementById('suggestionsBox')?.classList.remove('show');
-                    if (tab === 'items') ItemsModule.load();
-                    if (tab === 'records') RecordsModule.load();
-                    if (tab === 'reports') {
-                        const n = new Date();
-                        document.getElementById('reportDateFrom').value = new Date(n.getFullYear(), n
-                            .getMonth(), 1).toISOString().split('T')[0];
-                        document.getElementById('reportDateTo').value = n.toISOString().split('T')[0];
-                        ReportsModule.generate();
-                    }
-                    if (tab === 'settings') { SettingsModule.renderFixedExpenses();
-                        SettingsModule.renderPurchaseUnits();
-                        document.getElementById('exchangeRateInput').value = Currency.rate;
-                        SettingsModule.updateDisplays(); }
-                    if (tab === 'retail') RetailModule.applyMode();
-                    if (tab === 'invoices') {
-                        InvoiceModule.resetUI();
-                        RetailModule.applyMode();
-                    }
-                    if (tab !== 'invoices' && tab !== 'retail') {
-                        const exchangeBar = document.getElementById('exchangeRateBar');
-                        const statsBar = document.getElementById('quickStats');
-                        exchangeBar.style.display = 'flex';
-                        statsBar.style.display = 'flex';
-                    }
-                    if (tab === 'retail' && AppState.quickModeEnabled) {} else {
-                        document.getElementById('quickModeBottomBar').style.display = 'none';
-                    }
-                });
+                const bottomNav = document.getElementById('bottomNav');
+                if (bottomNav) {
+                    bottomNav.addEventListener('click', (e) => {
+                        const btn = e.target.closest('.nav-item');
+                        if (!btn) return;
+                        const tab = btn.dataset.tab;
+                        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                        const panel = document.getElementById('panel-' + tab);
+                        if (panel) panel.classList.add('active');
+                        document.getElementById('suggestionsBox')?.classList.remove('show');
+                        if (tab === 'items') ItemsModule.load();
+                        if (tab === 'records') RecordsModule.load();
+                        if (tab === 'reports') {
+                            const n = new Date();
+                            document.getElementById('reportDateFrom').value = new Date(n.getFullYear(), n
+                                .getMonth(), 1).toISOString().split('T')[0];
+                            document.getElementById('reportDateTo').value = n.toISOString().split('T')[0];
+                            ReportsModule.generate();
+                        }
+                        if (tab === 'settings') {
+                            SettingsModule.renderFixedExpenses();
+                            document.getElementById('exchangeRateInput').value = Currency.rate;
+                            SettingsModule.updateDisplays();
+                        }
+                        if (tab === 'retail') RetailModule.applyMode();
+                        if (tab === 'invoices') {
+                            InvoiceModule.resetUI();
+                            RetailModule.applyMode();
+                        }
+                        if (tab !== 'invoices' && tab !== 'retail') {
+                            const exchangeBar = document.getElementById('exchangeRateBar');
+                            const statsBar = document.getElementById('quickStats');
+                            if (exchangeBar) exchangeBar.style.display = 'flex';
+                            if (statsBar) statsBar.style.display = 'flex';
+                        }
+                        if (tab === 'retail' && AppState.quickModeEnabled) {
+                            // keep
+                        } else {
+                            const bottomBar = document.getElementById('quickModeBottomBar');
+                            if (bottomBar) bottomBar.style.display = 'none';
+                        }
+                    });
+                }
 
-                document.getElementById('exchangeRateTopBtn').addEventListener('click', async () => {
-                    const val = parseFloat(document.getElementById('exchangeRateTop').value);
-                    if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
-                    Currency.rate = val;
-                    await DB.put('metadata', { key: 'exchangeRate', value: val });
-                    document.getElementById('exchangeRateInput').value = val;
-                    App.updateAllDisplays();
-                    Utils.toast('✅ تم تحديث سعر الصرف');
-                });
+                const exchangeBtn = document.getElementById('exchangeRateTopBtn');
+                if (exchangeBtn) {
+                    exchangeBtn.addEventListener('click', async () => {
+                        const val = parseFloat(document.getElementById('exchangeRateTop').value);
+                        if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
+                        Currency.rate = val;
+                        await DB.put('metadata', { key: 'exchangeRate', value: val });
+                        document.getElementById('exchangeRateInput').value = val;
+                        App.updateAllDisplays();
+                        Utils.toast('✅ تم تحديث سعر الصرف');
+                    });
+                }
 
                 document.querySelectorAll('.currency-toggle button').forEach(b => {
                     b.addEventListener('click', function() {
@@ -3691,134 +3874,116 @@
                 setInterval(App.updateQuickStats, 30000);
                 setInterval(App.performBackup, 300000);
 
-                if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js?v=2').catch(
-                    () => {}); }
+                if ('serviceWorker' in navigator) {
+                    try { navigator.serviceWorker.register('./sw.js?v=2'); } catch (e) { console.warn('SW reg error:',
+                            e); }
+                }
 
-                // ----- تحسين زر التثبيت -----
-                let installPromptFired = false;
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    App._deferredPrompt = e;
-                    installPromptFired = true;
-                    const btn = document.getElementById('floatingInstallBtn');
-                    if (btn) {
-                        btn.style.display = 'flex';
-                        btn.textContent = '📲 تثبيت التطبيق';
-                    }
-                    // إلغاء المؤقت الاحتياطي
-                    if (App._installTimer) {
-                        clearTimeout(App._installTimer);
-                        App._installTimer = null;
-                    }
-                });
-                // بعد 3 ثوانٍ إذا لم يظهر الحدث، نظهر الزر مع رسالة توجيهية
-                App._installTimer = setTimeout(() => {
-                    if (!installPromptFired) {
-                        const btn = document.getElementById('floatingInstallBtn');
-                        if (btn) {
-                            btn.style.display = 'flex';
-                            btn.textContent = '📲 تثبيت التطبيق (من القائمة)';
+                const startTrial = document.getElementById('startTrialBtn');
+                if (startTrial) {
+                    startTrial.addEventListener('click', async () => {
+                        const phone = document.getElementById('welcomePhone').value.trim();
+                        if (phone.length < 6) { Utils.toast('⚠️ رقم هاتف صحيح'); return; }
+                        const ok = await App._startTrial(phone);
+                        if (ok) {
+                            const acc = await App._checkAccess();
+                            if (acc) {
+                                document.getElementById('welcomeScreen').classList.remove('open');
+                                document.getElementById('app').style.display = 'flex';
+                                App._checkPin();
+                                await ItemsModule.load();
+                                AppState.customers = await DB.getAll('contacts');
+                                await RecordsModule.load();
+                                App.updateQuickStats();
+                                SettingsModule.updateDisplays();
+                                InvoiceModule.buildDatalist();
+                            }
                         }
-                    }
-                }, 3000);
+                    });
+                }
 
-                window.addEventListener('appinstalled', () => {
-                    App._deferredPrompt = null;
-                    document.getElementById('floatingInstallBtn').style.display = 'none';
-                    Utils.toast('✅ تم تثبيت التطبيق');
-                });
-
-                document.getElementById('floatingInstallBtn').addEventListener('click', async function() {
-                    if (App._deferredPrompt) {
-                        App._deferredPrompt.prompt();
-                        const result = await App._deferredPrompt.userChoice;
-                        if (result.outcome === 'accepted') { this.style.display = 'none';
-                            Utils.toast('✅ تم التثبيت'); } else { Utils.toast('❌ تم الإلغاء'); }
-                        App._deferredPrompt = null;
-                    } else {
-                        // في حال لم يكن هناك حدث تثبيت مدعوم
-                        Utils.toast('⚠️ استخدم قائمة المتصفح ⋮ واختر "تثبيت التطبيق" أو "أضف إلى الشاشة الرئيسية"');
-                    }
-                });
-
-                document.getElementById('startTrialBtn').addEventListener('click', async () => {
-                    const phone = document.getElementById('welcomePhone').value.trim();
-                    if (phone.length < 6) { Utils.toast('⚠️ رقم هاتف صحيح'); return; }
-                    const ok = await App._startTrial(phone);
-                    if (ok) {
-                        const acc = await App._checkAccess();
-                        if (acc) {
-                            document.getElementById('welcomeScreen').classList.remove('open');
-                            document.getElementById('app').style.display = 'flex';
-                            App._checkPin();
-                            await ItemsModule.load();
-                            AppState.customers = await DB.getAll('contacts');
-                            await RecordsModule.load();
-                            App.updateQuickStats();
-                            SettingsModule.updateDisplays();
-                            InvoiceModule.buildDatalist();
+                const activateBtn = document.getElementById('activateCodeBtn');
+                if (activateBtn) {
+                    activateBtn.addEventListener('click', async () => {
+                        const code = document.getElementById('activationCodeInput').value.trim();
+                        const phone = document.getElementById('welcomePhone').value.trim();
+                        if (!code || code.length !== 8 || !/^\d{8}$/.test(code)) {
+                            Utils.toast('⚠️ الكود 8 أرقام');
+                            return;
                         }
-                    }
-                });
-                document.getElementById('activateCodeBtn').addEventListener('click', async () => {
-                    const code = document.getElementById('activationCodeInput').value.trim();
-                    const phone = document.getElementById('welcomePhone').value.trim();
-                    if (!code || code.length !== 8 || !/^\d{8}$/.test(code)) { Utils.toast(
-                            '⚠️ الكود 8 أرقام'); return; }
-                    const ok = await App._activate(code, phone);
-                    if (ok) {
-                        const acc = await App._checkAccess();
-                        if (acc) {
-                            document.getElementById('welcomeScreen').classList.remove('open');
-                            document.getElementById('app').style.display = 'flex';
-                            App._checkPin();
-                            await ItemsModule.load();
-                            AppState.customers = await DB.getAll('contacts');
-                            await RecordsModule.load();
-                            App.updateQuickStats();
-                            SettingsModule.updateDisplays();
-                            InvoiceModule.buildDatalist();
+                        const ok = await App._activate(code, phone);
+                        if (ok) {
+                            const acc = await App._checkAccess();
+                            if (acc) {
+                                document.getElementById('welcomeScreen').classList.remove('open');
+                                document.getElementById('app').style.display = 'flex';
+                                App._checkPin();
+                                await ItemsModule.load();
+                                AppState.customers = await DB.getAll('contacts');
+                                await RecordsModule.load();
+                                App.updateQuickStats();
+                                SettingsModule.updateDisplays();
+                                InvoiceModule.buildDatalist();
+                            }
                         }
-                    }
-                });
-                document.getElementById('whatsappSupportBtn').addEventListener('click', () => {
-                    const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
-                    const msg = `مرحباً، أرغب في الاشتراك في احسبلي+. الرقم: ${phone}`;
-                    window.open(`https://wa.me/963936019079?text=${encodeURIComponent(msg)}`, '_blank');
-                });
-                document.getElementById('welcomeBackBtn').addEventListener('click', () => {
-                    document.getElementById('welcomeScreen').classList.remove('open');
-                    document.getElementById('app').style.display = 'flex';
-                });
-                document.querySelectorAll('.btn-select-plan').forEach(b => b.addEventListener('click',
-                    function() {
+                    });
+                }
+
+                const whatsappBtn = document.getElementById('whatsappSupportBtn');
+                if (whatsappBtn) {
+                    whatsappBtn.addEventListener('click', () => {
+                        const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
+                        const msg = `مرحباً، أرغب في الاشتراك في احسبلي+. الرقم: ${phone}`;
+                        window.open(`https://wa.me/963936019079?text=${encodeURIComponent(msg)}`, '_blank');
+                    });
+                }
+
+                const welcomeBack = document.getElementById('welcomeBackBtn');
+                if (welcomeBack) {
+                    welcomeBack.addEventListener('click', () => {
+                        document.getElementById('welcomeScreen').classList.remove('open');
+                        document.getElementById('app').style.display = 'flex';
+                    });
+                }
+
+                document.querySelectorAll('.btn-select-plan').forEach(b => {
+                    b.addEventListener('click', function() {
                         const plan = this.dataset.plan;
-                        const phone = document.getElementById('welcomePhone').value.trim() ||
-                            'غير محدد';
+                        const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
                         window.open(
                             `https://wa.me/963936019079?text=${encodeURIComponent(`مرحباً، أرغب في الاشتراك في خطة (${plan}) على احسبلي+. رقم الهاتف: ${phone}`)}`,
                             '_blank');
-                    }));
+                    });
+                });
 
-                document.getElementById('pinConfirmBtn').addEventListener('click', () => {
-                    const code = Array.from(document.querySelectorAll('.pin-digit')).map(i => i.value)
-                        .join('');
-                    if (code.length !== 4) { Utils.toast('⚠️ 4 أرقام'); return; }
-                    const stored = localStorage.getItem('app_pin');
-                    if (code === stored) {
-                        document.getElementById('pinScreen').classList.remove('open');
-                        Utils.toast('🔓 تم فتح التطبيق');
-                    } else {
-                        Utils.toast('❌ PIN غير صحيح');
-                        document.querySelectorAll('.pin-digit').forEach(i => i.value = '');
-                        document.querySelector('.pin-digit').focus();
-                    }
-                });
-                document.getElementById('pinForgotBtn').addEventListener('click', () => {
-                    if (confirm('حذف PIN؟ سيتم إعادة تحميل الصفحة.')) { localStorage.removeItem(
-                            'app_pin');
-                        location.reload(); }
-                });
+                const pinConfirm = document.getElementById('pinConfirmBtn');
+                if (pinConfirm) {
+                    pinConfirm.addEventListener('click', () => {
+                        const code = Array.from(document.querySelectorAll('.pin-digit')).map(i => i
+                            .value).join('');
+                        if (code.length !== 4) { Utils.toast('⚠️ 4 أرقام'); return; }
+                        const stored = localStorage.getItem('app_pin');
+                        if (code === stored) {
+                            document.getElementById('pinScreen').classList.remove('open');
+                            Utils.toast('🔓 تم فتح التطبيق');
+                        } else {
+                            Utils.toast('❌ PIN غير صحيح');
+                            document.querySelectorAll('.pin-digit').forEach(i => i.value = '');
+                            document.querySelector('.pin-digit').focus();
+                        }
+                    });
+                }
+
+                const pinForgot = document.getElementById('pinForgotBtn');
+                if (pinForgot) {
+                    pinForgot.addEventListener('click', () => {
+                        if (confirm('حذف PIN؟ سيتم إعادة تحميل الصفحة.')) {
+                            localStorage.removeItem('app_pin');
+                            location.reload();
+                        }
+                    });
+                }
+
                 document.querySelectorAll('.pin-digit').forEach((inp, idx) => {
                     inp.addEventListener('input', function() {
                         if (this.value.length === 1 && idx < 3) document.querySelectorAll(
@@ -3827,7 +3992,10 @@
                     inp.addEventListener('keydown', function(e) {
                         if (e.key === 'Backspace' && this.value === '' && idx > 0) document
                             .querySelectorAll('.pin-digit')[idx - 1].focus();
-                        if (e.key === 'Enter') document.getElementById('pinConfirmBtn').click();
+                        if (e.key === 'Enter') {
+                            const confirmBtn = document.getElementById('pinConfirmBtn');
+                            if (confirmBtn) confirmBtn.click();
+                        }
                     });
                 });
 
@@ -3845,61 +4013,109 @@
                     }
                 });
 
-                document.getElementById('detailCloseBtn').addEventListener('click', () => {
-                    document.getElementById('invoiceDetailModal').classList.remove('open');
-                    AppState.currentDetailInvoiceId = null;
-                });
-                document.getElementById('invoiceDetailModal').addEventListener('click', (e) => {
-                    if (e.target === e.currentTarget) {
+                const detailClose = document.getElementById('detailCloseBtn');
+                if (detailClose) {
+                    detailClose.addEventListener('click', () => {
                         document.getElementById('invoiceDetailModal').classList.remove('open');
                         AppState.currentDetailInvoiceId = null;
-                    }
-                });
-                document.getElementById('addCustomerFromManageBtn').addEventListener('click', () => {
-                    document.getElementById('customerManageModal').classList.remove('open');
-                    document.getElementById('customerAddModal').classList.add('open');
-                });
-                document.getElementById('closeCustomerManageBtn').addEventListener('click', () => document
-                    .getElementById('customerManageModal').classList.remove('open'));
-                document.getElementById('customerAddCancel').addEventListener('click', () => document
-                    .getElementById('customerAddModal').classList.remove('open'));
-                document.getElementById('customerAddSave').addEventListener('click', async () => {
-                    const name = document.getElementById('customerAddName').value.trim();
-                    if (!name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
-                    const data = { name, phone: document.getElementById('customerAddPhone')
-                            .value.trim(), address: document.getElementById('customerAddAddress')
-                            .value.trim(), balance: 0 };
-                    const editId = document.getElementById('customerAddSave').dataset.editId;
-                    if (editId) { data.id = Number(editId);
-                        const ex = await DB.get('contacts', data.id);
-                        if (ex) data.balance = ex.balance || 0;
-                        await DB.put('contacts', data);
-                        Utils.toast('✅ تم تحديث العميل'); } else { await DB.add('contacts', data);
-                        Utils.toast('✅ تم إضافة العميل'); }
-                    document.getElementById('customerAddModal').classList.remove('open');
-                    AppState.customers = await DB.getAll('contacts');
-                    if (document.getElementById('customerManageModal').classList.contains('open')) App
-                        ._openCustomerManage();
-                });
-                document.getElementById('reportGenerateBtn').addEventListener('click', ReportsModule
-                    .generate);
-                document.getElementById('exportReportExcelBtn').addEventListener('click', ReportsModule
-                    .export);
-                document.getElementById('exportRecordsExcelBtn').addEventListener('click', ReportsModule
-                    .exportRecords);
-                document.querySelectorAll('.records-filter .filter-btn').forEach(b => b.addEventListener(
-                    'click', function() {
+                    });
+                }
+                const invoiceDetailModal = document.getElementById('invoiceDetailModal');
+                if (invoiceDetailModal) {
+                    invoiceDetailModal.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) {
+                            invoiceDetailModal.classList.remove('open');
+                            AppState.currentDetailInvoiceId = null;
+                        }
+                    });
+                }
+
+                const addCustomerFromManage = document.getElementById('addCustomerFromManageBtn');
+                if (addCustomerFromManage) {
+                    addCustomerFromManage.addEventListener('click', () => {
+                        document.getElementById('customerManageModal').classList.remove('open');
+                        document.getElementById('customerAddModal').classList.add('open');
+                        document.getElementById('customerAddSave').dataset.editId = '';
+                        document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
+                    });
+                }
+                const closeCustomerManage = document.getElementById('closeCustomerManageBtn');
+                if (closeCustomerManage) {
+                    closeCustomerManage.addEventListener('click', () => document.getElementById(
+                        'customerManageModal').classList.remove('open'));
+                }
+                const customerAddCancel = document.getElementById('customerAddCancel');
+                if (customerAddCancel) {
+                    customerAddCancel.addEventListener('click', () => document.getElementById(
+                        'customerAddModal').classList.remove('open'));
+                }
+                const customerAddSave = document.getElementById('customerAddSave');
+                if (customerAddSave) {
+                    customerAddSave.addEventListener('click', async () => {
+                        const name = document.getElementById('customerAddName').value.trim();
+                        if (!name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
+                        const data = {
+                            name,
+                            phone: document.getElementById('customerAddPhone').value.trim(),
+                            address: document.getElementById('customerAddAddress').value.trim(),
+                            balance: 0
+                        };
+                        const editId = customerAddSave.dataset.editId;
+                        if (editId) {
+                            data.id = Number(editId);
+                            const ex = await DB.get('contacts', data.id);
+                            if (ex) data.balance = ex.balance || 0;
+                            await DB.put('contacts', data);
+                            Utils.toast('✅ تم تحديث العميل');
+                        } else {
+                            await DB.add('contacts', data);
+                            Utils.toast('✅ تم إضافة العميل');
+                        }
+                        document.getElementById('customerAddModal').classList.remove('open');
+                        AppState.customers = await DB.getAll('contacts');
+                        App.updateCustomerDatalist();
+                        // إذا كانت نافذة إدارة العملاء مفتوحة، نحدثها
+                        if (document.getElementById('customerManageModal').classList.contains('open'))
+                            App._openCustomerManage();
+                        // إذا كانت الفاتورة مفتوحة، نحدد العميل الجديد في الحقل
+                        const custField = document.getElementById('invoiceCustomerName');
+                        if (custField && document.getElementById('invoiceEditor').style.display !== 'none') {
+                            custField.value = name;
+                        }
+                    });
+                }
+
+                const reportGenerate = document.getElementById('reportGenerateBtn');
+                if (reportGenerate) reportGenerate.addEventListener('click', ReportsModule.generate);
+                const exportReport = document.getElementById('exportReportExcelBtn');
+                if (exportReport) exportReport.addEventListener('click', ReportsModule.export);
+                const exportRecords = document.getElementById('exportRecordsExcelBtn');
+                if (exportRecords) exportRecords.addEventListener('click', ReportsModule.exportRecords);
+
+                document.querySelectorAll('.records-filter .filter-btn').forEach(b => {
+                    b.addEventListener('click', function() {
                         document.querySelectorAll('.records-filter .filter-btn').forEach(b2 => b2
                             .classList.remove('active'));
                         this.classList.add('active');
                         AppState.currentFilter = this.dataset.filter;
                         RecordsModule.applyFilter();
-                    }));
-                document.getElementById('recordsSearch').addEventListener('input', function() { AppState
-                        .searchQuery = this.value;
-                    RecordsModule.applyFilter(); });
-                document.getElementById('restoreBackupBtn').addEventListener('click', () => { document
-                        .getElementById('restoreFileInput').click(); });
+                    });
+                });
+
+                const recordsSearch = document.getElementById('recordsSearch');
+                if (recordsSearch) {
+                    recordsSearch.addEventListener('input', function() {
+                        AppState.searchQuery = this.value;
+                        RecordsModule.applyFilter();
+                    });
+                }
+
+                const restoreBackupBtn = document.getElementById('restoreBackupBtn');
+                if (restoreBackupBtn) {
+                    restoreBackupBtn.addEventListener('click', () => {
+                        document.getElementById('restoreFileInput').click();
+                    });
+                }
 
                 Utils.toast('📦 احسبلي+ جاهز - نظام فواتير جديد', 2500);
             },
@@ -3916,9 +4132,11 @@
                                     ._fingerprint() })
                         });
                     const json = await resp.json();
-                    if (json && json.isValid === true) { localStorage.setItem('last_successful_ping', Date
-                            .now().toString());
-                        localStorage.setItem('cached_license', JSON.stringify(json)); return true; }
+                    if (json && json.isValid === true) {
+                        localStorage.setItem('last_successful_ping', Date.now().toString());
+                        localStorage.setItem('cached_license', JSON.stringify(json));
+                        return true;
+                    }
                 } catch (e) {}
                 const lastPing = parseInt(localStorage.getItem('last_successful_ping') || '0');
                 if (Date.now() - lastPing < 72 * 60 * 60 * 1000) {
@@ -3938,13 +4156,18 @@
                                 hash: 'trial_device', fingerprint: App._fingerprint() })
                         });
                     const json = await resp.json();
-                    if (json && json.success) { localStorage.setItem('user_phone', phone.trim());
+                    if (json && json.success) {
+                        localStorage.setItem('user_phone', phone.trim());
                         localStorage.setItem('user_hash', 'trial_device');
                         localStorage.setItem('last_successful_ping', Date.now().toString());
                         localStorage.setItem('cached_license', JSON.stringify({ isValid: true,
                             expiry: json.expiry }));
-                        Utils.toast('✅ تم بدء التجربة لمدة 14 يوماً'); return true; } else { Utils.toast(
-                            '❌ فشل التجربة: ' + (json.error || '')); return false; }
+                        Utils.toast('✅ تم بدء التجربة لمدة 14 يوماً');
+                        return true;
+                    } else {
+                        Utils.toast('❌ فشل التجربة: ' + (json.error || ''));
+                        return false;
+                    }
                 } catch (e) { Utils.toast('❌ خطأ في الاتصال'); return false; }
             },
 
@@ -3959,13 +4182,18 @@
                                     ._fingerprint() })
                         });
                     const json = await resp.json();
-                    if (json && json.success) { localStorage.setItem('user_phone', phone || 'مستخدم');
+                    if (json && json.success) {
+                        localStorage.setItem('user_phone', phone || 'مستخدم');
                         localStorage.setItem('user_hash', 'activated_device');
                         localStorage.setItem('last_successful_ping', Date.now().toString());
                         localStorage.setItem('cached_license', JSON.stringify({ isValid: true,
                             expiry: json.expiry }));
-                        Utils.toast('✅ تم تفعيل الاشتراك'); return true; } else { Utils.toast(
-                            '❌ فشل التفعيل: ' + (json.error || 'الكود غير صحيح')); return false; }
+                        Utils.toast('✅ تم تفعيل الاشتراك');
+                        return true;
+                    } else {
+                        Utils.toast('❌ فشل التفعيل: ' + (json.error || 'الكود غير صحيح'));
+                        return false;
+                    }
                 } catch (e) { Utils.toast('❌ خطأ في الاتصال'); return false; }
             },
 
@@ -3984,24 +4212,29 @@
 
             _checkPin: () => {
                 const stored = localStorage.getItem('app_pin');
-                if (stored) { document.getElementById('pinScreen').classList.add('open');
-                    document.querySelector('.pin-digit').focus(); } else { document.getElementById(
-                        'pinScreen').classList.remove('open'); }
+                if (stored) {
+                    document.getElementById('pinScreen').classList.add('open');
+                    document.querySelector('.pin-digit')?.focus();
+                } else {
+                    document.getElementById('pinScreen').classList.remove('open');
+                }
             },
 
             _openCustomerManage: async () => {
                 AppState.customers = await DB.getAll('contacts');
                 const container = document.getElementById('customerListContainer');
-                if (!AppState.customers.length) { container.innerHTML =
-                        '<div style="color:var(--text4);padding:20px;text-align:center;">لا يوجد عملاء</div>'; } else {
+                if (!AppState.customers.length) {
+                    container.innerHTML =
+                        '<div style="color:var(--text4);padding:20px;text-align:center;">لا يوجد عملاء</div>';
+                } else {
                     let html = '';
                     AppState.customers.forEach(c => {
                         html +=
                             `<div style="display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);"><span>${Utils.escape(c.name)} ${c.phone?'📞 '+Utils.escape(c.phone):''}</span><span style="color:var(--gold);">الرصيد: ${Currency.format(c.balance||0)}</span><button class="btn btn-danger btn-sm" data-del="${c.id}" style="padding:2px 8px;">✕</button></div>`;
                     });
                     container.innerHTML = html;
-                    container.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click',
-                        async function() {
+                    container.querySelectorAll('[data-del]').forEach(b => {
+                        b.addEventListener('click', async function() {
                             const id = Number(this.dataset.id);
                             const invs = await DB.getAll('invoices');
                             const rel = invs.filter(inv => inv.contactId === id);
@@ -4010,11 +4243,24 @@
                             await DB.delete('contacts', id);
                             Utils.toast('🗑️ تم الحذف');
                             AppState.customers = await DB.getAll('contacts');
+                            App.updateCustomerDatalist();
                             if (document.getElementById('customerManageModal').classList.contains(
                                 'open')) App._openCustomerManage();
-                        }));
+                        });
+                    });
                 }
                 document.getElementById('customerManageModal').classList.add('open');
+            },
+
+            updateCustomerDatalist: () => {
+                const dl = document.getElementById('customerDatalist');
+                if (!dl) return;
+                dl.innerHTML = '';
+                AppState.customers.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.name;
+                    dl.appendChild(opt);
+                });
             },
 
             performBackup: async () => {
@@ -4034,17 +4280,20 @@
                                     .stringify(data), fingerprint: App._fingerprint() })
                         });
                     const json = await resp.json();
-                    if (json && json.success) { localStorage.setItem('last_backup_time', Date.now()
-                            .toString());
-                        SettingsModule.updateDisplays(); }
+                    if (json && json.success) {
+                        localStorage.setItem('last_backup_time', Date.now().toString());
+                        SettingsModule.updateDisplays();
+                    }
                 } catch (e) { console.warn('Backup failed:', e); }
             },
 
             restoreBackup: async (file) => {
                 try {
                     let backupData = null;
-                    if (file && file.name) { const text = await file.text();
-                        backupData = JSON.parse(text); } else {
+                    if (file && file.name) {
+                        const text = await file.text();
+                        backupData = JSON.parse(text);
+                    } else {
                         const phone = localStorage.getItem('user_phone') || 'guest';
                         const hash = localStorage.getItem('user_hash') || 'guest_device';
                         const resp = await fetch(
@@ -4055,7 +4304,10 @@
                                     fingerprint: App._fingerprint() })
                             });
                         const json = await resp.json();
-                        if (!json.success || !json.data) { Utils.toast('⚠️ لا توجد نسخة سحابية'); return false; }
+                        if (!json.success || !json.data) {
+                            Utils.toast('⚠️ لا توجد نسخة سحابية');
+                            return false;
+                        }
                         backupData = JSON.parse(json.data);
                     }
                     if (!backupData || !backupData.data) throw new Error('بيانات غير صالحة');
@@ -4074,8 +4326,11 @@
                     }
                     Utils.toast('✅ تم استعادة البيانات');
                     return true;
-                } catch (e) { console.error(e);
-                    Utils.toast('❌ فشل الاستعادة: ' + e.message); return false; }
+                } catch (e) {
+                    console.error(e);
+                    Utils.toast('❌ فشل الاستعادة: ' + e.message);
+                    return false;
+                }
             },
 
             updateQuickStats: async () => {
@@ -4116,6 +4371,7 @@
                 SettingsModule.updateDisplays();
                 if (AppState.quickModeEnabled) RetailModule.renderQuick();
                 InvoiceModule.buildDatalist();
+                App.updateCustomerDatalist();
             }
         };
 
@@ -4146,9 +4402,72 @@
                     App.init(); }, 600);
             }
             document.getElementById('splashSkipBtn').addEventListener('click', dismiss);
-            el.addEventListener('click', (e) => { if (!e.target.closest('.splash-skip') && !e.target.closest(
-                    '.splash-logo')) dismiss(); });
+            el.addEventListener('click', (e) => {
+                if (!e.target.closest('.splash-skip') && !e.target.closest('.splash-logo')) dismiss();
+            });
             setTimeout(dismiss, 2000);
+        })();
+
+        // =====================================================================
+        // 15. زر التثبيت الذكي (PWA)
+        // =====================================================================
+        (function setupInstallButton() {
+            const installBtn = document.getElementById('installAppBtn');
+            if (!installBtn) return;
+
+            let deferredPrompt = null;
+            let isAppInstalled = false;
+
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.matchMedia('(display-mode: fullscreen)').matches) {
+                isAppInstalled = true;
+                installBtn.style.display = 'none';
+                return;
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                if (!isAppInstalled) {
+                    installBtn.style.display = 'flex';
+                }
+            });
+
+            window.addEventListener('appinstalled', () => {
+                isAppInstalled = true;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+                if (typeof Utils !== 'undefined' && Utils.toast) {
+                    Utils.toast('✅ تم تثبيت التطبيق بنجاح!');
+                }
+            });
+
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    if (result.outcome === 'accepted') {
+                        // سيتم التعامل معه عبر حدث appinstalled أعلاه
+                    } else {
+                        if (typeof Utils !== 'undefined' && Utils.toast) {
+                            Utils.toast('تم إلغاء التثبيت');
+                        }
+                    }
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                } else {
+                    if (typeof Utils !== 'undefined' && Utils.toast) {
+                        Utils.toast('⚠️ التثبيت غير متاح حالياً، حاول من قائمة المتصفح');
+                    }
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                if (window.matchMedia('(display-mode: standalone)').matches || 
+                    window.matchMedia('(display-mode: fullscreen)').matches) {
+                    installBtn.style.display = 'none';
+                }
+            });
         })();
     </script>
 </body>
