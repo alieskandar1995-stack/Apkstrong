@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="احسبلي+" />
 <link rel="apple-touch-icon" href="icon-192.png" />
-    
+   
     <style>
         /* ===== RESET & BASE ===== */
         *,::after,::before{margin:0;padding:0;box-sizing:border-box}
@@ -663,6 +663,131 @@
     font-size: 15px;
     font-weight: 500;
     cursor: pointer;
+}
+/* ===== إعدادات الأكورديون (خاص بتبويب الإعدادات) ===== */
+.settings-accordion .accordion-item {
+    border-bottom: 1px solid var(--border2);
+}
+
+.settings-accordion .accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text2);
+    transition: color 0.2s;
+    user-select: none;
+}
+.settings-accordion .accordion-header:hover {
+    color: var(--gold);
+}
+.settings-accordion .accordion-header .accordion-icon {
+    transition: transform 0.3s ease;
+    font-size: 14px;
+    margin-right: 6px;
+}
+.settings-accordion .accordion-item.open .accordion-header .accordion-icon {
+    transform: rotate(180deg);
+}
+
+/* المحتوى مخفي افتراضياً */
+.settings-accordion .accordion-body {
+    display: none;
+    padding: 6px 0 16px 0;
+    border-top: 1px solid var(--border2);
+}
+
+/* عند فتح العنصر (بإضافة كلاس open) */
+.settings-accordion .accordion-item.open .accordion-body {
+    display: block;
+}
+
+/* تحسين تنسيق الحقول داخل الإعدادات */
+.settings-group {
+    margin-bottom: 18px;
+}
+.settings-group h4 {
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: var(--text2);
+}
+.settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+}
+.settings-row .form-group {
+    flex: 1 1 140px;
+    min-width: 100px;
+}
+.settings-row .form-group label {
+    font-size: 12px;
+    display: block;
+    margin-bottom: 2px;
+}
+.settings-row .form-group input,
+.settings-row .form-group select {
+    width: 100%;
+}
+.cash-display,
+.equity-display {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border2);
+    font-size: 14px;
+}
+.cash-display .label,
+.equity-display .label {
+    color: var(--text3);
+}
+.cash-display .value,
+.equity-display .value {
+    font-weight: 600;
+    color: var(--gold);
+}
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.expense-item button {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 0 6px;
+}
+.expense-item button:hover {
+    color: var(--gold);
+}
+.favorite-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.favorite-item-row .item-name.fav {
+    color: var(--gold);
+}
+.favorite-item-row .favorite-toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 2px 12px;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 12px;
+}
+.favorite-item-row .favorite-toggle-btn.is-fav {
+    border-color: var(--gold);
+    color: var(--gold);
 }
     </style>
 </head>
