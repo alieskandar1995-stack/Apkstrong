@@ -11,6 +11,65 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
    
     <style>
+    /* ===== تنسيق مودال تسعير الأصناف ===== */
+.pricing-modal-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 14px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    border: 1px solid var(--border2);
+}
+
+.pricing-modal-item .item-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 4px;
+}
+
+.price-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.price-field label {
+    font-size: 14px;
+    color: var(--text3);
+    min-width: 100px;
+}
+
+.price-field input {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    border-radius: 30px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: var(--transition);
+}
+
+.price-field input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(245,166,35,0.15);
+}
+
+.price-field .currency-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+    background: rgba(245,166,35,0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
         /* ===== RESET & BASE ===== */
         *,::after,::before{margin:0;padding:0;box-sizing:border-box}
         :root{--gold:#f5a623;--gold2:#f7d875;--gold3:#e8a317;--bg:#0a0a0a;--bg2:rgba(255,255,255,.04);--bg3:rgba(255,255,255,.06);--border:rgba(255,215,0,.08);--border2:rgba(255,255,255,.06);--text:#e8e6e3;--text2:#f5e7c8;--text3:#a8a6b0;--text4:#6a6868;--radius:16px;--radius2:24px;--transition:.2s}
@@ -2664,40 +2723,30 @@ const InvoiceModule = {
             document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
         });
     },
-    _updatePriceFromSaleType: function() {
-        const name = document.getElementById('invoiceRowName').value.trim();
-        const opt = document.querySelector(`#invoiceItemsDatalist option[value="${Utils.escape(name)}"]`);
-        if (!opt) return;
-        const saleType = document.getElementById('invoiceRowSaleType').value;
-        let price = 0;
-        if (saleType === 'wholesale') {
-            const wholesalePrice = parseFloat(opt.dataset.wholesale) || 0;
-            price = Currency.fromOld(wholesalePrice);
-            if (AppState.currentInvoiceType === 'purchases') {
-                document.getElementById('invoiceRowWholesaleGroup').style.display = 'flex';
-                const item = AppState.items.find(i => i.id == opt.dataset.id);
-                if (item) {
-                    document.getElementById('invoiceRowWholesaleUnit').value = item.wholesaleUnit || '';
-                    document.getElementById('invoiceRowWholesaleFactor').value = item.wholesaleUnitFactor || 1;
-                    document.getElementById('invoiceRowUnit').value = item.wholesaleUnit || '';
-                }
-            } else {
-                const item = AppState.items.find(i => i.id == opt.dataset.id);
-                if (item) {
-                    document.getElementById('invoiceRowUnit').value = item.wholesaleUnit || '';
-                }
-            }
-        } else {
-            const retailPrice = parseFloat(opt.dataset.retail) || 0;
-            price = Currency.fromOld(retailPrice);
-            if (AppState.currentInvoiceType === 'purchases') { document.getElementById('invoiceRowWholesaleGroup').style.display = 'none'; }
-            const item = AppState.items.find(i => i.id == opt.dataset.id);
-            if (item) {
-                document.getElementById('invoiceRowUnit').value = item.unit || 'قطعة';
-            }
-        }
-        document.getElementById('invoiceRowPrice').value = price;
-    },
+_updatePriceFromSaleType: function() {
+    const name = document.getElementById('invoiceRowName').value.trim();
+    const opt = document.querySelector(`#invoiceItemsDatalist option[value="${Utils.escape(name)}"]`);
+    if (!opt) return;
+    const saleType = document.getElementById('invoiceRowSaleType').value;
+    let price = 0;
+    const item = AppState.items.find(i => i.id == opt.dataset.id);
+    if (saleType === 'wholesale' && item && item.wholesaleUnit && item.wholesaleUnitFactor > 0) {
+        // جملة
+        const wholesalePrice = parseFloat(opt.dataset.wholesale) || 0;
+        price = Currency.fromOld(wholesalePrice);
+        document.getElementById('invoiceRowUnit').value = item.wholesaleUnit || '';
+        document.getElementById('invoiceRowWholesaleUnit').value = item.wholesaleUnit || '';
+        document.getElementById('invoiceRowWholesaleFactor').value = item.wholesaleUnitFactor || 1;
+        document.getElementById('invoiceRowWholesaleGroup').style.display = (AppState.currentInvoiceType === 'purchases') ? 'flex' : 'none';
+    } else {
+        // مفرق
+        const retailPrice = parseFloat(opt.dataset.retail) || 0;
+        price = Currency.fromOld(retailPrice);
+        document.getElementById('invoiceRowUnit').value = (item && item.unit) ? item.unit : 'قطعة';
+        document.getElementById('invoiceRowWholesaleGroup').style.display = 'none';
+    }
+    document.getElementById('invoiceRowPrice').value = price;
+}
     buildDatalist: () => {
         let dl = document.getElementById('invoiceItemsDatalist');
         if (!dl) { dl = document.createElement('datalist'); dl.id = 'invoiceItemsDatalist'; document.body.appendChild(dl); }
@@ -2764,128 +2813,128 @@ const InvoiceModule = {
         document.getElementById('invoiceRowSaleTypeGroup').style.display = 'none';
         document.getElementById('invoiceRowWholesaleGroup').style.display = 'none';
     },
-    addRowFromInput: () => {
-        const name = document.getElementById('invoiceRowName').value.trim();
-        const unit = document.getElementById('invoiceRowUnit').value.trim() || 'قطعة';
-        let qty = parseFloat(document.getElementById('invoiceRowQty').value) || 1;
-        let price = parseFloat(document.getElementById('invoiceRowPrice').value) || 0;
+    addRowFromInput: function() {
+    const name = document.getElementById('invoiceRowName').value.trim();
+    const unit = document.getElementById('invoiceRowUnit').value.trim() || 'قطعة';
+    let qty = parseFloat(document.getElementById('invoiceRowQty').value) || 1;
+    let price = parseFloat(document.getElementById('invoiceRowPrice').value) || 0;
 
-        if (!name) { Utils.toast('⚠️ يرجى إدخال اسم الصنف'); return; }
-        const opt = document.querySelector(`#invoiceItemsDatalist option[value="${Utils.escape(name)}"]`);
-        let itemId = null;
-        let item = null;
-        let unitPrice = price;
-        let isWholesale = false;
-        let wholesaleFactor = 1;
-        let wholesaleUnit = '';
-        let baseUnit = unit;
+    if (!name) { Utils.toast('⚠️ يرجى إدخال اسم الصنف'); return; }
+    const opt = document.querySelector(`#invoiceItemsDatalist option[value="${Utils.escape(name)}"]`);
+    let itemId = null;
+    let item = null;
+    let unitPrice = price;
+    let isWholesale = false;
+    let wholesaleFactor = 1;
+    let wholesaleUnit = '';
+    let baseUnit = unit;
 
-        if (opt) {
-            itemId = Number(opt.dataset.id);
-            item = AppState.items.find(i => i.id === itemId);
-            if (!item) { Utils.toast('⚠️ الصنف غير مسجل'); return; }
+    if (opt) {
+        itemId = Number(opt.dataset.id);
+        item = AppState.items.find(i => i.id === itemId);
+        if (!item) { Utils.toast('⚠️ الصنف غير مسجل'); return; }
 
-            if (AppState.currentInvoiceType === 'sales') {
-                const avail = item.quantity || 0;
-                const saleType = document.getElementById('invoiceRowSaleType').value;
-                isWholesale = (saleType === 'wholesale' && item.wholesaleUnit && item.wholesaleUnitFactor > 0);
-                if (isWholesale) {
-                    wholesaleFactor = item.wholesaleUnitFactor || 1;
-                    wholesaleUnit = item.wholesaleUnit || '';
-                    const qtyInBase = qty * wholesaleFactor;
-                    if (qtyInBase > avail) { Utils.toast(`⚠️ الكمية غير كافية! المتوفر: ${avail} وحدة مفرق`); return; }
-                    const wholesalePrice = parseFloat(opt.dataset.wholesale) || 0;
-                    unitPrice = wholesalePrice;
-                    price = Currency.fromOld(wholesalePrice);
-                    document.getElementById('invoiceRowPrice').value = price;
-                    baseUnit = wholesaleUnit;
-                } else {
-                    wholesaleFactor = 1;
-                    if (qty > avail) { Utils.toast(`⚠️ الكمية غير كافية! المتوفر: ${avail}`); return; }
-                    const retailPrice = parseFloat(opt.dataset.retail) || 0;
-                    unitPrice = retailPrice;
-                    price = Currency.fromOld(retailPrice);
-                    document.getElementById('invoiceRowPrice').value = price;
-                    baseUnit = item.unit || 'قطعة';
-                }
+        if (AppState.currentInvoiceType === 'sales') {
+            const avail = item.quantity || 0;
+            const saleType = document.getElementById('invoiceRowSaleType').value;
+            isWholesale = (saleType === 'wholesale' && item.wholesaleUnit && item.wholesaleUnitFactor > 0);
+            if (isWholesale) {
+                wholesaleFactor = item.wholesaleUnitFactor || 1;
+                wholesaleUnit = item.wholesaleUnit || '';
+                const qtyInBase = qty * wholesaleFactor;
+                if (qtyInBase > avail) { Utils.toast(`⚠️ الكمية غير كافية! المتوفر: ${avail} وحدة مفرق`); return; }
+                const wholesalePrice = parseFloat(opt.dataset.wholesale) || 0;
+                unitPrice = wholesalePrice;
+                price = Currency.fromOld(wholesalePrice);
+                document.getElementById('invoiceRowPrice').value = price;
+                baseUnit = wholesaleUnit;
             } else {
-                const saleType = document.getElementById('invoiceRowSaleType').value;
-                isWholesale = (saleType === 'wholesale');
-                if (isWholesale) {
-                    wholesaleUnit = document.getElementById('invoiceRowWholesaleUnit').value.trim() || item.wholesaleUnit || '';
-                    wholesaleFactor = parseInt(document.getElementById('invoiceRowWholesaleFactor').value) || item.wholesaleUnitFactor || 1;
-                    if (!wholesaleUnit) { Utils.toast('⚠️ يرجى إدخال وحدة الجملة'); return; }
-                    if (wholesaleFactor < 1) { Utils.toast('⚠️ معامل الجملة يجب أن يكون 1 على الأقل'); return; }
-                    if (price === 0) {
-                        const purchasePrice = parseFloat(opt.dataset.purchase) || 0;
-                        if (purchasePrice > 0) { price = Currency.fromOld(purchasePrice); unitPrice = purchasePrice; }
-                        else { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
-                    } else { unitPrice = Currency.toOld(price); }
-                    baseUnit = wholesaleUnit;
-                } else {
-                    wholesaleFactor = 1;
-                    wholesaleUnit = '';
-                    if (price === 0) {
-                        const purchasePrice = parseFloat(opt.dataset.purchase) || 0;
-                        if (purchasePrice > 0) { price = Currency.fromOld(purchasePrice); unitPrice = purchasePrice; }
-                        else { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
-                    } else { unitPrice = Currency.toOld(price); }
-                    baseUnit = item.unit || 'قطعة';
-                }
+                wholesaleFactor = 1;
+                if (qty > avail) { Utils.toast(`⚠️ الكمية غير كافية! المتوفر: ${avail}`); return; }
+                const retailPrice = parseFloat(opt.dataset.retail) || 0;
+                unitPrice = retailPrice;
+                price = Currency.fromOld(retailPrice);
+                document.getElementById('invoiceRowPrice').value = price;
+                baseUnit = item.unit || 'قطعة';  // ← التعديل هنا
             }
         } else {
-            if (AppState.currentInvoiceType !== 'purchases') { Utils.toast('⚠️ الصنف غير مسجل'); return; }
             const saleType = document.getElementById('invoiceRowSaleType').value;
             isWholesale = (saleType === 'wholesale');
             if (isWholesale) {
-                wholesaleUnit = document.getElementById('invoiceRowWholesaleUnit').value.trim();
-                wholesaleFactor = parseInt(document.getElementById('invoiceRowWholesaleFactor').value) || 1;
-                if (!wholesaleUnit) { Utils.toast('⚠️ يرجى إدخال وحدة الجملة للصنف الجديد'); return; }
+                wholesaleUnit = document.getElementById('invoiceRowWholesaleUnit').value.trim() || item.wholesaleUnit || '';
+                wholesaleFactor = parseInt(document.getElementById('invoiceRowWholesaleFactor').value) || item.wholesaleUnitFactor || 1;
+                if (!wholesaleUnit) { Utils.toast('⚠️ يرجى إدخال وحدة الجملة'); return; }
                 if (wholesaleFactor < 1) { Utils.toast('⚠️ معامل الجملة يجب أن يكون 1 على الأقل'); return; }
-                if (price === 0) { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
-                unitPrice = Currency.toOld(price);
+                if (price === 0) {
+                    const purchasePrice = parseFloat(opt.dataset.purchase) || 0;
+                    if (purchasePrice > 0) { price = Currency.fromOld(purchasePrice); unitPrice = purchasePrice; }
+                    else { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
+                } else { unitPrice = Currency.toOld(price); }
                 baseUnit = wholesaleUnit;
             } else {
-                if (price === 0) { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
-                unitPrice = Currency.toOld(price);
-                baseUnit = unit;
+                wholesaleFactor = 1;
+                wholesaleUnit = '';
+                if (price === 0) {
+                    const purchasePrice = parseFloat(opt.dataset.purchase) || 0;
+                    if (purchasePrice > 0) { price = Currency.fromOld(purchasePrice); unitPrice = purchasePrice; }
+                    else { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
+                } else { unitPrice = Currency.toOld(price); }
+                baseUnit = item.unit || 'قطعة';
             }
         }
-
-        if (unitPrice <= 0) { Utils.toast('⚠️ يرجى تحديد سعر الوحدة'); return; }
-        const total = qty * unitPrice;
-        const row = {
-            id: ++AppState.rowCounter,
-            itemName: name,
-            unit: isWholesale ? wholesaleUnit : baseUnit,
-            itemId: itemId,
-            quantity: qty,
-            unitPrice: unitPrice,
-            total: total,
-            isWholesale: isWholesale,
-            wholesaleFactor: wholesaleFactor,
-            baseUnit: baseUnit,
-            wholesaleUnit: wholesaleUnit,
-            isNewItem: !itemId && AppState.currentInvoiceType === 'purchases',
-            warning: false,
-            warningMsg: ''
-        };
-        if (AppState.currentInvoiceType === 'sales' && item) {
-            const avail = item.quantity || 0;
-            const qtyToCheck = isWholesale ? qty * wholesaleFactor : qty;
-            if (qtyToCheck > avail) { row.warning = true; row.warningMsg = `المتوفر: ${avail}`; }
+    } else {
+        if (AppState.currentInvoiceType !== 'purchases') { Utils.toast('⚠️ الصنف غير مسجل'); return; }
+        const saleType = document.getElementById('invoiceRowSaleType').value;
+        isWholesale = (saleType === 'wholesale');
+        if (isWholesale) {
+            wholesaleUnit = document.getElementById('invoiceRowWholesaleUnit').value.trim();
+            wholesaleFactor = parseInt(document.getElementById('invoiceRowWholesaleFactor').value) || 1;
+            if (!wholesaleUnit) { Utils.toast('⚠️ يرجى إدخال وحدة الجملة للصنف الجديد'); return; }
+            if (wholesaleFactor < 1) { Utils.toast('⚠️ معامل الجملة يجب أن يكون 1 على الأقل'); return; }
+            if (price === 0) { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
+            unitPrice = Currency.toOld(price);
+            baseUnit = wholesaleUnit;
+        } else {
+            if (price === 0) { Utils.toast('⚠️ يرجى إدخال سعر الوحدة'); return; }
+            unitPrice = Currency.toOld(price);
+            baseUnit = unit;
         }
-        AppState.invoiceRows.push(row);
-        InvoiceModule.renderRows();
-        InvoiceModule.calcSummary();
-        document.getElementById('invoiceRowName').value = '';
-        document.getElementById('invoiceRowUnit').value = '';
-        document.getElementById('invoiceRowQty').value = '1';
-        document.getElementById('invoiceRowPrice').value = '';
-        document.getElementById('invoiceRowSaleTypeGroup').style.display = 'none';
-        document.getElementById('invoiceRowWholesaleGroup').style.display = 'none';
-        document.getElementById('invoiceRowName').focus();
-    },
+    }
+
+    if (unitPrice <= 0) { Utils.toast('⚠️ يرجى تحديد سعر الوحدة'); return; }
+    const total = qty * unitPrice;
+    const row = {
+        id: ++AppState.rowCounter,
+        itemName: name,
+        unit: isWholesale ? wholesaleUnit : baseUnit,
+        itemId: itemId,
+        quantity: qty,
+        unitPrice: unitPrice,
+        total: total,
+        isWholesale: isWholesale,
+        wholesaleFactor: wholesaleFactor,
+        baseUnit: baseUnit,
+        wholesaleUnit: wholesaleUnit,
+        isNewItem: !itemId && AppState.currentInvoiceType === 'purchases',
+        warning: false,
+        warningMsg: ''
+    };
+    if (AppState.currentInvoiceType === 'sales' && item) {
+        const avail = item.quantity || 0;
+        const qtyToCheck = isWholesale ? qty * wholesaleFactor : qty;
+        if (qtyToCheck > avail) { row.warning = true; row.warningMsg = `المتوفر: ${avail}`; }
+    }
+    AppState.invoiceRows.push(row);
+    InvoiceModule.renderRows();
+    InvoiceModule.calcSummary();
+    document.getElementById('invoiceRowName').value = '';
+    document.getElementById('invoiceRowUnit').value = '';
+    document.getElementById('invoiceRowQty').value = '1';
+    document.getElementById('invoiceRowPrice').value = '';
+    document.getElementById('invoiceRowSaleTypeGroup').style.display = 'none';
+    document.getElementById('invoiceRowWholesaleGroup').style.display = 'none';
+    document.getElementById('invoiceRowName').focus();
+}
     removeRow: (id) => {
         if (AppState.invoiceRows.length <= 1) { Utils.toast('⚠️ لا يمكن حذف الصف الأخير'); return; }
         AppState.invoiceRows = AppState.invoiceRows.filter(r => r.id !== id);
@@ -3053,13 +3102,28 @@ const InvoiceModule = {
             InvoiceModule.buildDatalist();
         } catch(e) { console.error(e); Utils.toast('❌ فشل حفظ الفاتورة'); }
     },
-    showPricing: (items) => {
-        const container = document.getElementById('pricingItemsContainer');
-        let html = '';
-        items.forEach(item => {
-            html += `<div class="pricing-modal-item" data-id="${item.id}"><div class="item-name">${Utils.escape(item.name)}</div><div class="price-field"><label>سعر المفرق</label><input type="number" class="pricing-retail" data-id="${item.id}" step="0.01" inputmode="decimal" min="0" value="0" /><div class="currency-label">${Currency.display==='usd'?'$':Currency.display==='new'?'ل.س.ج':'ل.س'}</div></div><div class="price-field"><label>سعر الجملة (اختياري)</label><input type="number" class="pricing-wholesale" data-id="${item.id}" step="0.01" inputmode="decimal" min="0" value="0" /><div class="currency-label">${Currency.display==='usd'?'$':Currency.display==='new'?'ل.س.ج':'ل.س'}</div></div></div>`;
-        });
-        container.innerHTML = html;
+showPricing: (items) => {
+    const container = document.getElementById('pricingItemsContainer');
+    let html = '';
+    items.forEach(item => {
+        html += `
+            <div class="pricing-modal-item" data-id="${item.id}">
+                <div class="item-name">🏷️ ${Utils.escape(item.name)}</div>
+                <div class="price-field">
+                    <label>💰 سعر المفرق</label>
+                    <input type="number" class="pricing-retail" data-id="${item.id}" step="0.01" min="0" value="0" placeholder="0.00" />
+                    <span class="currency-label">${Currency.display==='usd'?'$':Currency.display==='new'?'ل.س.ج':'ل.س'}</span>
+                </div>
+                <div class="price-field">
+                    <label>📦 سعر الجملة (اختياري)</label>
+                    <input type="number" class="pricing-wholesale" data-id="${item.id}" step="0.01" min="0" value="0" placeholder="0.00" />
+                    <span class="currency-label">${Currency.display==='usd'?'$':Currency.display==='new'?'ل.س.ج':'ل.س'}</span>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+  
         document.getElementById('pricingModal').classList.add('open');
         const first = container.querySelector('.pricing-retail');
         if (first) setTimeout(() => first.focus(), 300);
