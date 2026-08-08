@@ -2,32 +2,47 @@
   "name": "احسبلي+ · نظام نقاط بيع",
   "short_name": "احسبلي+",
   "description": "نظام نقاط بيع متكامل لإدارة المبيعات والمخزون",
-  "start_url": "/index.html",
+  "start_url": "/index.html?utm_source=pwa",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b0b0e",
+  "background_color": "#0a0a0a",
   "theme_color": "#f5a623",
+  "categories": ["business", "finance", "productivity"],
+  "lang": "ar",
+  "dir": "rtl",
+  "scope": "/",
   "icons": [
+    { "src": "icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
     {
-      "src": "icon_192.png",
-      "sizes": "192x192",
+      "src": "screenshot-1.png",
+      "sizes": "1080x1920",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon_512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "form_factor": "narrow",
+      "label": "شاشة المفرق"
     }
   ],
   "shortcuts": [
     {
-      "name": "المفرق",
+      "name": "🛒 المفرق",
       "short_name": "المفرق",
-      "description": "فتح نقطة البيع",
-      "url": "/index.html?tab=retail",
-      "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
+      "description": "فتح نقطة البيع مباشرة",
+      "url": "/index.html?tab=retail&from=shortcut",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/index.html?share=product",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  },
+  "prefer_related_applications": false
 }
