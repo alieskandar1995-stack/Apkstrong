@@ -1724,7 +1724,7 @@ left: 0;
 // =====================================================================
 // 0. SERVER_URL
 // =====================================================================
-const SERVER_URL = "https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec";
 
 // =====================================================================
 // 1. UTILITIES
@@ -5065,7 +5065,7 @@ document.getElementById('addCustomerFromManageBtn').addEventListener('click', fu
         const phone = localStorage.getItem('user_phone') || 'guest';
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'check', phone, hash, fingerprint: App._fingerprint() })
@@ -5085,41 +5085,76 @@ document.getElementById('addCustomerFromManageBtn').addEventListener('click', fu
         return false;
     },
     _startTrial: async (phone) => {
-        try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'trial', phone: phone.trim(), hash: 'trial_device', fingerprint: App._fingerprint() })
-            });
-            const json = await resp.json();
-            if (json && json.success) {
-                localStorage.setItem('user_phone', phone.trim());
-                localStorage.setItem('user_hash', 'trial_device');
-                localStorage.setItem('last_successful_ping', Date.now().toString());
-                localStorage.setItem('cached_license', JSON.stringify({ isValid: true, expiry: json.expiry }));
-                Utils.toast('✅ تم بدء التجربة لمدة 14 يوماً');
-                return true;
-            } else { Utils.toast('❌ فشل التجربة: ' + (json.error || '')); return false; }
-        } catch(e) { Utils.toast('❌ خطأ في الاتصال'); return false; }
-    },
+    try {
+        const resp = await fetch(SERVER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ 
+                action: 'trial', 
+                phone: phone.trim(), 
+                // ✅ تم حذف hash الثابت، السيرفر سيعيد هاشاً فريداً
+                fingerprint: App._fingerprint() 
+            })
+        });
+        const json = await resp.json();
+        if (json && json.success) {
+            // ✅ التغيير الجوهري: استلام الهاش الفريد من السيرفر
+            const newHash = json.hash || 'trial_fallback';
+            localStorage.setItem('user_phone', phone.trim());
+            localStorage.setItem('user_hash', newHash); // ✅ تخزين الهاش الفريد
+            localStorage.setItem('last_successful_ping', Date.now().toString());
+            localStorage.setItem('cached_license', JSON.stringify({ 
+                isValid: true, 
+                expiry: json.expiry,
+                hash: newHash 
+            }));
+            Utils.toast('✅ تم بدء التجربة لمدة 14 يوماً');
+            return true;
+        } else {
+            Utils.toast('❌ فشل التجربة: ' + (json.error || ''));
+            return false;
+        }
+    } catch(e) {
+        Utils.toast('❌ خطأ في الاتصال');
+        return false;
+    }
+},
     _activate: async (code, phone) => {
-        try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'activate', phone: phone || 'مستخدم', hash: 'activated_device', code: code.trim(), fingerprint: App._fingerprint() })
-            });
-            const json = await resp.json();
-            if (json && json.success) {
-                localStorage.setItem('user_phone', phone || 'مستخدم');
-                localStorage.setItem('user_hash', 'activated_device');
-                localStorage.setItem('last_successful_ping', Date.now().toString());
-                localStorage.setItem('cached_license', JSON.stringify({ isValid: true, expiry: json.expiry }));
-                Utils.toast('✅ تم تفعيل الاشتراك');
-                return true;
-            } else { Utils.toast('❌ فشل التفعيل: ' + (json.error || 'الكود غير صحيح')); return false; }
-        } catch(e) { Utils.toast('❌ خطأ في الاتصال'); return false; }
-    },
+    try {
+        const resp = await fetch(SERVER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ 
+                action: 'activate', 
+                phone: phone || 'مستخدم', 
+                // ✅ تم حذف hash الثابت، السيرفر سيعيد هاشاً فريداً
+                code: code.trim(), 
+                fingerprint: App._fingerprint() 
+            })
+        });
+        const json = await resp.json();
+        if (json && json.success) {
+            // ✅ التغيير الجوهري: استلام الهاش الفريد من السيرفر
+            const newHash = json.hash || 'activated_fallback';
+            localStorage.setItem('user_phone', phone || 'مستخدم');
+            localStorage.setItem('user_hash', newHash); // ✅ تخزين الهاش الفريد
+            localStorage.setItem('last_successful_ping', Date.now().toString());
+            localStorage.setItem('cached_license', JSON.stringify({ 
+                isValid: true, 
+                expiry: json.expiry,
+                hash: newHash 
+            }));
+            Utils.toast('✅ تم تفعيل الاشتراك');
+            return true;
+        } else {
+            Utils.toast('❌ فشل التفعيل: ' + (json.error || 'الكود غير صحيح'));
+            return false;
+        }
+    } catch(e) {
+        Utils.toast('❌ خطأ في الاتصال');
+        return false;
+    }
+},
     _fingerprint: () => {
         try {
             const comps = [navigator.userAgent, navigator.language, screen.width, screen.height, screen.colorDepth, navigator.hardwareConcurrency || 4, navigator.deviceMemory || 8];
@@ -5189,7 +5224,7 @@ document.getElementById('addCustomerFromManageBtn').addEventListener('click', fu
             const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
             const data = {};
             for (let s of stores) data[s] = await DB.getAll(s);
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
@@ -5207,7 +5242,7 @@ document.getElementById('addCustomerFromManageBtn').addEventListener('click', fu
             } else {
                 const phone = localStorage.getItem('user_phone') || 'guest';
                 const hash = localStorage.getItem('user_hash') || 'guest_device';
-                const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
+                const resp = await fetch('https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec', {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
