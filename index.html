@@ -293,6 +293,7 @@
         align-items: center;
         gap: 6px;
         width: 100%;
+        position: relative;
     }
     .invoice-fields .customer-date-row .customer-input-wrapper input {
         flex: 1;
@@ -910,6 +911,44 @@
         padding: 0 20px;
         flex: 0 0 auto;
     }
+    /* ===== تنسيق اقتراحات البحث ===== */
+    .customer-input-wrapper {
+    position: relative;
+} 
+    .suggestions-box {
+        display: none;
+        position: absolute;
+        top: 100%;
+left: 0;
+        background: #1a1a1e;
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 10px;
+        max-height: 150px;
+        overflow-y: auto;
+        width: 100%;
+        z-index: 1000;
+        margin-top: 4px;
+    }
+    .suggestions-box .suggestion-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        color: #dfdbd6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .suggestions-box .suggestion-item:hover {
+        background: rgba(255,255,255,0.08);
+    }
+    .suggestions-box .suggestion-item .price-tag {
+        color: var(--gold);
+        font-weight: 600;
+        font-size: 13px;
+    }
+    .pos-search-area {
+        position: relative;
+    }
     </style>
 </head>
 <body>
@@ -1118,11 +1157,13 @@
                     <div class="customer-date-row">
                         <div>
                             <label id="customerFieldLabel">👤 العميل</label>
-                            <div class="customer-input-wrapper">
-                                <input type="text" id="invoiceCustomerName" placeholder="اكتب الاسم..." list="customerDatalist" />
-                                <button type="button" id="addCustomerFromInvoiceBtn" title="إضافة عميل جديد">➕</button>
-                            </div>
+                            <div class="customer-input-wrapper" style="position: relative;">
+<input type="text" id="invoiceCustomerName" placeholder="اكتب الاسم..." />
+    <button type="button" id="addCustomerFromInvoiceBtn">➕</button>
+                            <div class="suggestions-box" id="invoiceCustomerSuggestions"></div>
+</div>
                             <datalist id="customerDatalist"></datalist>
+    
                         </div>
                         <div>
                             <label>📅 التاريخ</label>
@@ -1534,11 +1575,13 @@
         <h3>📝 بيع آجل (المفرق)</h3>
         <div class="form-group" style="margin-bottom:10px;">
             <label>👤 اسم العميل</label>
-            <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" id="retailCreditCustomerName" placeholder="اكتب اسم العميل..." list="retailCustomerDatalist" style="flex:1;" />
+            <div style="display:flex;gap:6px;align-items:center; position:relative;">
+<input type="text" id="retailCreditCustomerName" placeholder="اكتب الاسم..." />
                 <button type="button" id="addCustomerFromRetailBtn" title="إضافة عميل جديد" style="background:transparent;border:none;color:var(--gold);font-size:22px;cursor:pointer;min-height:40px;flex-shrink:0;transition:var(--transition);">➕</button>
+             <div class="suggestions-box" id="retailCustomerSuggestions"></div>   
             </div>
             <datalist id="retailCustomerDatalist"></datalist>
+            
         </div>
         <div class="form-group" style="margin-bottom:10px;">
             <label>المبلغ المدفوع نقداً (اختياري)</label>
@@ -1706,10 +1749,32 @@ const Currency = {
     set rate(v) { this._rate = v > 0 ? v : 13000; },
     get display() { return this._display; },
     set display(c) { if (['old','new','usd'].includes(c)) this._display = c; },
-    toOld: function(value) { const v = parseFloat(value) || 0; if (this.display === 'new') return v * 100; if (this.display === 'usd') return v * this.rate; return v; },
-    fromOld: function(value) { const v = parseFloat(value) || 0; if (this.display === 'new') return v / 100; if (this.display === 'usd') return this.rate > 0 ? v / this.rate : 0; return v; },
-    getPrice: function(priceObj) { if (typeof priceObj === 'number') return priceObj; if (!priceObj || typeof priceObj !== 'object') return 0; const v = parseFloat(priceObj.value) || 0; const c = priceObj.currency || 'old'; if (c === 'new') return v * 100; if (c === 'usd') return v * this.rate; return v; },
-    makeObj: function(value, currency) { const v = parseFloat(value) || 0; return { value: v, currency: currency || 'old' }; },
+
+    toOld: function(value) {
+        const v = parseFloat(value) || 0;
+        if (this.display === 'new') return v * 100;
+        if (this.display === 'usd') return v * this.rate;
+        return v;
+    },
+    fromOld: function(value) {
+        const v = parseFloat(value) || 0;
+        if (this.display === 'new') return v / 100;
+        if (this.display === 'usd') return this.rate > 0 ? v / this.rate : 0;
+        return v;
+    },
+    getPrice: function(priceObj) {
+        if (typeof priceObj === 'number') return priceObj;
+        if (!priceObj || typeof priceObj !== 'object') return 0;
+        const v = parseFloat(priceObj.value) || 0;
+        const c = priceObj.currency || 'old';
+        if (c === 'new') return v * 100;
+        if (c === 'usd') return v * this.rate;
+        return v;
+    },
+    makeObj: function(value, currency) {
+        const v = parseFloat(value) || 0;
+        return { value: v, currency: currency || 'old' };
+    },
     format: function(value) {
         const v = parseFloat(value) || 0;
         const disp = this.fromOld(v);
@@ -1724,7 +1789,10 @@ const Currency = {
         return this.format(old);
     },
 
-    // ===== دوال التكلفة الجديدة =====
+    // ====================================================
+    // هذه هي الدوال المفقودة التي طلبت مني إضافتها سابقاً
+    // وهي الآن في المكان الصحيح (خارج أي دالة أخرى)
+    // ====================================================
     getHistoricalCostInSYP: function(item) {
         if (!item) return 0;
         if (item.purchasePriceUSD !== undefined && item.purchasePriceUSD > 0 && item.exchangeRateAtPurchase !== undefined && item.exchangeRateAtPurchase > 0) {
@@ -1802,14 +1870,11 @@ function checkItemsAfterRateChange() {
     const alerts = [];
 
     for (let item of items) {
-        // نحتاج سعر الشراء (باستخدام المنهجية المختارة)
         const purchaseCost = Currency.getCostByMethod(item, AppState.valuationMethod || 'historical');
-        // سعر البيع (المفرق)
         const retailPrice = Currency.getPrice(item.retailPrice);
         
         if (purchaseCost <= 0) continue;
 
-        // إذا كان سعر البيع أقل أو يساوي سعر الشراء
         if (retailPrice <= purchaseCost) {
             alerts.push({
                 id: item.id,
@@ -1858,7 +1923,6 @@ function showPriceAlertModal(alerts) {
     container.innerHTML = html;
     document.getElementById('priceAlertModal').classList.add('open');
 
-    // زر الحفظ
     document.getElementById('priceAlertSaveBtn').onclick = async function() {
         const inputs = container.querySelectorAll('.pricing-modal-item');
         for (let div of inputs) {
@@ -1869,7 +1933,6 @@ function showPriceAlertModal(alerts) {
             const wholesaleVal = parseFloat(wholesaleInput.value) || 0;
             const item = AppState.items.find(i => i.id === id);
             if (!item) continue;
-            // تحويل القيم إلى العملة الأساسية (old) وحفظها
             item.retailPrice = Currency.makeObj(Currency.toOld(retailVal), 'old');
             item.wholesalePrice = Currency.makeObj(Currency.toOld(wholesaleVal), 'old');
             await DB.put('items', item);
@@ -1881,7 +1944,6 @@ function showPriceAlertModal(alerts) {
         App.updateAllDisplays();
     };
 
-    // زر التخطي
     document.getElementById('priceAlertLaterBtn').onclick = function() {
         document.getElementById('priceAlertModal').classList.remove('open');
         Utils.toast('⏰ يمكنك التعديل لاحقاً من قائمة الأصناف');
@@ -1937,7 +1999,7 @@ const Cash = {
         const newBal = type === 'deposit' ? current + num : current - num;
         if (newBal < 0) { Utils.toast('⚠️ الرصيد غير كافٍ'); return false; }
         Cash.set(newBal);
-        await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); // FIX
+        await DB.put('metadata', { key: 'cashLiquidity', value: newBal });
         await DB.add('cashAdjustments', { date: Utils.nowISO(), amount: num, type, description: desc.trim(), oldBalance: current, newBalance: newBal });
         const count = await DB.count('invoices');
         const inv = { id: Utils.generateInvoiceId(count), date: Utils.nowISO(), type: 'رأس_مال', category: type === 'deposit' ? 'إيداع رأس مال' : 'سحب رأس مال', contactId: null, totalAmount: num, discount: 0, tax: 0, netAmount: num, paidAmount: num, remaining: 0, status: 'مغلقة', paymentMethod: 'كاش', description: desc.trim(), currencyUsed: 'old' };
@@ -2341,20 +2403,47 @@ const RetailModule = {
 
         const posSearch = document.getElementById('posSearch');
         if (posSearch) {
-            posSearch.addEventListener('input', () => {
-                const q = posSearch.value.trim().toLowerCase();
+            posSearch.addEventListener('input', function() {
+                const q = this.value.trim().toLowerCase();
                 const results = q ? AppState.items.filter(it => it.name.toLowerCase().includes(q) || (it.barcode && it.barcode.includes(q))) : [];
                 RetailModule.renderSuggestions(results);
             });
-            posSearch.addEventListener('blur', () => setTimeout(() => document.getElementById('suggestionsBox').classList.remove('show'), 180));
-            posSearch.addEventListener('focus', () => {
-                const q = posSearch.value.trim();
-                if (q) RetailModule.renderSuggestions(AppState.items.filter(it => it.name.toLowerCase().includes(q) || (it.barcode && it.barcode.includes(q))));
+            posSearch.addEventListener('blur', function() {
+                setTimeout(() => {
+                    const box = document.getElementById('suggestionsBox');
+                    if (box) {
+                        box.style.display = 'none';
+                        box.classList.remove('show');
+                    }
+                }, 150);
+            });
+            posSearch.addEventListener('focus', function() {
+                const q = this.value.trim();
+                if (q) {
+                    const results = AppState.items.filter(it => it.name.toLowerCase().includes(q) || (it.barcode && it.barcode.includes(q)));
+                    RetailModule.renderSuggestions(results);
+                }
             });
             posSearch.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
-                    const val = this.value.trim();
-                    if (val && !AppState.items.some(it => it.name === val)) { Utils.toast('⚠️ هذا الصنف غير مسجل'); this.value = ''; RetailModule.clearPos(); e.preventDefault(); }
+                    const box = document.getElementById('suggestionsBox');
+                    const firstItem = box.querySelector('.suggestion-item');
+                    if (firstItem) {
+                        e.preventDefault();
+                        const id = Number(firstItem.dataset.id);
+                        RetailModule.selectItem(id);
+                        box.style.display = 'none';
+                        box.classList.remove('show');
+                        this.blur();
+                    } else {
+                        const q = this.value.trim();
+                        if (q) {
+                            const item = AppState.items.find(it => it.name === q);
+                            if (item) RetailModule.selectItem(item.id);
+                            else Utils.toast('⚠️ هذا الصنف غير مسجل');
+                        }
+                        this.blur();
+                    }
                 }
             });
         }
@@ -2474,7 +2563,6 @@ const RetailModule = {
         const saved = localStorage.getItem('quickModeEnabled');
         if (saved === 'true') { AppState.quickModeEnabled = true; document.getElementById('quickModeToggle').checked = true; RetailModule.applyMode(); RetailModule.renderQuick(); } else { document.getElementById('quickModeToggle').checked = false; RetailModule.applyMode(); }
 
-        // ===== زر إضافة عميل سريع في شاشة المفرق =====
         const addCustomerFromRetailBtn = document.getElementById('addCustomerFromRetailBtn');
         if (addCustomerFromRetailBtn) {
             addCustomerFromRetailBtn.addEventListener('click', function() {
@@ -2484,7 +2572,6 @@ const RetailModule = {
                 document.getElementById('customerAddAddress').value = '';
                 document.getElementById('customerAddSave').dataset.editId = '';
                 document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
-                // عند الحفظ، نضع الاسم في حقل العميل
                 const originalSave = document.getElementById('customerAddSave').onclick;
                 document.getElementById('customerAddSave').onclick = async function() {
                     const name = document.getElementById('customerAddName').value.trim();
@@ -2506,9 +2593,11 @@ const RetailModule = {
                     App.updateCustomerDatalist();
                     App.updateRetailCustomerDatalist();
                     document.getElementById('retailCreditCustomerName').value = name;
-                    // استعادة الوظيفة الأصلية
                     document.getElementById('customerAddSave').onclick = originalSave;
                     document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
+                    // تحديث اقتراحات العملاء
+            renderCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
+renderCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');        
                 };
             });
         }
@@ -2542,7 +2631,7 @@ const RetailModule = {
         if (qty > avail) return { valid: false, msg: `⚠️ الكمية غير كافية! المتوفر: ${avail}` };
         return { valid: true };
     },
-    selectItem: async (id) => {
+    selectItem: async function(id) {
         const item = await DB.get('items', id);
         if (!item) { Utils.toast('⚠️ الصنف غير موجود'); return; }
         AppState.posSelectedItem = item;
@@ -2551,7 +2640,12 @@ const RetailModule = {
         RetailModule.updatePosDisplay();
         document.querySelectorAll('#qtyButtons .qty-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.qty) === 1));
         document.getElementById('posSearch').value = item.name;
-        document.getElementById('suggestionsBox').classList.remove('show');
+        // إخفاء القائمة
+        const box = document.getElementById('suggestionsBox');
+        if (box) {
+            box.style.display = 'none';
+            box.classList.remove('show');
+        }
     },
     updatePosDisplay: () => {
         const el = document.getElementById('posSelected');
@@ -2576,21 +2670,31 @@ const RetailModule = {
         document.getElementById('customQtyInput').value = 1;
         RetailModule.updatePosDisplay();
     },
-    renderSuggestions: (results) => {
+    renderSuggestions: function(results) {
         const box = document.getElementById('suggestionsBox');
-        if (!results || !results.length) { box.classList.remove('show'); return; }
+        if (!box) return;
+        if (!results || !results.length) {
+            box.style.display = 'none';
+            box.classList.remove('show');
+            return;
+        }
         let html = '';
-        results.slice(0,10).forEach(it => {
+        results.slice(0, 10).forEach(it => {
             html += `<div class="suggestion-item" data-id="${it.id}"><span>${Utils.escape(it.name)} (${it.unit||'قطعة'})</span><span class="price-tag">${Currency.displayPrice(it.retailPrice)}</span></div>`;
         });
         box.innerHTML = html;
+        box.style.display = 'block';
         box.classList.add('show');
-        box.querySelectorAll('.suggestion-item').forEach(el => el.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            RetailModule.selectItem(Number(el.dataset.id));
-            box.classList.remove('show');
-            document.getElementById('posSearch').blur();
-        }));
+        box.querySelectorAll('.suggestion-item').forEach(el => {
+            el.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                const id = Number(this.dataset.id);
+                RetailModule.selectItem(id);
+                box.style.display = 'none';
+                box.classList.remove('show');
+                document.getElementById('posSearch').blur();
+            });
+        });
     },
     renderTemp: () => {
         const container = document.getElementById('tempInvoiceContainer');
@@ -2724,7 +2828,7 @@ const RetailModule = {
             const invId = Utils.generateInvoiceId(count);
             const inv = { id: invId, date: Utils.nowISO(), type: 'مبيعات', category: 'مفرق', contactId: contactId || null, totalAmount: subtotal, discount: discAmt, tax: 0, netAmount: net, paidAmount: 0, remaining: net, status: 'مفتوحة', paymentMethod: paymentMethod, currencyUsed: Currency.display };
             let paidAmount = paymentMethod === 'كاش' ? net : (customerData?.paidAmount || 0);
-            if (paidAmount > net) { Utils.toast('⚠️ المبلغ المدفوع يتجاوز قيمة الفاتورة'); return; } // FIX
+            if (paidAmount > net) { Utils.toast('⚠️ المبلغ المدفوع يتجاوز قيمة الفاتورة'); return; }
             const ok = await RetailModule._applyPayment(inv, paidAmount, paymentMethod, 'create');
             if (!ok) { Utils.toast('❌ فشل الدفع'); return; }
             const addP = [], updP = [], stkP = [];
@@ -2766,7 +2870,7 @@ const RetailModule = {
         const curPaid = inv.paidAmount || 0;
         let newPaid, rem;
         if (op === 'repayment') { newPaid = curPaid + paid; rem = net - newPaid; } else { newPaid = paid; rem = net - paid; }
-        if (rem < 0) { Utils.toast('⚠️ المبلغ المدفوع يتجاوز قيمة الفاتورة'); return false; } // FIX
+        if (rem < 0) { Utils.toast('⚠️ المبلغ المدفوع يتجاوز قيمة الفاتورة'); return false; }
         const cash = Cash.get();
         let newCash = cash;
         const isSales = inv.type === 'مبيعات';
@@ -2774,9 +2878,9 @@ const RetailModule = {
         const isRetSales = inv.type === 'مرتجع مبيعات';
         const isRetPurchase = inv.type === 'مرتجع مشتريات';
         if (op === 'create') { if (isSales || isRetPurchase) newCash += paid; else if (isPurchase || isRetSales) newCash -= paid; else if (inv.type === 'مصروفات') newCash -= paid; } else { if (isSales || isRetPurchase) newCash += paid; else if (isPurchase || isRetSales) newCash -= paid; }
-        if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لعملية الدفع'); return false; } // FIX
+        if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لعملية الدفع'); return false; }
         Cash.set(newCash);
-        await DB.put('metadata', { key: 'cashLiquidity', value: newCash }); // FIX
+        await DB.put('metadata', { key: 'cashLiquidity', value: newCash });
         if (inv.contactId) {
             const contact = await DB.get('contacts', inv.contactId);
             if (contact) {
@@ -2786,7 +2890,6 @@ const RetailModule = {
                     contact.balance = (contact.balance || 0) + bal;
                     if (contact.balance < 0) { Utils.toast(`⚠️ رصيد العميل سيصبح سالباً (${Currency.format(contact.balance)})`); Cash.set(cash); return false; }
                     await DB.put('contacts', contact);
-                    // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
                     AppState.customers = await DB.getAll('contacts');
                     App.updateCustomerDatalist();
                     App.updateRetailCustomerDatalist();
@@ -2811,7 +2914,7 @@ const RetailModule = {
         await DB.add('invoices', inv);
         const newBal = cash - amtOld;
         Cash.set(newBal);
-        await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); // FIX
+        await DB.put('metadata', { key: 'cashLiquidity', value: newBal });
         Utils.toast(`✅ تم تسجيل المصرف "${desc}" ${Currency.format(amtOld)}`);
         return true;
     },
@@ -2977,7 +3080,7 @@ const InvoiceModule = {
                 }
                 const netText = document.getElementById('newNetTotal').textContent;
                 const net = parseFloat(netText.replace(/[^0-9.]/g,'')) || 0;
-                if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; } // FIX
+                if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; }
                 document.getElementById('creditNetDisplay').textContent = Currency.format(net);
                 document.getElementById('creditPaidAmount').value = '0';
                 document.getElementById('creditRemainingDisplay').textContent = Currency.format(net);
@@ -3008,7 +3111,6 @@ const InvoiceModule = {
             document.getElementById('customerAddAddress').value = '';
             document.getElementById('customerAddSave').dataset.editId = '';
             document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
-            // عند الحفظ، نضع الاسم في حقل العميل
             const originalSave = document.getElementById('customerAddSave').onclick;
             document.getElementById('customerAddSave').onclick = async function() {
                 const name = document.getElementById('customerAddName').value.trim();
@@ -3030,9 +3132,11 @@ const InvoiceModule = {
                 App.updateCustomerDatalist();
                 App.updateRetailCustomerDatalist();
                 document.getElementById('invoiceCustomerName').value = name;
-                // استعادة الوظيفة الأصلية
                 document.getElementById('customerAddSave').onclick = originalSave;
                 document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
+                // تحديث اقتراحات العملاء
+                renderCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
+                renderCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
             };
         });
     },
@@ -3331,7 +3435,7 @@ const InvoiceModule = {
         const discAmt = subtotal * (discP / 100);
         const taxAmt = subtotal * (taxP / 100);
         const net = subtotal - discAmt + taxAmt;
-        if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; } // FIX
+        if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; }
         if (method === 'آجل' && paidAmount > net) { Utils.toast('⚠️ المدفوع لا يتجاوز الصافي'); return; }
         const custName = document.getElementById('invoiceCustomerName').value.trim();
         let contactId = null;
@@ -3595,9 +3699,9 @@ const RecordsModule = {
             else if (isPurchase || isRetSales) newCash += paid;
             else if (isExpense) newCash += paid;
             else if (isCapital) { newCash += inv2.category === 'إيداع رأس مال' ? -paid : paid; }
-            if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; } // FIX
+            if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; }
             Cash.set(newCash);
-            await DB.put('metadata', { key: 'cashLiquidity', value: newCash }); // FIX
+            await DB.put('metadata', { key: 'cashLiquidity', value: newCash });
             if (inv2.contactId) {
                 const contact = await DB.get('contacts', inv2.contactId);
                 if (contact) {
@@ -3605,7 +3709,6 @@ const RecordsModule = {
                     if (isSales || isRetPurchase) bal = -inv2.paidAmount;
                     else if (isPurchase || isRetSales) bal = inv2.paidAmount;
                     if (bal !== 0) { contact.balance = (contact.balance || 0) + bal; if (contact.balance < 0) contact.balance = 0; await DB.put('contacts', contact);
-                        // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
                         AppState.customers = await DB.getAll('contacts');
                         App.updateCustomerDatalist();
                         App.updateRetailCustomerDatalist();
@@ -3727,19 +3830,19 @@ const RecordsModule = {
 
                 const cash = Cash.get();
                 if (inv4.paymentMethod === 'كاش') {
-                    if (cash < netRet) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; } // FIX
+                    if (cash < netRet) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; }
                     const newBal = cash - netRet;
                     Cash.set(newBal);
-                    await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); // FIX
+                    await DB.put('metadata', { key: 'cashLiquidity', value: newBal });
                     await DB.add('cashAdjustments', { date: Utils.nowISO(), amount: netRet, type: 'refund', description: `مرتجع مفرق ${inv4.id}`, oldBalance: cash, newBalance: newBal });
                 } else if (inv4.paymentMethod === 'آجل') {
                     let remainingDebt = inv4.remaining || 0;
                     if (netRet > remainingDebt) {
                         const surplus = netRet - remainingDebt;
-                        if (cash < surplus) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; } // FIX
+                        if (cash < surplus) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; }
                         const newBal = cash - surplus;
                         Cash.set(newBal);
-                        await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); // FIX
+                        await DB.put('metadata', { key: 'cashLiquidity', value: newBal });
                         await DB.add('cashAdjustments', { date: Utils.nowISO(), amount: surplus, type: 'refund', description: `فائض مرتجع مفرق ${inv4.id}`, oldBalance: cash, newBalance: newBal });
                         if (inv4.contactId) {
                             const contact = await DB.get('contacts', inv4.contactId);
@@ -3748,7 +3851,6 @@ const RecordsModule = {
                                 const newBalC = oldBal - remainingDebt;
                                 contact.balance = newBalC < 0 ? 0 : newBalC;
                                 await DB.put('contacts', contact);
-                                // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
                                 AppState.customers = await DB.getAll('contacts');
                                 App.updateCustomerDatalist();
                                 App.updateRetailCustomerDatalist();
@@ -3765,7 +3867,6 @@ const RecordsModule = {
                                 const newBalC = oldBal - netRet;
                                 contact.balance = newBalC < 0 ? 0 : newBalC;
                                 await DB.put('contacts', contact);
-                                // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
                                 AppState.customers = await DB.getAll('contacts');
                                 App.updateCustomerDatalist();
                                 App.updateRetailCustomerDatalist();
@@ -3790,7 +3891,7 @@ const RecordsModule = {
 
             if (method === 'cash') {
                 const cash2 = Cash.get();
-                if (inv4.type === 'مبيعات' && cash2 < totalRet2) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; } // FIX
+                if (inv4.type === 'مبيعات' && cash2 < totalRet2) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لإلغاء هذه الفاتورة'); return; }
             }
             try {
                 const count2 = await DB.count('invoices');
@@ -3812,8 +3913,8 @@ const RecordsModule = {
                     remAmt = 0;
                     const cash3 = Cash.get();
                     let newBal;
-                    if (inv4.type === 'مبيعات') { newBal = cash3 - netRet; Cash.set(newBal); await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); } // FIX
-                    else if (inv4.type === 'مشتريات') { newBal = cash3 + netRet; Cash.set(newBal); await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); } // FIX
+                    if (inv4.type === 'مبيعات') { newBal = cash3 - netRet; Cash.set(newBal); await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); }
+                    else if (inv4.type === 'مشتريات') { newBal = cash3 + netRet; Cash.set(newBal); await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); }
                     if (inv4.contactId && inv4.paymentMethod === 'آجل') {
                         const contact = await DB.get('contacts', inv4.contactId);
                         if (contact) {
@@ -3823,7 +3924,6 @@ const RecordsModule = {
                             contact.balance = (contact.balance || 0) + bal;
                             if (contact.balance < 0) contact.balance = 0;
                             await DB.put('contacts', contact);
-                            // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
                             AppState.customers = await DB.getAll('contacts');
                             App.updateCustomerDatalist();
                             App.updateRetailCustomerDatalist();
@@ -3841,7 +3941,6 @@ const RecordsModule = {
                             contact.balance = (contact.balance || 0) + bal;
                             if (contact.balance < 0) contact.balance = 0;
                             await DB.put('contacts', contact);
-                            // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
                             AppState.customers = await DB.getAll('contacts');
                             App.updateCustomerDatalist();
                             App.updateRetailCustomerDatalist();
@@ -4211,7 +4310,6 @@ const SettingsModule = {
         const firstAccordion = document.querySelector('.accordion-item');
         if (firstAccordion) firstAccordion.classList.add('open');
 
-        // منهجية التقييم
         const methodRadios = document.querySelectorAll('input[name="valuationMethod"]');
         const savedMethod = localStorage.getItem('valuationMethod') || 'historical';
         AppState.valuationMethod = savedMethod;
@@ -4355,7 +4453,7 @@ const SettingsModule = {
                 const val = parseFloat(document.getElementById('exchangeRateInput').value);
                 if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
                 Currency.rate = val;
-                await DB.put('metadata', { key: 'exchangeRate', value: val }); // FIX
+                await DB.put('metadata', { key: 'exchangeRate', value: val });
                 document.getElementById('exchangeRateTop').value = val;
                 document.getElementById('exchangeRateInput').value = val;
                 App.updateAllDisplays();
@@ -4397,7 +4495,7 @@ checkItemsAfterRateChange();
         await DB.add('invoices', inv);
         const newBal = Cash.get() - amt;
         Cash.set(newBal);
-        await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); // FIX
+        await DB.put('metadata', { key: 'cashLiquidity', value: newBal });
         await Cash.addAudit({ action: 'دفع مصروف ثابت', invoiceId: inv.id, amount: amt, remaining: 0, description: `دفع ${exp.name} - ${Currency.format(amt)}` });
         Utils.toast(`✅ تم دفع "${exp.name}" ${Currency.format(amt)}`);
         SettingsModule.updateDisplays();
@@ -4549,7 +4647,6 @@ const DebtsModule = {
             await DB.add('invoices', inv);
             contact.balance = (contact.balance || 0) + amountOld;
             await DB.put('contacts', contact);
-            // FIX: تحديث قائمة العملاء بعد تغيير الرصيد
             AppState.customers = await DB.getAll('contacts');
             App.updateCustomerDatalist();
             App.updateRetailCustomerDatalist();
@@ -4632,7 +4729,10 @@ const App = {
         try { InvoiceModule.init(); } catch(e) { console.warn('InvoiceModule init error:', e); }
         try { SettingsModule.init(); } catch(e) { console.warn('SettingsModule init error:', e); }
 
-        // ===== ربط الأزرار والأحداث =====
+        // تفعيل اقتراحات العملاء بعد تحميل العملاء
+        setupCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
+        setupCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
+
         document.getElementById('settingsGearBtn').addEventListener('click', function() {
             const settingsTab = document.querySelector('.nav-item[data-tab="settings"]');
             if (settingsTab) { settingsTab.click(); } else {
@@ -4677,7 +4777,6 @@ const App = {
             });
         }
 
-        // ===== التنقل السفلي =====
         const bottomNav = document.getElementById('bottomNav');
         if (bottomNav) {
             bottomNav.addEventListener('click', (e) => {
@@ -4726,7 +4825,6 @@ const App = {
             });
         }
 
-        // ===== فلاتر سجل الفواتير =====
         document.querySelectorAll('.invoice-records-filter .filter-btn').forEach(b => {
             b.addEventListener('click', function() {
                 document.querySelectorAll('.invoice-records-filter .filter-btn').forEach(b2 => b2.classList.remove('active'));
@@ -4736,14 +4834,13 @@ const App = {
             });
         });
 
-        // ===== تحديث سعر الصرف =====
         const exchangeBtn = document.getElementById('exchangeRateTopBtn');
         if (exchangeBtn) {
             exchangeBtn.addEventListener('click', async () => {
                 const val = parseFloat(document.getElementById('exchangeRateTop').value);
                 if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
                 Currency.rate = val;
-                await DB.put('metadata', { key: 'exchangeRate', value: val }); // FIX
+                await DB.put('metadata', { key: 'exchangeRate', value: val });
                 document.getElementById('exchangeRateInput').value = val;
                 document.getElementById('exchangeRateTop').value = val;
                 App.updateAllDisplays();
@@ -4752,7 +4849,6 @@ const App = {
             });
         }
 
-        // ===== أزرار العملات =====
         document.querySelectorAll('.currency-toggle button').forEach(b => {
             b.addEventListener('click', function() {
                 const cur = this.dataset.cur;
@@ -4763,11 +4859,9 @@ const App = {
             });
         });
 
-        // ===== مؤقتات =====
         setInterval(App.updateQuickStats, 30000);
         setInterval(App.performBackup, 300000);
 
-        // ===== Service Worker =====
         if ('serviceWorker' in navigator) {
             const registerSW = () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -4783,7 +4877,6 @@ const App = {
             registerSW();
         }
 
-        // ===== أزرار التجربة والتفعيل =====
         const startTrial = document.getElementById('startTrialBtn');
         if (startTrial) {
             startTrial.addEventListener('click', async () => {
@@ -4856,7 +4949,6 @@ const App = {
             });
         });
 
-        // ===== PIN =====
         const pinConfirm = document.getElementById('pinConfirmBtn');
         if (pinConfirm) {
             pinConfirm.addEventListener('click', () => {
@@ -4889,17 +4981,49 @@ const App = {
                 if (document.getElementById('itemViewMode').style.display !== 'none') { ItemsModule.closeView(); } else { ItemsModule.cancelEdit(); }
             }
         });
+document.getElementById('addCustomerFromManageBtn').addEventListener('click', function() {
+    document.getElementById('customerManageModal').classList.remove('open');
+    document.getElementById('customerAddModal').classList.add('open');
+    document.getElementById('customerAddName').value = '';
+    document.getElementById('customerAddPhone').value = '';
+    document.getElementById('customerAddAddress').value = '';
+    document.getElementById('customerAddSave').dataset.editId = '';
+    document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
 
-        // ===== إدارة العملاء =====
-        const addCustomerFromManage = document.getElementById('addCustomerFromManageBtn');
-        if (addCustomerFromManage) {
-            addCustomerFromManage.addEventListener('click', () => {
-                document.getElementById('customerManageModal').classList.remove('open');
-                document.getElementById('customerAddModal').classList.add('open');
-                document.getElementById('customerAddSave').dataset.editId = '';
-                document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
-            });
+    const saveBtn = document.getElementById('customerAddSave');
+    saveBtn.onclick = async function() {
+        const name = document.getElementById('customerAddName').value.trim();
+        if (!name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
+        const data = {
+            name: name,
+            phone: document.getElementById('customerAddPhone').value.trim(),
+            address: document.getElementById('customerAddAddress').value.trim(),
+            balance: 0
+        };
+        const editId = this.dataset.editId;
+        if (editId) {
+            data.id = Number(editId);
+            const ex = await DB.get('contacts', data.id);
+            if (ex) data.balance = ex.balance || 0;
+            await DB.put('contacts', data);
+            Utils.toast('✅ تم تحديث العميل');
+        } else {
+            await DB.add('contacts', data);
+            Utils.toast('✅ تم إضافة العميل');
         }
+        document.getElementById('customerAddModal').classList.remove('open');
+        AppState.customers = await DB.getAll('contacts');
+        App.updateCustomerDatalist();
+        App.updateRetailCustomerDatalist();
+        const invName = document.getElementById('invoiceCustomerName');
+        if (invName) invName.value = name;
+        const retailName = document.getElementById('retailCreditCustomerName');
+        if (retailName) retailName.value = name;
+        renderCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
+        renderCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
+        InvoicesRecordsModule.load();
+    };
+});
         const closeCustomerManage = document.getElementById('closeCustomerManageBtn');
         if (closeCustomerManage) {
             closeCustomerManage.addEventListener('click', () => document.getElementById('customerManageModal').classList.remove('open'));
@@ -4910,33 +5034,9 @@ const App = {
         }
         const customerAddSave = document.getElementById('customerAddSave');
         if (customerAddSave) {
-            customerAddSave.addEventListener('click', async () => {
-                const name = document.getElementById('customerAddName').value.trim();
-                if (!name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
-                const data = { name, phone: document.getElementById('customerAddPhone').value.trim(), address: document.getElementById('customerAddAddress').value.trim(), balance: 0 };
-                const editId = customerAddSave.dataset.editId;
-                if (editId) {
-                    data.id = Number(editId);
-                    const ex = await DB.get('contacts', data.id);
-                    if (ex) data.balance = ex.balance || 0;
-                    await DB.put('contacts', data);
-                    Utils.toast('✅ تم تحديث العميل');
-                } else {
-                    await DB.add('contacts', data);
-                    Utils.toast('✅ تم إضافة العميل');
-                }
-                document.getElementById('customerAddModal').classList.remove('open');
-                AppState.customers = await DB.getAll('contacts');
-                App.updateCustomerDatalist();
-                App.updateRetailCustomerDatalist();
-                if (document.getElementById('customerManageModal').classList.contains('open')) App._openCustomerManage();
-                const custField = document.getElementById('invoiceCustomerName');
-                if (custField && document.getElementById('invoiceEditor').style.display !== 'none') { custField.value = name; }
-                InvoicesRecordsModule.load();
-            });
+            
         }
 
-        // ===== التقارير =====
         const reportGenerate = document.getElementById('reportGenerateBtn');
         if (reportGenerate) reportGenerate.addEventListener('click', ReportsModule.generate);
         const exportReport = document.getElementById('exportReportExcelBtn');
@@ -4965,7 +5065,7 @@ const App = {
         const phone = localStorage.getItem('user_phone') || 'guest';
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbzplTE9vmQWzmtaAaIXMzw8_9U9ck-GJiHLU_m4CArFYEaxjtsJPdq9-5j8FImL1tqcoA/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'check', phone, hash, fingerprint: App._fingerprint() })
@@ -4986,7 +5086,7 @@ const App = {
     },
     _startTrial: async (phone) => {
         try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbzplTE9vmQWzmtaAaIXMzw8_9U9ck-GJiHLU_m4CArFYEaxjtsJPdq9-5j8FImL1tqcoA/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'trial', phone: phone.trim(), hash: 'trial_device', fingerprint: App._fingerprint() })
@@ -5004,7 +5104,7 @@ const App = {
     },
     _activate: async (code, phone) => {
         try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbzplTE9vmQWzmtaAaIXMzw8_9U9ck-GJiHLU_m4CArFYEaxjtsJPdq9-5j8FImL1tqcoA/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'activate', phone: phone || 'مستخدم', hash: 'activated_device', code: code.trim(), fingerprint: App._fingerprint() })
@@ -5089,7 +5189,7 @@ const App = {
             const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
             const data = {};
             for (let s of stores) data[s] = await DB.getAll(s);
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbzplTE9vmQWzmtaAaIXMzw8_9U9ck-GJiHLU_m4CArFYEaxjtsJPdq9-5j8FImL1tqcoA/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
@@ -5107,7 +5207,7 @@ const App = {
             } else {
                 const phone = localStorage.getItem('user_phone') || 'guest';
                 const hash = localStorage.getItem('user_hash') || 'guest_device';
-                const resp = await fetch('https://script.google.com/macros/s/AKfycbzplTE9vmQWzmtaAaIXMzw8_9U9ck-GJiHLU_m4CArFYEaxjtsJPdq9-5j8FImL1tqcoA/exec', {
+                const resp = await fetch('https://script.google.com/macros/s/AKfycbyZ-6jJ0X6FWzjHBfYdYf9bJf0eY-pvwuOxZFgxENnMZH_4KsrcsiV3p_JeXKd_NyHi/exec', {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
@@ -5150,7 +5250,6 @@ const App = {
                     cashIn += inv.paidAmount || 0;
                 }
             }
-            // المصروفات والمشتريات النقدية اليوم
             const expenses = todayInvs.filter(inv => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات');
             for (let inv of expenses) {
                 if (inv.paymentMethod === 'كاش') {
@@ -5185,7 +5284,65 @@ const App = {
 };
 
 // =====================================================================
-// 16. SPLASH
+// 16. CUSTOMER SUGGESTIONS FUNCTIONS (المضافة)
+// =====================================================================
+function renderCustomerSuggestions(inputId, suggestionsId) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(suggestionsId);
+    if (!input || !container) return;
+    const q = input.value.trim().toLowerCase();
+    if (!q) {
+        container.style.display = 'none';
+        container.classList.remove('show');
+        return;
+    }
+    const matches = AppState.customers.filter(c => c.name.toLowerCase().includes(q));
+    if (!matches.length) {
+        container.style.display = 'none';
+        container.classList.remove('show');
+        return;
+    }
+    let html = '';
+    matches.slice(0, 10).forEach(c => {
+        html += `<div class="suggestion-item" data-id="${c.id}" style="padding:8px 12px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05); color:#dfdbd6;">${Utils.escape(c.name)}</div>`;
+    });
+    container.innerHTML = html;
+    container.style.display = 'block';
+    container.classList.add('show');
+    container.querySelectorAll('.suggestion-item').forEach(el => {
+        el.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            const name = this.textContent.trim();
+            input.value = name;
+            container.style.display = 'none';
+            container.classList.remove('show');
+            input.blur();
+        });
+    });
+}
+
+function setupCustomerSuggestions(inputId, suggestionsId) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(suggestionsId);
+    if (!input || !container) return;
+    input.addEventListener('input', function() {
+        renderCustomerSuggestions(inputId, suggestionsId);
+    });
+    input.addEventListener('blur', function() {
+        setTimeout(() => {
+            container.style.display = 'none';
+            container.classList.remove('show');
+        }, 200);
+    });
+    input.addEventListener('focus', function() {
+        if (this.value.trim()) {
+            renderCustomerSuggestions(inputId, suggestionsId);
+        }
+    });
+}
+
+// =====================================================================
+// 17. SPLASH
 // =====================================================================
 (function splash() {
     const el = document.getElementById('splashScreen');
@@ -5216,7 +5373,7 @@ const App = {
 })();
 
 // =====================================================================
-// 17. PWA INSTALL BUTTON
+// 18. PWA INSTALL BUTTON
 // =====================================================================
 (function setupInstallButton() {
     const installBtn = document.getElementById('installAppBtn');
