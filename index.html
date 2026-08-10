@@ -5061,13 +5061,31 @@ document.getElementById('addCustomerFromManageBtn').addEventListener('click', fu
                 InvoicesRecordsModule.applyFilter();
             });
         }
+const restoreBtn = document.getElementById('restoreBackupBtn');
+if (restoreBtn) {
+    restoreBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); // منع أي سلوك افتراضي غير مرغوب (مثل فتح الملفات)
+        if (!confirm('سيتم جلب أحدث نسخة سحابية واستبدال البيانات المحلية. متابعة؟')) return;
 
-        const restoreBackupBtn = document.getElementById('restoreBackupBtn');
-        if (restoreBackupBtn) {
-            restoreBackupBtn.addEventListener('click', () => {
-                document.getElementById('restoreFileInput').click();
-            });
+        Utils.toast('⏳ جاري استعادة النسخة السحابية...');
+        const ok = await App.restoreBackup(null);
+
+        if (ok) {
+            Utils.toast('✅ تمت استعادة النسخة السحابية بنجاح');
+            // تحديث كل واجهات البيانات
+            await ItemsModule.load();
+            await InvoicesRecordsModule.load();
+            App.updateQuickStats();
+            ReportsModule.generate();
+            SettingsModule.updateDisplays();
+            InvoiceModule.buildDatalist();
+        } else {
+            Utils.toast('❌ فشل الاستعادة من السحاب. تأكد من اتصال الإنترنت ووجود نسخة سحابية.');
         }
+    });
+}
+           
+        
 
         Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
     },
