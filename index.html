@@ -394,38 +394,37 @@
     ::-webkit-scrollbar-thumb:hover{background:rgba(245,166,35,.4)}
 
     /* ===== التعديلات التجميلية الجديدة ===== */
-    .qty-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        justify-content: center;
-        margin-bottom: 10px;
-    }
-    .qty-btn {
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        background: transparent;
-        border: 2px solid var(--gold);
-        color: var(--gold);
-        font-size: 18px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255,255,255,0.03);
-    }
-    .qty-btn:active {
-        transform: scale(0.88);
-        background: var(--gold);
-        color: #000;
-    }
-    .qty-btn.active {
-        background: var(--gold);
-        color: #000;
-    }
+.qty-btn {
+    width: 56px;               /* زيادة العرض قليلاً */
+    height: 56px;              /* زيادة الارتفاع قليلاً */
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.08);
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;            /* ✅ الأهم: منع امتداد النص عمودياً */
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: visible;         /* ✅ منع قص النص نهائياً */
+    padding: 0;                /* ✅ إزالة أي حشوة داخلية */
+    box-sizing: border-box;
+    text-align: center;
+}
+.qty-btn:active {
+    transform: scale(0.88);
+    background: var(--gold);
+    color: #000;
+}
+.qty-btn.active {
+    background: var(--gold);
+    color: #000;
+    box-shadow: 0 0 20px rgba(245, 166, 35, 0.5);
+} 
     #customQtyInput {
         width: 100%;
         padding: 14px 20px;
@@ -651,7 +650,7 @@
 
     /* ===== RESPONSIVE ===== */
     @media(max-width:480px){.app-container{padding:10px 8px 0}.glass-card{padding:14px 12px}.modal-box{padding:18px 14px}.bottom-nav{padding:4px 4px 8px}.nav-item{padding:4px 6px;min-width:36px}.nav-item .nav-icon{font-size:20px}.nav-item .nav-label{font-size:10px}.welcome-box,.pin-box{padding:20px 16px}.pin-box .pin-dots input{width:40px;height:40px;font-size:20px}.pricing-grid{grid-template-columns:1fr 1fr;gap:8px}.pricing-card{padding:12px 6px}
-            .qty-btn { width: 44px; height: 44px; font-size: 16px; }
+            .qty-btn { width: 50px; height: 50px; font-size: 18px; }
             .quick-sell-btn { font-size: 16px; padding: 12px 8px; }
             .quick-undo-btn { font-size: 14px; padding: 12px 8px; }
         }
