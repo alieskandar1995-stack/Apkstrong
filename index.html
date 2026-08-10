@@ -1751,7 +1751,7 @@ left: 0;
 // =====================================================================
 // 0. SERVER_URL
 // =====================================================================
-const SERVER_URL = "https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec";
 
 // =====================================================================
 // 1. UTILITIES
@@ -5148,7 +5148,7 @@ if (restoreBtn) {
         const phone = localStorage.getItem('user_phone') || 'guest';
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'check', phone, hash, fingerprint: App._fingerprint() })
@@ -5307,7 +5307,7 @@ if (restoreBtn) {
             const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
             const data = {};
             for (let s of stores) data[s] = await DB.getAll(s);
-            const resp = await fetch('https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec', {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
@@ -5325,7 +5325,7 @@ if (restoreBtn) {
             } else {
                 const phone = localStorage.getItem('user_phone') || 'guest';
                 const hash = localStorage.getItem('user_hash') || 'guest_device';
-                const resp = await fetch('https://script.google.com/macros/s/AKfycby9Y6aVg-Eu5QQE5-H21_th3NzL0p6jddIGvIqxGJ4xlE21mUzDIcOLqBBEA3wKy0qZDw/exec', {
+                const resp = await fetch('https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec', {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
