@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes" />
+    <meta name="theme-color" content="#f5a623" />
     <title>احسبلي+ · نظام نقاط بيع</title>
     <link rel="manifest" href="./manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="احسبلي+" />
     <link rel="apple-touch-icon" href="icon-192.png" />
    
@@ -1790,8 +1791,7 @@ const Currency = {
     },
 
     // ====================================================
-    // هذه هي الدوال المفقودة التي طلبت مني إضافتها سابقاً
-    // وهي الآن في المكان الصحيح (خارج أي دالة أخرى)
+    // دوال التكلفة المطلوبة
     // ====================================================
     getHistoricalCostInSYP: function(item) {
         if (!item) return 0;
@@ -3458,16 +3458,21 @@ const InvoiceModule = {
                 let item = null;
                 if (itemId) item = AppState.items.find(i => i.id === itemId);
                 if (row.isNewItem || (!item && AppState.currentInvoiceType === 'purchases')) {
-                    const purchasePrice = row.unitPrice || 0;
+                    // حساب سعر القطعة
+                    let baseUnitPrice = row.unitPrice;
+                    let baseUnit = row.baseUnit || 'قطعة';
+                    if (row.isWholesale && row.wholesaleFactor > 0) {
+                        baseUnitPrice = row.unitPrice / row.wholesaleFactor;
+                        baseUnit = row.baseUnit || 'قطعة';
+                    }
                     const rateNow = Currency.rate;
-                    const usdPrice = rateNow > 0 ? purchasePrice / rateNow : 0;
+                    const usdPrice = rateNow > 0 ? baseUnitPrice / rateNow : 0;
                     const wholesaleFactor = row.wholesaleFactor || 1;
                     const wholesaleUnit = row.wholesaleUnit || '';
-                    const baseUnit = row.baseUnit || 'قطعة';
                     const ni = {
                         name: row.itemName.trim(),
                         unit: baseUnit,
-                        purchasePrice: Currency.makeObj(purchasePrice, 'old'),
+                        purchasePrice: Currency.makeObj(baseUnitPrice, 'old'),
                         retailPrice: Currency.makeObj(0, 'old'),
                         wholesalePrice: Currency.makeObj(0, 'old'),
                         wholesaleUnit: wholesaleUnit,
@@ -3482,23 +3487,28 @@ const InvoiceModule = {
                     };
                     itemId = await DB.add('items', ni);
                     item = { ...ni, id: itemId };
-                    newItems.push({ id: itemId, name: row.itemName.trim(), purchasePrice: purchasePrice });
+                    newItems.push({ id: itemId, name: row.itemName.trim(), purchasePrice: baseUnitPrice });
                     AppState.items.push(item);
                 } else if (item && AppState.currentInvoiceType === 'purchases') {
+                    // تحديث الصنف الموجود
+                    let newBasePrice = row.unitPrice;
+                    if (row.isWholesale && row.wholesaleFactor > 0) {
+                        newBasePrice = row.unitPrice / row.wholesaleFactor;
+                    }
                     const oldP = Currency.getPrice(item.purchasePrice);
-                    if (row.unitPrice > oldP) {
-                        item.purchasePrice = Currency.makeObj(row.unitPrice, 'old');
+                    if (newBasePrice > oldP) {
+                        item.purchasePrice = Currency.makeObj(newBasePrice, 'old');
                         const rateNow2 = Currency.rate;
-                        item.purchasePriceUSD = rateNow2 > 0 ? row.unitPrice / rateNow2 : 0;
+                        item.purchasePriceUSD = rateNow2 > 0 ? newBasePrice / rateNow2 : 0;
                         item.exchangeRateAtPurchase = rateNow2;
                         item.priceUpdated = true;
                         item.newItem = false;
-                        if (!newItems.find(n => n.id === item.id)) newItems.push({ id: item.id, name: item.name, purchasePrice: row.unitPrice });
+                        if (!newItems.find(n => n.id === item.id)) newItems.push({ id: item.id, name: item.name, purchasePrice: newBasePrice });
                     }
                     if (row.isWholesale && row.wholesaleUnit && row.wholesaleFactor > 0) {
                         item.wholesaleUnit = row.wholesaleUnit;
                         item.wholesaleUnitFactor = row.wholesaleFactor;
-                        if (row.unitPrice > 0 && row.isWholesale) { item.wholesalePrice = Currency.makeObj(row.unitPrice, 'old'); }
+                        // لا نعدل wholesalePrice هنا (يبقى سعر بيع الجملة)
                     }
                     const qtyToAdd = row.isWholesale ? row.quantity * row.wholesaleFactor : row.quantity;
                     item.quantity = (item.quantity || 0) + qtyToAdd;
