@@ -450,9 +450,11 @@
         gap: 12px;
         margin-top: 16px;
         width: 100%;
+        flex-wrap: wrap; /* ⬅️ إضافة */
     }
     .quick-sell-btn {
-        flex: 3;
+        flex: 1 1 auto;      /* ⬅️ تعديل */
+        min-width: 80px;     /* ⬅️ إضافة */
         background: linear-gradient(135deg, #f7d875, #e8a317);
         color: #0a0a0a;
         font-weight: 700;
@@ -474,7 +476,8 @@
         box-shadow: 0 4px 14px rgba(245, 166, 35, 0.6);
     }
     .quick-undo-btn {
-        flex: 1;
+        flex: 1 1 auto;      /* ⬅️ تعديل */
+        min-width: 80px;     /* ⬅️ إضافة */
         background: rgba(255, 70, 70, 0.12);
         color: #ff6b6b;
         border: 2px solid rgba(255, 70, 70, 0.25);
@@ -506,6 +509,10 @@
         align-items: center;
         gap: 4px;
         position: relative;
+        box-sizing: border-box;   /* ⬅️ إضافة */
+        word-break: break-word;   /* ⬅️ إضافة */
+        overflow: hidden;         /* ⬅️ إضافة */
+        width: 100%;              /* ⬅️ إضافة */
     }
     .quick-item-btn:active {
         transform: scale(0.94);
@@ -516,6 +523,8 @@
         font-weight: 600;
         color: var(--text2);
         line-height: 1.3;
+        max-width: 100%;          /* ⬅️ إضافة */
+        white-space: normal;      /* ⬅️ إضافة */
     }
     .quick-item-btn .item-price {
         font-size: 18px;
@@ -950,6 +959,61 @@ left: 0;
     .pos-search-area {
         position: relative;
     }
+
+    /* ===== بداية التعديلات الجديدة لضبط أبعاد الوضع السريع ===== */
+    #quickModeContainer {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+        overflow-x: hidden;
+    }
+
+    /* ===== وسائط العرض الإضافية للشاشات الصغيرة ===== */
+    @media (max-width: 600px) {
+        #quickModeContainer {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .quick-item-btn {
+            padding: 10px 4px;
+        }
+        .quick-item-btn .item-name {
+            font-size: 13px;
+        }
+        .quick-item-btn .item-price {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        #quickModeContainer {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .quick-item-btn {
+            padding: 12px 8px;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quick-item-btn .item-name {
+            font-size: 15px;
+            flex: 2;
+            text-align: right;
+        }
+        .quick-item-btn .item-price {
+            font-size: 16px;
+            flex: 1;
+            text-align: left;
+        }
+        .quick-item-btn .item-qty-label {
+            font-size: 12px;
+            flex-basis: 100%;
+            text-align: center;
+        }
+    }
+    /* ===== نهاية التعديلات الجديدة ===== */
     </style>
 </head>
 <body>
@@ -2720,8 +2784,8 @@ renderCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions
         const chips = document.getElementById('quickModeChipsContainer');
         if (hasItems) { chips.style.display = 'flex'; RetailModule.renderChips(); } else chips.style.display = 'none';
         container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(3, 1fr)';
-        container.style.gap = '10px';
+        
+        
         const q = AppState.quickModeSearch.trim().toLowerCase();
         let items = [...AppState.items];
         if (q) items = items.filter(it => it.name.toLowerCase().includes(q));
@@ -4542,6 +4606,31 @@ checkItemsAfterRateChange();
         App.updateRetailCustomerDatalist();
     }
 };
+// =====================================================================
+// دالة لإعادة ضبط مودال العملاء إلى الوضع الافتراضي
+// =====================================================================
+function resetCustomerModalToDefault() {
+    // إعادة التسميات
+    const nameLabel = document.querySelector('#customerAddModal .form-group:first-child label');
+    if (nameLabel) nameLabel.textContent = 'الاسم *';
+    
+    const phoneLabel = document.querySelector('#customerAddModal .form-group:nth-child(2) label');
+    if (phoneLabel) phoneLabel.textContent = 'الهاتف';
+    
+    const addressLabel = document.querySelector('#customerAddModal .form-group:nth-child(3) label');
+    if (addressLabel) addressLabel.textContent = 'العنوان';
+
+    // إعادة الـ placeholders
+    document.getElementById('customerAddName').placeholder = 'الاسم *';
+    document.getElementById('customerAddPhone').placeholder = 'الهاتف';
+    document.getElementById('customerAddAddress').placeholder = 'العنوان';
+
+    // إعادة اسم زر الحفظ
+    document.getElementById('customerAddSave').textContent = 'حفظ';
+    
+    // إعادة عنوان المودال الأساسي
+    document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
+}
 
 // =====================================================================
 // 14. DEBTS MODULE
@@ -4605,6 +4694,7 @@ const DebtsModule = {
         });
     },
     showManualDebtModal: function() {
+    resetCustomerModalToDefault(); // <--
         const modal = document.getElementById('customerAddModal');
         document.getElementById('customerAddModalTitle').textContent = '➕ إضافة دين يدوي';
         const nameLabel = document.querySelector('#customerAddModal .form-group:first-child label');
@@ -5038,9 +5128,13 @@ document.getElementById('addCustomerFromManageBtn').addEventListener('click', fu
         if (closeCustomerManage) {
             closeCustomerManage.addEventListener('click', () => document.getElementById('customerManageModal').classList.remove('open'));
         }
-        const customerAddCancel = document.getElementById('customerAddCancel');
-        if (customerAddCancel) {
-            customerAddCancel.addEventListener('click', () => document.getElementById('customerAddModal').classList.remove('open'));
+      const customerAddCancel = document.getElementById('customerAddCancel');
+if (customerAddCancel) {
+    customerAddCancel.addEventListener('click', function() {
+        document.getElementById('customerAddModal').classList.remove('open');
+        resetCustomerModalToDefault(); // <-- إضافة هذا السطر
+    });
+}
         }
         const customerAddSave = document.getElementById('customerAddSave');
         if (customerAddSave) {
@@ -5085,7 +5179,6 @@ if (restoreBtn) {
     });
 }
            
-        
 
         Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
     },
