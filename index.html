@@ -962,57 +962,16 @@ left: 0;
 
     /* ===== بداية التعديلات الجديدة لضبط أبعاد الوضع السريع ===== */
     #quickModeContainer {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 10px;
-        overflow-x: hidden;
-    }
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    overflow-x: hidden;
+}
+    
 
     /* ===== وسائط العرض الإضافية للشاشات الصغيرة ===== */
-    @media (max-width: 600px) {
-        #quickModeContainer {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-        .quick-item-btn {
-            padding: 10px 4px;
-        }
-        .quick-item-btn .item-name {
-            font-size: 13px;
-        }
-        .quick-item-btn .item-price {
-            font-size: 16px;
-        }
-    }
-
-    @media (max-width: 400px) {
-        #quickModeContainer {
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-        .quick-item-btn {
-            padding: 12px 8px;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .quick-item-btn .item-name {
-            font-size: 15px;
-            flex: 2;
-            text-align: right;
-        }
-        .quick-item-btn .item-price {
-            font-size: 16px;
-            flex: 1;
-            text-align: left;
-        }
-        .quick-item-btn .item-qty-label {
-            font-size: 12px;
-            flex-basis: 100%;
-            text-align: center;
-        }
-    }
+  
+    
     /* ===== نهاية التعديلات الجديدة ===== */
     </style>
 </head>
