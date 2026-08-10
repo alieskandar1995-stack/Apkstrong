@@ -4432,14 +4432,17 @@ const SettingsModule = {
         }
 
         const backupBtn = document.getElementById('manualBackupBtn');
-        if (backupBtn) {
-            backupBtn.addEventListener('click', async () => {
-                Utils.toast('⏳ جاري النسخ الاحتياطي...');
-                await App.performBackup();
-                Utils.toast('✅ تم النسخ إلى السحاب');
-            });
+if (backupBtn) {
+    backupBtn.addEventListener('click', async () => {
+        Utils.toast('⏳ جاري النسخ الاحتياطي...');
+        const success = await App.performBackup();
+        if (success) {
+            Utils.toast('✅ تم النسخ إلى السحاب بنجاح');
+        } else {
+            Utils.toast('❌ فشل النسخ إلى السحاب. تأكد من اتصال الإنترنت.');
         }
-
+    });
+}
         const restoreBtn = document.getElementById('restoreBackupBtn');
         if (restoreBtn) {
             restoreBtn.addEventListener('click', async () => {
@@ -4662,7 +4665,7 @@ const DebtsModule = {
         const nameLabel = document.querySelector('#customerAddModal .form-group:first-child label');
         if (nameLabel) nameLabel.textContent = '👤 اسم المدين';
         const phoneLabel = document.querySelector('#customerAddModal .form-group:nth-child(2) label');
-        if (phoneLabel) phoneLabel.textContent = '💰 المبلغ';
+        if (phoneLabel) phoneLabel.textContent = '?? المبلغ';
         document.getElementById('customerAddName').placeholder = 'اسم المدين';
         const curSymbol = Currency.display === 'usd' ? '$' : Currency.display === 'new' ? 'ل.س.ج' : 'ل.س';
         document.getElementById('customerAddPhone').placeholder = `المبلغ (${curSymbol})`;
@@ -5148,7 +5151,7 @@ if (restoreBtn) {
         const phone = localStorage.getItem('user_phone') || 'guest';
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         try {
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec', {
+            const resp = await fetch(SERVER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'check', phone, hash, fingerprint: App._fingerprint() })
@@ -5301,21 +5304,31 @@ if (restoreBtn) {
         });
     },
     performBackup: async () => {
-        try {
-            const phone = localStorage.getItem('user_phone') || 'guest';
-            const hash = localStorage.getItem('user_hash') || 'guest_device';
-            const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
-            const data = {};
-            for (let s of stores) data[s] = await DB.getAll(s);
-            const resp = await fetch('https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec', {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
-            });
-            const json = await resp.json();
-            if (json && json.success) { localStorage.setItem('last_backup_time', Date.now().toString()); SettingsModule.updateDisplays(); }
-        } catch(e) { console.warn('Backup failed:', e); }
-    },
+    try {
+        const phone = localStorage.getItem('user_phone') || 'guest';
+        const hash = localStorage.getItem('user_hash') || 'guest_device';
+        const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
+        const data = {};
+        for (let s of stores) data[s] = await DB.getAll(s);
+        const resp = await fetch(SERVER_URL, {  // ✅ استخدم SERVER_URL بدلاً من الرابط الثابت
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
+        });
+        const json = await resp.json();
+        if (json && json.success) {
+            localStorage.setItem('last_backup_time', Date.now().toString());
+            SettingsModule.updateDisplays();
+            return true;  // ✅ نجاح
+        } else {
+            console.warn('Backup failed:', json);
+            return false; // ❌ فشل (السيرفر رد بفشل)
+        }
+    } catch(e) {
+        console.warn('Backup error:', e);
+        return false; // ❌ فشل (خطأ في الشبكة أو السيرفر)
+    }
+},
     restoreBackup: async (file) => {
         try {
             let backupData = null;
@@ -5325,7 +5338,7 @@ if (restoreBtn) {
             } else {
                 const phone = localStorage.getItem('user_phone') || 'guest';
                 const hash = localStorage.getItem('user_hash') || 'guest_device';
-                const resp = await fetch('https://script.google.com/macros/s/AKfycbztZfYuK9uxYD075Sqr0eyie4Phn6fqYpelACG6CbNuu6uu01CckXmpucoocRJ1e6BPTQ/exec', {
+                const resp = await fetch(SERVER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
