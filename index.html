@@ -510,7 +510,11 @@
         position: relative;
         box-sizing: border-box;   /* ⬅️ إضافة */
         word-break: break-word;   /* ⬅️ إضافة */
-        overflow: hidden;         /* ⬅️ إضافة */
+.quick-item-btn {
+    /* ... */
+    overflow: visible;   /* ⬅️ الحل السحري */
+    /* ... */
+} 
         width: 100%;              /* ⬅️ إضافة */
     }
     .quick-item-btn:active {
