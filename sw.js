@@ -3,7 +3,7 @@
 // الإصدار: v11.0.0
 // ============================================================
 
-const CACHE_NAME = 'hasbali-v25';
+const CACHE_NAME = 'hasbali-v26';
 const OFFLINE_URL = '/index.html';
 
 // قائمة الملفات المطلوب تخزينها مسبقاً
