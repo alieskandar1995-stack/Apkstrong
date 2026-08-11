@@ -10,7 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="احسبلي+" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-   
+    <!-- CryptoJS للتحقق من الكود محلياً -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
     /* ===== تنسيق مودال تسعير الأصناف ===== */
     .pricing-modal-item {
@@ -986,30 +987,40 @@ left: 0;
 <!-- ===== WELCOME ===== -->
 <div id="welcomeScreen">
     <div class="welcome-box">
-        <button class="back-btn" id="welcomeBackBtn">↩️</button>
         <h1>🏷️ احسبلي+</h1>
-        <p>نظام نقاط بيع متكامل لإدارة المبيعات والمخزون</p>
+        <p style="color:var(--text3); font-size:14px;">أدخل رقم هاتفك، اختر الباقة، ثم اطلب الاشتراك أو أدخل الكود إن كنت تملكه.</p>
         <div class="form-group">
-            <label>📱 رقم الهاتف (للتجربة والتفعيل)</label>
+            <label>📱 رقم الهاتف (للتسجيل والتفعيل)</label>
             <input type="tel" id="welcomePhone" placeholder="مثال: 966512345678" />
         </div>
-        <button class="btn btn-gold" id="startTrialBtn">🚀 ابدأ التجربة المجانية (14 يوماً)</button>
-        <div class="divider"><hr> أو <hr></div>
-        <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;">
-            <input type="text" id="activationCodeInput" placeholder="رمز التفعيل (8 أرقام)" maxlength="8" style="width:100%;padding:12px 16px;border-radius:40px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;outline:none;text-align:center;box-sizing:border-box;" />
-            <button class="btn btn-gold-outline" id="activateCodeBtn" style="width:100%;">تفعيل</button>
-        </div>
-        <div style="margin:16px 0 12px;text-align:center;">
-            <h3 style="color:var(--text2);font-size:16px;margin-bottom:12px;">📋 اختر خطتك المناسبة</h3>
+
+        <!-- الباقات -->
+        <div style="margin:16px 0 12px;">
+            <h3 style="color:var(--text2); font-size:16px; margin-bottom:12px;">📋 اختر الباقة المناسبة</h3>
             <div class="pricing-grid">
-                <div class="pricing-card"><div class="plan-name">شهري</div><div class="plan-desc">شهر واحد</div><button class="btn-select-plan" data-plan="شهري">اختر الخطة</button></div>
-                <div class="pricing-card popular"><div class="plan-name">نصف سنوي</div><div class="plan-desc">6 أشهر</div><div class="plan-savings">🔥 وفر شهراً مجاناً</div><button class="btn-select-plan" data-plan="نصف سنوي">اختر الخطة</button></div>
-                <div class="pricing-card"><div class="plan-name">سنوي</div><div class="plan-desc">12 شهراً</div><div class="plan-savings">🎯 وفر 31%</div><button class="btn-select-plan" data-plan="سنوي">اختر الخطة</button></div>
-                <div class="pricing-card" style="border:2px solid var(--gold);background:rgba(245,166,35,.08);"><div class="plan-name" style="color:var(--gold);font-weight:700;">مدى الحياة</div><div class="plan-desc">دفعة واحدة</div><div class="plan-savings">⭐ أفضل قيمة</div><button class="btn-select-plan" data-plan="مدى الحياة" style="background:var(--gold);color:var(--bg);">اختر الخطة</button></div>
+                <div class="pricing-card"><div class="plan-name">شهري</div><div class="plan-desc">شهر واحد</div><button class="btn-select-plan" data-plan="monthly">اختر</button></div>
+                <div class="pricing-card popular"><div class="plan-name">نصف سنوي</div><div class="plan-desc">6 أشهر</div><div class="plan-savings">🔥 وفر شهراً</div><button class="btn-select-plan" data-plan="half_yearly">اختر</button></div>
+                <div class="pricing-card"><div class="plan-name">سنوي</div><div class="plan-desc">12 شهراً</div><div class="plan-savings">🎯 وفر 31%</div><button class="btn-select-plan" data-plan="yearly">اختر</button></div>
+                <div class="pricing-card" style="border:2px solid var(--gold);background:rgba(245,166,35,.08);"><div class="plan-name" style="color:var(--gold);font-weight:700;">مدى الحياة</div><div class="plan-desc">دفعة واحدة</div><div class="plan-savings">⭐ أفضل قيمة</div><button class="btn-select-plan" data-plan="forever">اختر</button></div>
             </div>
         </div>
+
+        <!-- كود التفعيل -->
+        <div class="form-group">
+            <label>🔑 كود التفعيل (إن كنت تملك واحداً)</label>
+            <input type="text" id="activationCodeInput" maxlength="8" placeholder="أدخل الكود (8 أرقام)" style="text-align:center;" />
+        </div>
+
+        <!-- أزرار الإجراء -->
+        <button class="btn btn-gold" id="activateCodeBtn" style="width:100%; margin-top:6px;">🚀 تفعيل الاشتراك</button>
+        <button class="btn btn-gold-outline" id="startTrialBtn" style="width:100%; margin-top:8px;">🎁 بدء تجربة مجانية (14 يوماً)</button>
+        
+        <div class="divider"><hr> أو <hr></div>
+
         <button class="whatsapp-btn" id="whatsappSupportBtn">💬 طلب اشتراك عبر واتساب</button>
-        <div style="margin-top:16px;font-size:13px;color:var(--text4);">لديك كود تفعيل؟ أدخله أعلاه</div>
+        
+        <div id="activationMessage" style="margin-top:12px; color:#ff6b6b; font-weight:600; text-align:center;"></div>
+        <div style="margin-top:16px; font-size:13px; color:var(--text4); text-align:center;">📌 عند بدء التجربة، سيتم تسجيل رقمك وبصمة جهازك في السحاب.</div>
     </div>
 </div>
 
@@ -1745,9 +1756,9 @@ left: 0;
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 // =====================================================================
-// 0. SERVER_URL
+// 0. SERVER_URL (تم تحديثه)
 // =====================================================================
-const SERVER_URL = "https://script.google.com/macros/s/AKfycbyq8RsMNXFZiNDbfXkHCXpM1bcImq7u9V7z2Fdf6Khp6JDWWYKmDxJS6u5Dppuf1YPL/exec";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbylYMl-XmrzOww3uNy07wrRU9f04LnRJyWbLGWBPHza8MGXVxGECLIJjj5W33c4JR0E/exec";
 
 // =====================================================================
 // 1. UTILITIES
@@ -4728,7 +4739,7 @@ const DebtsModule = {
 };
 
 // =====================================================================
-// 15. APP
+// 15. APP (المعدل لاستخدام نظام الأكواد والتجربة)
 // =====================================================================
 const App = {
     init: async () => {
@@ -4756,160 +4767,197 @@ const App = {
             r.checked = r.value === AppState.valuationMethod;
         });
 
-        let hasAccess = false;
-        try { hasAccess = await App._checkAccess(); } catch(e) { console.warn('Access check error:', e); }
+        // ========================================================
+        //  الجديد: التحقق من الاشتراك (محلياً ومن السيرفر)
+        // ========================================================
+        const phone = localStorage.getItem('user_phone') || '';
+        const fingerprint = getDeviceFingerprint();
+        let subscriptionValid = false;
+        let isBlocked = false;
 
-        if (!hasAccess) {
-            document.getElementById('welcomeScreen').classList.add('open');
-            document.getElementById('app').style.display = 'none';
-        } else {
-            document.getElementById('welcomeScreen').classList.remove('open');
-            document.getElementById('app').style.display = 'flex';
-            App._checkPin();
+        if (phone && fingerprint) {
+            // 1. التحقق المحلي من الاشتراك
+            const localSub = checkLocalSubscription();
+            if (localSub && localSub.valid) {
+                subscriptionValid = true;
+            } else {
+                subscriptionValid = false;
+            }
+
+            // 2. التحقق من السيرفر (حظر وتحديث الصلاحية)
+            try {
+                const status = await checkUserStatusOnline(phone, fingerprint);
+                if (status.success) {
+                    isBlocked = status.blocked === true;
+                    if (isBlocked) {
+                        subscriptionValid = false;
+                    }
+                    // تحديث الاشتراك المحلي إذا تغير من السيرفر (اختياري)
+                    if (status.subscriptionExpiry) {
+                        const expiryDate = new Date(status.subscriptionExpiry);
+                        const currentSub = JSON.parse(localStorage.getItem('subscription') || '{}');
+                        if (currentSub.phone === phone) {
+                            currentSub.expiry = expiryDate.toISOString();
+                            currentSub.plan = status.plan || currentSub.plan;
+                            localStorage.setItem('subscription', JSON.stringify(currentSub));
+                        }
+                    }
+                } else {
+                    console.warn('فشل التحقق من السيرفر، نعتمد على المحلي');
+                }
+            } catch(e) {
+                console.warn('خطأ في التحقق من السيرفر:', e);
+            }
         }
 
+        // إذا كان محظوراً، نعرض رسالة ونمنع الدخول
+        if (isBlocked) {
+            const msgEl = document.getElementById('activationMessage');
+            if (msgEl) {
+                msgEl.textContent = '🚫 تم حظر حسابك. يرجى التواصل مع الدعم الفني.';
+                msgEl.style.color = '#ff6b6b';
+            }
+            document.getElementById('welcomeScreen').classList.add('open');
+            document.getElementById('app').style.display = 'none';
+            Utils.toast('🚫 تم حظر حسابك. يرجى التواصل مع الدعم الفني.', 5000);
+            return;
+        }
+
+        if (!subscriptionValid) {
+            // إظهار شاشة الترحيب
+            document.getElementById('welcomeScreen').classList.add('open');
+            document.getElementById('app').style.display = 'none';
+            const msgEl = document.getElementById('activationMessage');
+            if (msgEl) {
+                msgEl.textContent = '📌 يرجى بدء تجربة مجانية أو إدخال كود التفعيل للوصول إلى التطبيق.';
+                msgEl.style.color = 'var(--text3)';
+            }
+            return;
+        }
+
+        // ========================================================
+        //  الاشتراك صالح: إخفاء شاشة الترحيب وإظهار التطبيق
+        // ========================================================
+        document.getElementById('welcomeScreen').classList.remove('open');
+        document.getElementById('app').style.display = 'flex';
+        App._checkPin();
+
+        // تحميل البيانات الأساسية
         try {
             await ItemsModule.load();
             AppState.customers = await DB.getAll('contacts');
             await InvoicesRecordsModule.load();
         } catch(e) { console.warn('Data load error:', e); }
 
+        // تهيئة التبويبات
         document.querySelector('.nav-item[data-tab="invoices"]')?.classList.add('active');
         document.getElementById('panel-invoices').classList.add('active');
         InvoiceModule.resetUI();
 
+        // التقارير
         const now = new Date();
         const first = new Date(now.getFullYear(), now.getMonth(), 1);
         document.getElementById('reportDateFrom').value = first.toISOString().split('T')[0];
         document.getElementById('reportDateTo').value = now.toISOString().split('T')[0];
-
         try { await ReportsModule.generate(); } catch(e) { console.warn('Report generate error:', e); }
         App.updateQuickStats();
 
+        // تهيئة الوحدات
         try { RetailModule.init(); } catch(e) { console.warn('RetailModule init error:', e); }
         try { InvoiceModule.init(); } catch(e) { console.warn('InvoiceModule init error:', e); }
         try { SettingsModule.init(); } catch(e) { console.warn('SettingsModule init error:', e); }
 
-        // تفعيل اقتراحات العملاء بعد تحميل العملاء
+        // تفعيل اقتراحات العملاء
         setupCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
         setupCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
 
+        // ربط الأحداث (مثل الأزرار)
+        this.bindEvents();
+
+        Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
+    },
+
+    bindEvents: function() {
+        // زر الإعدادات
         document.getElementById('settingsGearBtn').addEventListener('click', function() {
             const settingsTab = document.querySelector('.nav-item[data-tab="settings"]');
-            if (settingsTab) { settingsTab.click(); } else {
-                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                document.getElementById('panel-settings').classList.add('active');
+            if (settingsTab) { settingsTab.click(); }
+        });
+
+        // فتح إضافة صنف
+        document.getElementById('openItemModalBtn').addEventListener('click', () => ItemsModule.openAdd());
+
+        // زر التعديل والحذف في عرض الصنف
+        document.getElementById('viewEditBtn').addEventListener('click', function() {
+            const id = Number(this.dataset.id);
+            if (id) ItemsModule.switchToEdit(id);
+        });
+        document.getElementById('viewDeleteBtn').addEventListener('click', function() {
+            const id = Number(this.dataset.id);
+            if (id) ItemsModule.deleteItem(id);
+        });
+        document.getElementById('viewCloseBtn').addEventListener('click', () => ItemsModule.closeView());
+
+        // إلغاء التعديل
+        document.getElementById('editCancelBtn').addEventListener('click', () => ItemsModule.cancelEdit());
+
+        // حفظ الصنف من الفورم
+        document.getElementById('itemForm').addEventListener('submit', (e) => ItemsModule.saveFromForm(e));
+
+        // مسح الباركود
+        document.getElementById('scanBarcodeBtn').addEventListener('click', () => {
+            RetailModule.startScanner('itemBarcode', (result) => {
+                document.getElementById('itemBarcode').value = result;
+                Utils.toast('✅ تم مسح الباركود');
+            });
+        });
+
+        // إغلاق مودال الصنف عند الضغط خارجياً
+        document.getElementById('itemModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                if (document.getElementById('itemViewMode').style.display !== 'none') ItemsModule.closeView();
+                else ItemsModule.cancelEdit();
             }
         });
 
-        const openItemBtn = document.getElementById('openItemModalBtn');
-        if (openItemBtn) openItemBtn.addEventListener('click', () => ItemsModule.openAdd());
-
-        const viewEditBtn = document.getElementById('viewEditBtn');
-        if (viewEditBtn) { viewEditBtn.addEventListener('click', function() { const id = Number(this.dataset.id); if (id) ItemsModule.switchToEdit(id); }); }
-        const viewDeleteBtn = document.getElementById('viewDeleteBtn');
-        if (viewDeleteBtn) { viewDeleteBtn.addEventListener('click', function() { const id = Number(this.dataset.id); if (id) ItemsModule.deleteItem(id); }); }
-        const viewCloseBtn = document.getElementById('viewCloseBtn');
-        if (viewCloseBtn) viewCloseBtn.addEventListener('click', () => ItemsModule.closeView());
-
-        const editCancelBtn = document.getElementById('editCancelBtn');
-        if (editCancelBtn) editCancelBtn.addEventListener('click', () => ItemsModule.cancelEdit());
-
-        const itemForm = document.getElementById('itemForm');
-        if (itemForm) itemForm.addEventListener('submit', (e) => ItemsModule.saveFromForm(e));
-
-        const scanBarcodeBtn = document.getElementById('scanBarcodeBtn');
-        if (scanBarcodeBtn) {
-            scanBarcodeBtn.addEventListener('click', () => {
-                RetailModule.startScanner('itemBarcode', (result) => {
-                    document.getElementById('itemBarcode').value = result;
-                    Utils.toast('✅ تم مسح الباركود');
-                });
-            });
-        }
-
-        const itemModal = document.getElementById('itemModal');
-        if (itemModal) {
-            itemModal.addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) {
-                    if (document.getElementById('itemViewMode').style.display !== 'none') { ItemsModule.closeView(); } else { ItemsModule.cancelEdit(); }
-                }
-            });
-        }
-
-        const bottomNav = document.getElementById('bottomNav');
-        if (bottomNav) {
-            bottomNav.addEventListener('click', (e) => {
-                const btn = e.target.closest('.nav-item');
-                if (!btn) return;
-                const tab = btn.dataset.tab;
-                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                const panel = document.getElementById('panel-' + tab);
-                if (panel) panel.classList.add('active');
-                document.getElementById('suggestionsBox')?.classList.remove('show');
-                if (tab === 'items') ItemsModule.load();
-                if (tab === 'invoices') {
-                    InvoiceModule.resetUI();
-                    InvoicesRecordsModule.load();
-                    RetailModule.applyMode();
-                }
-                if (tab === 'reports') {
-                    const n = new Date();
-                    document.getElementById('reportDateFrom').value = new Date(n.getFullYear(), n.getMonth(), 1).toISOString().split('T')[0];
-                    document.getElementById('reportDateTo').value = n.toISOString().split('T')[0];
-                    ReportsModule.generate();
-                }
-                if (tab === 'settings') { SettingsModule.renderFixedExpenses(); document.getElementById('exchangeRateInput').value = Currency.rate; SettingsModule.updateDisplays(); }
-                if (tab === 'retail') RetailModule.applyMode();
-                if (tab === 'debts') {
-                    if (typeof DebtsModule !== 'undefined' && DebtsModule.load) { DebtsModule.load(); }
-                }
-                if (tab !== 'invoices' && tab !== 'retail' && tab !== 'debts') {
-                    const exchangeBar = document.getElementById('exchangeRateBar');
-                    const statsBar = document.getElementById('quickStats');
-                    if (exchangeBar) exchangeBar.style.display = 'flex';
-                    if (statsBar) statsBar.style.display = 'flex';
-                }
-                if (tab === 'retail' && AppState.quickModeEnabled) { /* keep */ } else {
-                    const bottomBar = document.getElementById('quickModeBottomBar');
-                    if (bottomBar) bottomBar.style.display = 'none';
-                }
-                if (tab === 'reports') {
-                    document.querySelectorAll('.reports-tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelector('.reports-tab-btn[data-tab="analytics"]')?.classList.add('active');
-                    document.querySelectorAll('.reports-tab-content').forEach(el => el.style.display = 'none');
-                    document.getElementById('reportsAnalytics').style.display = 'block';
-                }
-            });
-        }
-
-        document.querySelectorAll('.invoice-records-filter .filter-btn').forEach(b => {
-            b.addEventListener('click', function() {
-                document.querySelectorAll('.invoice-records-filter .filter-btn').forEach(b2 => b2.classList.remove('active'));
-                this.classList.add('active');
-                AppState.currentFilter = this.dataset.filter;
-                InvoicesRecordsModule.applyFilter();
-            });
+        // التنقل عبر التبويبات
+        document.getElementById('bottomNav').addEventListener('click', (e) => {
+            const btn = e.target.closest('.nav-item');
+            if (!btn) return;
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            const panel = document.getElementById('panel-' + tab);
+            if (panel) panel.classList.add('active');
+            document.getElementById('suggestionsBox')?.classList.remove('show');
+            if (tab === 'items') ItemsModule.load();
+            if (tab === 'invoices') { InvoiceModule.resetUI(); InvoicesRecordsModule.load(); RetailModule.applyMode(); }
+            if (tab === 'reports') {
+                const n = new Date();
+                document.getElementById('reportDateFrom').value = new Date(n.getFullYear(), n.getMonth(), 1).toISOString().split('T')[0];
+                document.getElementById('reportDateTo').value = n.toISOString().split('T')[0];
+                ReportsModule.generate();
+            }
+            if (tab === 'settings') { SettingsModule.renderFixedExpenses(); document.getElementById('exchangeRateInput').value = Currency.rate; SettingsModule.updateDisplays(); }
+            if (tab === 'retail') RetailModule.applyMode();
+            if (tab === 'debts') { if (typeof DebtsModule !== 'undefined' && DebtsModule.load) DebtsModule.load(); }
         });
 
-        const exchangeBtn = document.getElementById('exchangeRateTopBtn');
-        if (exchangeBtn) {
-            exchangeBtn.addEventListener('click', async () => {
-                const val = parseFloat(document.getElementById('exchangeRateTop').value);
-                if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
-                Currency.rate = val;
-                await DB.put('metadata', { key: 'exchangeRate', value: val });
-                document.getElementById('exchangeRateInput').value = val;
-                document.getElementById('exchangeRateTop').value = val;
-                App.updateAllDisplays();
-                Utils.toast('✅ تم تحديث سعر الصرف');
-                checkItemsAfterRateChange();
-            });
-        }
+        // تحديث سعر الصرف
+        document.getElementById('exchangeRateTopBtn').addEventListener('click', async () => {
+            const val = parseFloat(document.getElementById('exchangeRateTop').value);
+            if (isNaN(val) || val <= 0) { Utils.toast('⚠️ سعر صحيح'); return; }
+            Currency.rate = val;
+            await DB.put('metadata', { key: 'exchangeRate', value: val });
+            document.getElementById('exchangeRateInput').value = val;
+            document.getElementById('exchangeRateTop').value = val;
+            App.updateAllDisplays();
+            Utils.toast('✅ تم تحديث سعر الصرف');
+            checkItemsAfterRateChange();
+        });
 
+        // تبديل العملة
         document.querySelectorAll('.currency-toggle button').forEach(b => {
             b.addEventListener('click', function() {
                 const cur = this.dataset.cur;
@@ -4920,356 +4968,187 @@ const App = {
             });
         });
 
-        setInterval(App.updateQuickStats, 30000);
-        setInterval(App.performBackup, 300000);
-
-        if ('serviceWorker' in navigator) {
-            const registerSW = () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => {
-                        console.log('✅ SW (v11) مسجل بنجاح');
-                        setInterval(() => reg.update(), 60000);
-                    })
-                    .catch(err => {
-                        console.warn('⚠️ فشل تسجيل SW، إعادة المحاولة بعد 30 ثانية:', err);
-                        setTimeout(registerSW, 30000);
-                    });
-            };
-            registerSW();
-        }
-
-        const startTrial = document.getElementById('startTrialBtn');
-        if (startTrial) {
-            startTrial.addEventListener('click', async () => {
-                const phone = document.getElementById('welcomePhone').value.trim();
-                if (phone.length < 6) { Utils.toast('⚠️ رقم هاتف صحيح'); return; }
-                const ok = await App._startTrial(phone);
-                if (ok) {
-                    const acc = await App._checkAccess();
-                    if (acc) {
-                        document.getElementById('welcomeScreen').classList.remove('open');
-                        document.getElementById('app').style.display = 'flex';
-                        App._checkPin();
-                        await ItemsModule.load();
-                        AppState.customers = await DB.getAll('contacts');
-                        await InvoicesRecordsModule.load();
-                        App.updateQuickStats();
-                        SettingsModule.updateDisplays();
-                        InvoiceModule.buildDatalist();
-                    }
+        // أزرار شاشة الترحيب (التجربة والتفعيل)
+        document.getElementById('startTrialBtn').addEventListener('click', async function() {
+            const phone = document.getElementById('welcomePhone').value.trim();
+            if (!phone || phone.length < 10) { Utils.toast('⚠️ رقم هاتف صحيح (10 أرقام)'); return; }
+            const fingerprint = getDeviceFingerprint();
+            try {
+                const result = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'register', phone, fingerprint })
+                }).then(r => r.json());
+                if (result.success) {
+                    // تخزين محلي
+                    const trialEnd = result.trialEnd ? new Date(result.trialEnd) : null;
+                    saveLocalSubscription(phone, 'trial', fingerprint, trialEnd);
+                    localStorage.setItem('user_phone', phone);
+                    Utils.toast('✅ بدأت تجربتك المجانية لمدة 14 يومًا');
+                    location.reload(); // لإعادة تحميل التطبيق مع الاشتراك الجديد
+                } else {
+                    Utils.toast('❌ فشل بدء التجربة: ' + (result.error || ''));
                 }
-            });
-        }
+            } catch(e) {
+                Utils.toast('❌ خطأ في الاتصال بالسيرفر');
+                console.error(e);
+            }
+        });
 
-        const activateBtn = document.getElementById('activateCodeBtn');
-        if (activateBtn) {
-            activateBtn.addEventListener('click', async () => {
-                const code = document.getElementById('activationCodeInput').value.trim();
-                const phone = document.getElementById('welcomePhone').value.trim();
-                if (!code || code.length !== 8 || !/^\d{8}$/.test(code)) { Utils.toast('⚠️ الكود 8 أرقام'); return; }
-                const ok = await App._activate(code, phone);
-                if (ok) {
-                    const acc = await App._checkAccess();
-                    if (acc) {
-                        document.getElementById('welcomeScreen').classList.remove('open');
-                        document.getElementById('app').style.display = 'flex';
-                        App._checkPin();
-                        await ItemsModule.load();
-                        AppState.customers = await DB.getAll('contacts');
-                        await InvoicesRecordsModule.load();
-                        App.updateQuickStats();
-                        SettingsModule.updateDisplays();
-                        InvoiceModule.buildDatalist();
-                    }
+        document.getElementById('activateCodeBtn').addEventListener('click', async function() {
+            const phone = document.getElementById('welcomePhone').value.trim();
+            const code = document.getElementById('activationCodeInput').value.trim();
+            const plan = selectedPlan || 'monthly';
+            const fingerprint = getDeviceFingerprint();
+
+            if (!phone || phone.length < 10) { Utils.toast('⚠️ رقم هاتف صحيح'); return; }
+            if (!code || code.length !== 8 || !/^\d{8}$/.test(code)) { Utils.toast('⚠️ الكود 8 أرقام'); return; }
+
+            // التحقق محلياً أولاً (سريع)
+            const now = new Date();
+            const periodKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            const isValidLocally = verifyActivationCode(phone, plan, fingerprint, periodKey, code);
+
+            if (!isValidLocally) {
+                Utils.toast('❌ الكود غير صحيح أو منتهي الصلاحية');
+                return;
+            }
+
+            // إذا نجح التحقق المحلي، نرسل إلى السيرفر لتسجيل التفعيل (اختياري)
+            try {
+                const result = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'activate', phone, fingerprint, code, plan })
+                }).then(r => r.json());
+
+                if (result.success) {
+                    const expiry = result.expiry ? new Date(result.expiry) : getExpiryDate(plan);
+                    saveLocalSubscription(phone, plan, fingerprint, expiry);
+                    localStorage.setItem('user_phone', phone);
+                    Utils.toast('✅ تم التفعيل بنجاح');
+                    location.reload();
+                } else {
+                    Utils.toast('❌ فشل التفعيل: ' + (result.error || ''));
                 }
-            });
-        }
+            } catch(e) {
+                // إذا فشل الاتصال، نعتمد على التحقق المحلي ونخزن محلياً (للحالات الطارئة)
+                const expiry = getExpiryDate(plan);
+                saveLocalSubscription(phone, plan, fingerprint, expiry);
+                localStorage.setItem('user_phone', phone);
+                Utils.toast('✅ تم التفعيل محلياً (بدون اتصال بالسيرفر)');
+                location.reload();
+            }
+        });
 
-        const whatsappBtn = document.getElementById('whatsappSupportBtn');
-        if (whatsappBtn) {
-            whatsappBtn.addEventListener('click', () => {
-                const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
-                const msg = `مرحباً، أرغب في الاشتراك في احسبلي+. الرقم: ${phone}`;
-                window.open(`https://wa.me/963936019079?text=${encodeURIComponent(msg)}`, '_blank');
-            });
-        }
+        // زر واتساب
+        document.getElementById('whatsappSupportBtn').addEventListener('click', function() {
+            const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
+            const planLabel = selectedPlan || 'شهري';
+            const fingerprint = getDeviceFingerprint();
+            const msg = `مرحباً، أرغب في الاشتراك في احسبلي+. الرقم: ${phone}، الباقة: ${planLabel}، بصمة الجهاز: ${fingerprint}`;
+            window.open(`https://wa.me/963936019079?text=${encodeURIComponent(msg)}`, '_blank');
+        });
 
-        const welcomeBack = document.getElementById('welcomeBackBtn');
-        if (welcomeBack) {
-            welcomeBack.addEventListener('click', () => {
-                document.getElementById('welcomeScreen').classList.remove('open');
-                document.getElementById('app').style.display = 'flex';
-            });
-        }
-
-        document.querySelectorAll('.btn-select-plan').forEach(b => {
-            b.addEventListener('click', function() {
+        // أزرار اختيار الباقة
+        document.querySelectorAll('.btn-select-plan').forEach(btn => {
+            btn.addEventListener('click', function() {
                 const plan = this.dataset.plan;
-                const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
-                window.open(`https://wa.me/963936019079?text=${encodeURIComponent(`مرحباً، أرغب في الاشتراك في خطة (${plan}) على احسبلي+. رقم الهاتف: ${phone}`)}`, '_blank');
+                selectedPlan = plan;
+                document.querySelectorAll('.pricing-card').forEach(c => c.style.border = '1px solid var(--border)');
+                this.closest('.pricing-card').style.border = '2px solid var(--gold)';
+                Utils.toast('✅ تم اختيار الباقة: ' + this.closest('.pricing-card').querySelector('.plan-name').textContent);
             });
         });
 
-        const pinConfirm = document.getElementById('pinConfirmBtn');
-        if (pinConfirm) {
-            pinConfirm.addEventListener('click', () => {
-                const code = Array.from(document.querySelectorAll('.pin-digit')).map(i => i.value).join('');
-                if (code.length !== 4) { Utils.toast('⚠️ 4 أرقام'); return; }
-                const stored = localStorage.getItem('app_pin');
-                if (code === stored) { document.getElementById('pinScreen').classList.remove('open'); Utils.toast('🔓 تم فتح التطبيق'); } else { Utils.toast('❌ PIN غير صحيح'); document.querySelectorAll('.pin-digit').forEach(i => i.value = ''); document.querySelector('.pin-digit').focus(); }
-            });
-        }
-        const pinForgot = document.getElementById('pinForgotBtn');
-        if (pinForgot) {
-            pinForgot.addEventListener('click', () => {
-                if (confirm('حذف PIN؟ سيتم إعادة تحميل الصفحة.')) { localStorage.removeItem('app_pin'); location.reload(); }
-            });
+        // إدارة العملاء
+        document.getElementById('manageCustomersBtn').addEventListener('click', () => App._openCustomerManage());
+        document.getElementById('addCustomerFromManageBtn').addEventListener('click', function() {
+            document.getElementById('customerManageModal').classList.remove('open');
+            document.getElementById('customerAddModal').classList.add('open');
+            document.getElementById('customerAddName').value = '';
+            document.getElementById('customerAddPhone').value = '';
+            document.getElementById('customerAddAddress').value = '';
+            document.getElementById('customerAddSave').dataset.editId = '';
+            document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
+            // إعادة تعيين حدث حفظ العميل
+            const saveBtn = document.getElementById('customerAddSave');
+            saveBtn.onclick = async function() {
+                const name = document.getElementById('customerAddName').value.trim();
+                if (!name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
+                const data = { name, phone: document.getElementById('customerAddPhone').value.trim(), address: document.getElementById('customerAddAddress').value.trim(), balance: 0 };
+                const editId = this.dataset.editId;
+                if (editId) {
+                    data.id = Number(editId);
+                    const ex = await DB.get('contacts', data.id);
+                    if (ex) data.balance = ex.balance || 0;
+                    await DB.put('contacts', data);
+                    Utils.toast('✅ تم تحديث العميل');
+                } else {
+                    await DB.add('contacts', data);
+                    Utils.toast('✅ تم إضافة العميل');
+                }
+                document.getElementById('customerAddModal').classList.remove('open');
+                AppState.customers = await DB.getAll('contacts');
+                App.updateCustomerDatalist();
+                App.updateRetailCustomerDatalist();
+                // إعادة تعيين الحقول
+                resetCustomerModalToDefault();
+                InvoicesRecordsModule.load();
+            };
+        });
+        document.getElementById('closeCustomerManageBtn').addEventListener('click', () => document.getElementById('customerManageModal').classList.remove('open'));
+        document.getElementById('customerAddCancel').addEventListener('click', function() {
+            document.getElementById('customerAddModal').classList.remove('open');
+            resetCustomerModalToDefault();
+        });
+
+        // التقارير والتصدير
+        document.getElementById('reportGenerateBtn').addEventListener('click', ReportsModule.generate);
+        document.getElementById('exportReportExcelBtn').addEventListener('click', ReportsModule.export);
+        document.getElementById('exportInvoiceRecordsBtn').addEventListener('click', InvoicesRecordsModule.export);
+
+        // البحث في سجل الفواتير
+        document.getElementById('invoiceRecordsSearch').addEventListener('input', function() {
+            AppState.searchQuery = this.value;
+            InvoicesRecordsModule.applyFilter();
+        });
+
+        // تحديث دوري
+        setInterval(App.updateQuickStats, 30000);
+        setInterval(App.performBackup, 300000);
+
+        // تسجيل Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('✅ SW مسجل'))
+                .catch(err => console.warn('⚠️ فشل تسجيل SW:', err));
         }
 
+        // PIN
+        document.getElementById('pinConfirmBtn').addEventListener('click', () => {
+            const code = Array.from(document.querySelectorAll('.pin-digit')).map(i => i.value).join('');
+            if (code.length !== 4) { Utils.toast('⚠️ 4 أرقام'); return; }
+            const stored = localStorage.getItem('app_pin');
+            if (code === stored) { document.getElementById('pinScreen').classList.remove('open'); Utils.toast('🔓 تم فتح التطبيق'); } else { Utils.toast('❌ PIN غير صحيح'); document.querySelectorAll('.pin-digit').forEach(i => i.value = ''); document.querySelector('.pin-digit').focus(); }
+        });
+        document.getElementById('pinForgotBtn').addEventListener('click', () => {
+            if (confirm('حذف PIN؟ سيتم إعادة تحميل الصفحة.')) { localStorage.removeItem('app_pin'); location.reload(); }
+        });
         document.querySelectorAll('.pin-digit').forEach((inp, idx) => {
             inp.addEventListener('input', function() { if (this.value.length === 1 && idx < 3) document.querySelectorAll('.pin-digit')[idx+1].focus(); });
             inp.addEventListener('keydown', function(e) {
                 if (e.key === 'Backspace' && this.value === '' && idx > 0) document.querySelectorAll('.pin-digit')[idx-1].focus();
-                if (e.key === 'Enter') { const confirmBtn = document.getElementById('pinConfirmBtn'); if (confirmBtn) confirmBtn.click(); }
+                if (e.key === 'Enter') { document.getElementById('pinConfirmBtn').click(); }
             });
         });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
-                document.getElementById('suggestionsBox')?.classList.remove('show');
-                AppState.currentDetailInvoiceId = null;
-                if (document.getElementById('itemViewMode').style.display !== 'none') { ItemsModule.closeView(); } else { ItemsModule.cancelEdit(); }
-            }
-        });
-document.getElementById('addCustomerFromManageBtn').addEventListener('click', function() {
-    document.getElementById('customerManageModal').classList.remove('open');
-    document.getElementById('customerAddModal').classList.add('open');
-    document.getElementById('customerAddName').value = '';
-    document.getElementById('customerAddPhone').value = '';
-    document.getElementById('customerAddAddress').value = '';
-    document.getElementById('customerAddSave').dataset.editId = '';
-    document.getElementById('customerAddModalTitle').textContent = '➕ إضافة عميل جديد';
-
-    const saveBtn = document.getElementById('customerAddSave');
-    saveBtn.onclick = async function() {
-        const name = document.getElementById('customerAddName').value.trim();
-        if (!name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
-        const data = {
-            name: name,
-            phone: document.getElementById('customerAddPhone').value.trim(),
-            address: document.getElementById('customerAddAddress').value.trim(),
-            balance: 0
-        };
-        const editId = this.dataset.editId;
-        if (editId) {
-            data.id = Number(editId);
-            const ex = await DB.get('contacts', data.id);
-            if (ex) data.balance = ex.balance || 0;
-            await DB.put('contacts', data);
-            Utils.toast('✅ تم تحديث العميل');
-        } else {
-            await DB.add('contacts', data);
-            Utils.toast('✅ تم إضافة العميل');
-        }
-        document.getElementById('customerAddModal').classList.remove('open');
-        AppState.customers = await DB.getAll('contacts');
-        App.updateCustomerDatalist();
-        App.updateRetailCustomerDatalist();
-        const invName = document.getElementById('invoiceCustomerName');
-        if (invName) invName.value = name;
-        const retailName = document.getElementById('retailCreditCustomerName');
-        if (retailName) retailName.value = name;
-        renderCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
-        renderCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
-        InvoicesRecordsModule.load();
-    };
-});
-        const closeCustomerManage = document.getElementById('closeCustomerManageBtn');
-        if (closeCustomerManage) {
-            closeCustomerManage.addEventListener('click', () => document.getElementById('customerManageModal').classList.remove('open'));
-        }
-      const customerAddCancel = document.getElementById('customerAddCancel');
-if (customerAddCancel) {
-    customerAddCancel.addEventListener('click', function() {
-        document.getElementById('customerAddModal').classList.remove('open');
-        resetCustomerModalToDefault(); // <-- إضافة هذا السطر
-    });
-}
-        
-        const customerAddSave = document.getElementById('customerAddSave');
-        if (customerAddSave) {
-            
-        }
-
-        const reportGenerate = document.getElementById('reportGenerateBtn');
-        if (reportGenerate) reportGenerate.addEventListener('click', ReportsModule.generate);
-        const exportReport = document.getElementById('exportReportExcelBtn');
-        if (exportReport) exportReport.addEventListener('click', ReportsModule.export);
-        const exportRecords = document.getElementById('exportInvoiceRecordsBtn');
-        if (exportRecords) exportRecords.addEventListener('click', InvoicesRecordsModule.export);
-
-        const recordsSearch = document.getElementById('invoiceRecordsSearch');
-        if (recordsSearch) {
-            recordsSearch.addEventListener('input', function() {
-                AppState.searchQuery = this.value;
-                InvoicesRecordsModule.applyFilter();
-            });
-        }
-const restoreBtn = document.getElementById('restoreBackupBtn');
-if (restoreBtn) {
-    restoreBtn.addEventListener('click', async (e) => {
-        e.preventDefault(); // منع أي سلوك افتراضي غير مرغوب (مثل فتح الملفات)
-        if (!confirm('سيتم جلب أحدث نسخة سحابية واستبدال البيانات المحلية. متابعة؟')) return;
-
-        Utils.toast('⏳ جاري استعادة النسخة السحابية...');
-        const ok = await App.restoreBackup(null);
-
-        if (ok) {
-            Utils.toast('✅ تمت استعادة النسخة السحابية بنجاح');
-            // تحديث كل واجهات البيانات
-            await ItemsModule.load();
-            await InvoicesRecordsModule.load();
-            App.updateQuickStats();
-            ReportsModule.generate();
-            SettingsModule.updateDisplays();
-            InvoiceModule.buildDatalist();
-        } else {
-            Utils.toast('❌ فشل الاستعادة من السحاب. تأكد من اتصال الإنترنت ووجود نسخة سحابية.');
-        }
-    });
-}
-           
-
-        Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
     },
-   _checkAccess: async () => {
-    const phone = localStorage.getItem('user_phone') || 'guest';
-    const hash = localStorage.getItem('user_hash') || 'guest_device';
-    try {
-        const resp = await fetch(SERVER_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ 
-                action: 'check', 
-                phone: phone,
-                hash: hash,
-                fingerprint: App._fingerprint() 
-            })
-        });
-        const json = await resp.json();
-        if (json && json.isValid === true) {
-            localStorage.setItem('last_successful_ping', Date.now().toString());
-            localStorage.setItem('cached_license', JSON.stringify(json));
-            if (json.hash) localStorage.setItem('user_hash', json.hash);
-            return true;
-        } else {
-            // ✅ إذا كانت الصلاحية منتهية أو غير صالحة، احذف التخزين المؤقت
-            localStorage.removeItem('cached_license');
-            return false;
-        }
-    } catch(e) {
-        // ✅ في حالة فشل الشبكة، نعتمد على التخزين المؤقت فقط كحل احتياطي
-        const lastPing = parseInt(localStorage.getItem('last_successful_ping') || '0');
-        if (Date.now() - lastPing < 72 * 60 * 60 * 1000) {
-            const cached = localStorage.getItem('cached_license');
-            if (cached) { 
-                const l = JSON.parse(cached); 
-                if (l.isValid === true) return true;
-            }
-        }
-        // ✅ إذا فشل كل شيء، ارفض الدخول
-        return false;
-    }
-},
-_startTrial: async (phone) => {
-    try {
-        const hash = localStorage.getItem('user_hash') || 'guest_device';
-        const resp = await fetch(SERVER_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ 
-                action: 'trial', 
-                phone: phone.trim(),
-                hash: hash,
-                fingerprint: App._fingerprint() 
-            })
-        });
-        const json = await resp.json();
-        if (json && json.success) {
-            const newHash = json.hash || 'trial_fallback';
-            localStorage.setItem('user_phone', phone.trim());
-            localStorage.setItem('user_hash', newHash);
-            localStorage.setItem('last_successful_ping', Date.now().toString());
-            localStorage.setItem('cached_license', JSON.stringify({ 
-                isValid: true, 
-                expiry: json.expiry,
-                hash: newHash 
-            }));
-            Utils.toast('✅ تم بدء التجربة لمدة 14 يوماً');
-            return true;
-        } else {
-            Utils.toast('❌ فشل التجربة: ' + (json.error || ''));
-            return false;
-        }
-    } catch(e) {
-        Utils.toast('❌ خطأ في الاتصال');
-        return false;
-    }
-},
-
-_activate: async (code, phone) => {
-    try {
-        const hash = localStorage.getItem('user_hash') || 'guest_device';
-        const resp = await fetch(SERVER_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ 
-                action: 'activate', 
-                phone: phone || 'مستخدم', 
-                code: code.trim(), 
-                hash: hash,
-                fingerprint: App._fingerprint() 
-            })
-        });
-        const json = await resp.json();
-        if (json && json.success) {
-            const newHash = json.hash || 'activated_fallback';
-            localStorage.setItem('user_phone', phone || 'مستخدم');
-            localStorage.setItem('user_hash', newHash);
-            localStorage.setItem('last_successful_ping', Date.now().toString());
-            localStorage.setItem('cached_license', JSON.stringify({ 
-                isValid: true, 
-                expiry: json.expiry,
-                hash: newHash 
-            }));
-            Utils.toast('✅ تم تفعيل الاشتراك');
-            return true;
-        } else {
-            Utils.toast('❌ فشل التفعيل: ' + (json.error || 'الكود غير صحيح'));
-            return false;
-        }
-    } catch(e) {
-        Utils.toast('❌ خطأ في الاتصال');
-        return false;
-    }
-},
-
-_fingerprint: () => {
-    try {
-        const screen = `${window.screen.width}x${window.screen.height}`;
-        const ua = navigator.userAgent;
-        const lang = navigator.language;
-        return `${screen}|${ua}|${lang}`;
-    } catch(e) {
-        return 'fallback_device';
-    }
-},
 
     _checkPin: () => {
         const stored = localStorage.getItem('app_pin');
         if (stored) { document.getElementById('pinScreen').classList.add('open'); document.querySelector('.pin-digit')?.focus(); } else { document.getElementById('pinScreen').classList.remove('open'); }
     },
+
     _openCustomerManage: async () => {
         AppState.customers = await DB.getAll('contacts');
         App.updateCustomerDatalist();
@@ -5299,6 +5178,7 @@ _fingerprint: () => {
         }
         document.getElementById('customerManageModal').classList.add('open');
     },
+
     updateCustomerDatalist: () => {
         const dl = document.getElementById('customerDatalist');
         if (!dl) return;
@@ -5309,6 +5189,7 @@ _fingerprint: () => {
             dl.appendChild(opt);
         });
     },
+
     updateRetailCustomerDatalist: () => {
         const dl = document.getElementById('retailCustomerDatalist');
         if (!dl) return;
@@ -5319,73 +5200,72 @@ _fingerprint: () => {
             dl.appendChild(opt);
         });
     },
- performBackup: async () => {
-    try {
-        const phone = localStorage.getItem('user_phone') || 'guest';
-        const hash = localStorage.getItem('user_hash') || 'guest_device';
-        const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
-        const data = {};
-        for (let s of stores) data[s] = await DB.getAll(s);
-        const resp = await fetch(SERVER_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
-        });
-        const json = await resp.json();
-        if (json && json.success) {
-            localStorage.setItem('last_backup_time', Date.now().toString());
-            SettingsModule.updateDisplays();
-            return true;
-        } else {
-            console.warn('Backup failed (maybe not supported):', json);
-            return false;
-        }
-    } catch(e) {
-        console.warn('Backup error (maybe not supported):', e);
-        return false;
-    }
-},
 
-restoreBackup: async (file) => {
-    try {
-        let backupData = null;
-        if (file && file.name) {
-            const text = await file.text();
-            backupData = JSON.parse(text);
-        } else {
+    performBackup: async () => {
+        try {
             const phone = localStorage.getItem('user_phone') || 'guest';
             const hash = localStorage.getItem('user_hash') || 'guest_device';
+            const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
+            const data = {};
+            for (let s of stores) data[s] = await DB.getAll(s);
             const resp = await fetch(SERVER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
+                body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: getDeviceFingerprint() })
             });
             const json = await resp.json();
-            if (!json.success || !json.data) { 
-                Utils.toast('⚠️ لا توجد نسخة سحابية أو غير مدعومة');
-                return false; 
+            if (json && json.success) {
+                localStorage.setItem('last_backup_time', Date.now().toString());
+                SettingsModule.updateDisplays();
+                return true;
+            } else {
+                console.warn('Backup failed:', json);
+                return false;
             }
-            backupData = JSON.parse(json.data);
+        } catch(e) {
+            console.warn('Backup error:', e);
+            return false;
         }
-        if (!backupData || !backupData.data) throw new Error('بيانات غير صالحة');
-        const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
-        for (let s of stores) {
-            if (Array.isArray(backupData.data[s])) {
-                const tx = DB._db.transaction(s, 'readwrite');
-                const os = tx.objectStore(s);
-                os.clear();
-                for (let item of backupData.data[s]) os.add(item);
-                await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+    },
+
+    restoreBackup: async (file) => {
+        try {
+            let backupData = null;
+            if (file && file.name) {
+                const text = await file.text();
+                backupData = JSON.parse(text);
+            } else {
+                const phone = localStorage.getItem('user_phone') || 'guest';
+                const hash = localStorage.getItem('user_hash') || 'guest_device';
+                const resp = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'load', phone, hash, fingerprint: getDeviceFingerprint() })
+                });
+                const json = await resp.json();
+                if (!json.success || !json.data) { Utils.toast('⚠️ لا توجد نسخة سحابية'); return false; }
+                backupData = JSON.parse(json.data);
             }
+            if (!backupData || !backupData.data) throw new Error('بيانات غير صالحة');
+            const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
+            for (let s of stores) {
+                if (Array.isArray(backupData.data[s])) {
+                    const tx = DB._db.transaction(s, 'readwrite');
+                    const os = tx.objectStore(s);
+                    os.clear();
+                    for (let item of backupData.data[s]) os.add(item);
+                    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+                }
+            }
+            Utils.toast('✅ تم استعادة البيانات');
+            return true;
+        } catch(e) {
+            console.error(e);
+            Utils.toast('❌ فشل الاستعادة: ' + e.message);
+            return false;
         }
-        Utils.toast('✅ تم استعادة البيانات');
-        return true;
-    } catch(e) {
-        console.error(e);
-        Utils.toast('❌ فشل الاستعادة: ' + e.message);
-        return false;
-    }
-},   
+    },
+
     updateQuickStats: async () => {
         try {
             const today = Utils.today();
@@ -5401,15 +5281,11 @@ restoreBackup: async (file) => {
                     const cost = it.purchasePriceAtSale || 0;
                     cogs += cost * it.quantity * (it.wholesaleFactor || 1);
                 }
-                if (inv.paymentMethod === 'كاش') {
-                    cashIn += inv.paidAmount || 0;
-                }
+                if (inv.paymentMethod === 'كاش') cashIn += inv.paidAmount || 0;
             }
             const expenses = todayInvs.filter(inv => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات');
             for (let inv of expenses) {
-                if (inv.paymentMethod === 'كاش') {
-                    cashOut += inv.paidAmount || inv.netAmount || 0;
-                }
+                if (inv.paymentMethod === 'كاش') cashOut += inv.paidAmount || inv.netAmount || 0;
             }
             const cashNet = cashIn - cashOut;
             document.getElementById('statTodaySales').textContent = Currency.format(totalSales);
@@ -5423,6 +5299,7 @@ restoreBackup: async (file) => {
             SettingsModule.updateDisplays();
         } catch(e) { console.warn('updateQuickStats error:', e); }
     },
+
     updateAllDisplays: () => {
         ItemsModule.render();
         RetailModule.updatePosDisplay();
@@ -5437,6 +5314,106 @@ restoreBackup: async (file) => {
         App.updateRetailCustomerDatalist();
     }
 };
+
+// =====================================================================
+// دوال مساعدة لنظام الأكواد والتجربة (خارج App)
+// =====================================================================
+
+// المفتاح السري
+function getSecretKey() {
+    const part1 = "GyYbHhYdFgQCEhYGAg8RGBYLFhA=";
+    const part2 = "5A";
+    const _xorKey = parseInt(part2, 16);
+    let decoded = atob(part1);
+    let result = '';
+    for (let i = 0; i < decoded.length; i++) {
+        result += String.fromCharCode(decoded.charCodeAt(i) ^ _xorKey);
+    }
+    return result;
+}
+const SECRET_KEY = getSecretKey();
+
+// توليد الكود
+function generateActivationCode(phone, plan, fingerprint, periodKey) {
+    const data = phone + "|" + plan + "|" + fingerprint + "|" + periodKey;
+    const hash = CryptoJS.HmacSHA256(data, SECRET_KEY);
+    const hex = hash.toString(CryptoJS.enc.Hex);
+    const num = BigInt("0x" + hex);
+    const code = Number(num % 100000000n).toString().padStart(8, '0');
+    return code;
+}
+
+// التحقق من الكود
+function verifyActivationCode(phone, plan, fingerprint, periodKey, code) {
+    const expected = generateActivationCode(phone, plan, fingerprint, periodKey);
+    return expected === code;
+}
+
+// حساب تاريخ الانتهاء حسب الباقة
+function getExpiryDate(plan) {
+    if (plan === 'forever') return null;
+    const months = { monthly: 1, quarterly: 3, half_yearly: 6, yearly: 12 };
+    const m = months[plan] || 1;
+    const expiry = new Date();
+    expiry.setMonth(expiry.getMonth() + m);
+    return expiry;
+}
+
+// تخزين الاشتراك محلياً
+function saveLocalSubscription(phone, plan, fingerprint, expiryDate) {
+    const data = {
+        phone,
+        plan,
+        fingerprint,
+        expiry: expiryDate ? expiryDate.toISOString() : null,
+        activatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('subscription', JSON.stringify(data));
+    localStorage.setItem('user_phone', phone);
+}
+
+// التحقق من الاشتراك المحلي
+function checkLocalSubscription() {
+    const raw = localStorage.getItem('subscription');
+    if (!raw) return null;
+    try {
+        const data = JSON.parse(raw);
+        if (!data.expiry) return { valid: true, plan: data.plan, phone: data.phone };
+        const expiry = new Date(data.expiry);
+        if (expiry.getTime() > Date.now()) {
+            return { valid: true, plan: data.plan, phone: data.phone };
+        } else {
+            return { valid: false, reason: 'انتهت صلاحية الاشتراك' };
+        }
+    } catch(e) {
+        return null;
+    }
+}
+
+// بصمة الجهاز
+function getDeviceFingerprint() {
+    try {
+        const screen = `${window.screen.width}x${window.screen.height}`;
+        const ua = navigator.userAgent;
+        const lang = navigator.language;
+        return `${screen}|${ua}|${lang}`;
+    } catch(e) {
+        return 'fallback_device';
+    }
+}
+
+// =====================================================================
+// 🔍 دالة التحقق من حالة المستخدم عبر السيرفر (جديدة)
+// =====================================================================
+async function checkUserStatusOnline(phone, fingerprint) {
+    try {
+        const resp = await fetch(SERVER_URL + '?action=checkUser&phone=' + encodeURIComponent(phone) + '&fingerprint=' + encodeURIComponent(fingerprint));
+        return await resp.json();
+    } catch(e) {
+        console.warn('فشل التحقق من حالة المستخدم:', e);
+        return { success: false, error: 'فشل الاتصال' };
+    }
+}
 
 // =====================================================================
 // 16. CUSTOMER SUGGESTIONS FUNCTIONS (المضافة)
@@ -5550,14 +5527,10 @@ function setupCustomerSuggestions(inputId, suggestionsId) {
             if (outcome === 'accepted') {
                 localStorage.setItem('app_installed', 'true');
                 isAppInstalled = true;
-                if (typeof Utils !== 'undefined' && Utils.toast) {
-                    Utils.toast('✅ تم تثبيت التطبيق بنجاح!');
-                }
+                Utils.toast('✅ تم تثبيت التطبيق بنجاح!');
             } else {
                 localStorage.setItem('install_dismissed', 'true');
-                if (typeof Utils !== 'undefined' && Utils.toast) {
-                    Utils.toast('يمكنك التثبيت لاحقاً');
-                }
+                Utils.toast('يمكنك التثبيت لاحقاً');
             }
             deferredPrompt = null;
             installBtn.style.display = 'none';
