@@ -4880,10 +4880,21 @@ async init() {
 
     bindEvents: function() {
         // زر الإعدادات
-        document.getElementById('settingsGearBtn').addEventListener('click', function() {
-            const settingsTab = document.querySelector('.nav-item[data-tab="settings"]');
-            if (settingsTab) { settingsTab.click(); }
-        });
+        document.getElementById('settingsGearBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    // تفعيل تبويب الإعدادات مباشرة
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    const settingsTab = document.querySelector('.nav-item[data-tab="settings"]');
+    if (settingsTab) settingsTab.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-settings');
+    if (panel) panel.classList.add('active');
+    // تحديث المحتوى عند فتح الإعدادات
+    SettingsModule.renderFixedExpenses();
+    document.getElementById('exchangeRateInput').value = Currency.rate;
+    SettingsModule.updateDisplays();
+    document.getElementById('suggestionsBox')?.classList.remove('show');
+});
 
         // فتح إضافة صنف
         document.getElementById('openItemModalBtn').addEventListener('click', () => ItemsModule.openAdd());
