@@ -4743,6 +4743,7 @@ const DebtsModule = {
 // =====================================================================
 const App = {
     init: async () => {
+    bindWelcomeEvents();
         try { await DB.open(); } catch(e) { console.error('DB open error:', e); Utils.toast('⚠️ خطأ في قاعدة البيانات'); return; }
 
         try {
@@ -5402,6 +5403,7 @@ function getDeviceFingerprint() {
     }
 }
 
+
 // =====================================================================
 // 🔍 دالة التحقق من حالة المستخدم عبر السيرفر (جديدة)
 // =====================================================================
@@ -5412,6 +5414,120 @@ async function checkUserStatusOnline(phone, fingerprint) {
     } catch(e) {
         console.warn('فشل التحقق من حالة المستخدم:', e);
         return { success: false, error: 'فشل الاتصال' };
+    }
+}
+// =====================================================================
+// ربط أزرار شاشة الترحيب (تُستدعى دائماً)
+// =====================================================================
+function bindWelcomeEvents() {
+    // زر بدء التجربة
+    document.getElementById('startTrialBtn').addEventListener('click', async function() {
+        const phone = document.getElementById('welcomePhone').value.trim();
+        if (!phone || phone.length < 10) {
+            Utils.toast('⚠️ رقم هاتف صحيح (10 أرقام)');
+            return;
+        }
+        const fingerprint = getDeviceFingerprint();
+        try {
+            const result = await fetch(SERVER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'register', phone, fingerprint })
+            }).then(r => r.json());
+            if (result.success) {
+                const trialEnd = result.trialEnd ? new Date(result.trialEnd) : null;
+                saveLocalSubscription(phone, 'trial', fingerprint, trialEnd);
+                localStorage.setItem('user_phone', phone);
+                Utils.toast('✅ بدأت تجربتك المجانية لمدة 14 يومًا');
+                location.reload();
+            } else {
+                Utils.toast('❌ فشل بدء التجربة: ' + (result.error || ''));
+            }
+        } catch(e) {
+            Utils.toast('❌ خطأ في الاتصال بالسيرفر');
+            console.error(e);
+        }
+    });
+
+    // زر تفعيل الاشتراك (كود)
+    document.getElementById('activateCodeBtn').addEventListener('click', async function() {
+        const phone = document.getElementById('welcomePhone').value.trim();
+        const code = document.getElementById('activationCodeInput').value.trim();
+        const plan = selectedPlan || 'monthly';
+        const fingerprint = getDeviceFingerprint();
+
+        if (!phone || phone.length < 10) {
+            Utils.toast('⚠️ رقم هاتف صحيح');
+            return;
+        }
+        if (!code || code.length !== 8 || !/^\d{8}$/.test(code)) {
+            Utils.toast('⚠️ الكود 8 أرقام');
+            return;
+        }
+
+        const now = new Date();
+        const periodKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        const isValidLocally = verifyActivationCode(phone, plan, fingerprint, periodKey, code);
+
+        if (!isValidLocally) {
+            Utils.toast('❌ الكود غير صحيح أو منتهي الصلاحية');
+            return;
+        }
+
+        // محاولة تسجيل التفعيل في السيرفر (اختياري)
+        try {
+            const result = await fetch(SERVER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'activate', phone, fingerprint, code, plan })
+            }).then(r => r.json());
+
+            if (result.success) {
+                const expiry = result.expiry ? new Date(result.expiry) : getExpiryDate(plan);
+                saveLocalSubscription(phone, plan, fingerprint, expiry);
+                localStorage.setItem('user_phone', phone);
+                Utils.toast('✅ تم التفعيل بنجاح');
+                location.reload();
+            } else {
+                Utils.toast('❌ فشل التفعيل: ' + (result.error || ''));
+            }
+        } catch(e) {
+            // في حال فشل الاتصال، نعتمد على التحقق المحلي
+            const expiry = getExpiryDate(plan);
+            saveLocalSubscription(phone, plan, fingerprint, expiry);
+            localStorage.setItem('user_phone', phone);
+            Utils.toast('✅ تم التفعيل محلياً (بدون اتصال بالسيرفر)');
+            location.reload();
+        }
+    });
+
+    // زر واتساب
+    document.getElementById('whatsappSupportBtn').addEventListener('click', function() {
+        const phone = document.getElementById('welcomePhone').value.trim() || 'غير محدد';
+        const planLabel = selectedPlan || 'شهري';
+        const fingerprint = getDeviceFingerprint();
+        const msg = `مرحباً، أرغب في الاشتراك في احسبلي+. الرقم: ${phone}، الباقة: ${planLabel}، بصمة الجهاز: ${fingerprint}`;
+        window.open(`https://wa.me/963936019079?text=${encodeURIComponent(msg)}`, '_blank');
+    });
+
+    // أزرار اختيار الباقة
+    document.querySelectorAll('.btn-select-plan').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const plan = this.dataset.plan;
+            selectedPlan = plan;
+            document.querySelectorAll('.pricing-card').forEach(c => c.style.border = '1px solid var(--border)');
+            this.closest('.pricing-card').style.border = '2px solid var(--gold)';
+            Utils.toast('✅ تم اختيار الباقة: ' + this.closest('.pricing-card').querySelector('.plan-name').textContent);
+        });
+    });
+
+    // زر الرجوع (إن وجد) – يمكن إزالته أو تعطيله
+    const backBtn = document.getElementById('welcomeBackBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', function() {
+            // لا تفعل شيئاً أو أعد تحميل الصفحة
+            location.reload();
+        });
     }
 }
 
