@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="احسبلي+" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <!-- CryptoJS للتحقق من الكود محلياً -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" async defer></script>
     <style>
     /* ===== تنسيق مودال تسعير الأصناف ===== */
     .pricing-modal-item {
@@ -1753,12 +1753,13 @@ left: 0;
 
 <!-- ============================================================ -->
 <!-- ===== JAVASCRIPT ===== -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async defer></script>
 <script>
 // =====================================================================
 // 0. SERVER_URL (تم تحديثه)
 // =====================================================================
 const SERVER_URL = "https://script.google.com/macros/s/AKfycbylYMl-XmrzOww3uNy07wrRU9f04LnRJyWbLGWBPHza8MGXVxGECLIJjj5W33c4JR0E/exec";
+let selectedPlan = 'monthly';
 
 // =====================================================================
 // 1. UTILITIES
@@ -4744,140 +4745,124 @@ const DebtsModule = {
 const App = {
 async init() {     
     bindWelcomeEvents();
-        try { await DB.open(); } catch(e) { console.error('DB open error:', e); Utils.toast('⚠️ خطأ في قاعدة البيانات'); return; }
+    try { await DB.open(); } catch(e) { console.error('DB open error:', e); Utils.toast('⚠️ خطأ في قاعدة البيانات'); return; }
 
-        try {
-            const meta = await DB.get('metadata', 'exchangeRate');
-            if (meta && meta.value) Currency.rate = meta.value;
-            const cashMeta = await DB.get('metadata', 'cashLiquidity');
-            if (cashMeta && cashMeta.value !== undefined) Cash.set(cashMeta.value);
-        } catch(e) { console.warn('Metadata load error:', e); }
+    try {
+        const meta = await DB.get('metadata', 'exchangeRate');
+        if (meta && meta.value) Currency.rate = meta.value;
+        const cashMeta = await DB.get('metadata', 'cashLiquidity');
+        if (cashMeta && cashMeta.value !== undefined) Cash.set(cashMeta.value);
+    } catch(e) { console.warn('Metadata load error:', e); }
 
-        const storedCur = localStorage.getItem('displayCurrency');
-        if (['old','new','usd'].includes(storedCur)) Currency.display = storedCur;
-        document.querySelectorAll('.currency-toggle button').forEach(b => { b.classList.toggle('active-currency', b.dataset.cur === Currency.display); });
+    const storedCur = localStorage.getItem('displayCurrency');
+    if (['old','new','usd'].includes(storedCur)) Currency.display = storedCur;
+    document.querySelectorAll('.currency-toggle button').forEach(b => { b.classList.toggle('active-currency', b.dataset.cur === Currency.display); });
 
-        const storedMethod = localStorage.getItem('valuationMethod');
-        if (storedMethod === 'historical' || storedMethod === 'replacement') {
-            AppState.valuationMethod = storedMethod;
-        } else {
-            AppState.valuationMethod = 'historical';
-            localStorage.setItem('valuationMethod', 'historical');
+    const storedMethod = localStorage.getItem('valuationMethod');
+    if (storedMethod === 'historical' || storedMethod === 'replacement') {
+        AppState.valuationMethod = storedMethod;
+    } else {
+        AppState.valuationMethod = 'historical';
+        localStorage.setItem('valuationMethod', 'historical');
+    }
+    document.querySelectorAll('input[name="valuationMethod"]').forEach(r => {
+        r.checked = r.value === AppState.valuationMethod;
+    });
+
+    // ========================================================
+    // التحقق من الاشتراك (محلياً فوراً، ثم خلفية)
+    // ========================================================
+    const phone = localStorage.getItem('user_phone') || '';
+    const fingerprint = getDeviceFingerprint();
+    let subscriptionValid = false;
+
+    // التحقق المحلي السريع
+    const localSub = checkLocalSubscription();
+    if (localSub && localSub.valid) {
+        subscriptionValid = true;
+    }
+
+    if (!subscriptionValid) {
+        document.getElementById('welcomeScreen').classList.add('open');
+        document.getElementById('app').style.display = 'none';
+        const msgEl = document.getElementById('activationMessage');
+        if (msgEl) {
+            msgEl.textContent = '📌 يرجى بدء تجربة مجانية أو إدخال كود التفعيل للوصول إلى التطبيق.';
+            msgEl.style.color = 'var(--text3)';
         }
-        document.querySelectorAll('input[name="valuationMethod"]').forEach(r => {
-            r.checked = r.value === AppState.valuationMethod;
-        });
+        return;
+    }
 
-        // ========================================================
-        //  الجديد: التحقق من الاشتراك (محلياً ومن السيرفر)
-        // ========================================================
-        const phone = localStorage.getItem('user_phone') || '';
-        const fingerprint = getDeviceFingerprint();
-        let subscriptionValid = false;
-        let isBlocked = false;
+    // الاشتراك صالح محلياً: عرض التطبيق فوراً
+    document.getElementById('welcomeScreen').classList.remove('open');
+    document.getElementById('app').style.display = 'flex';
+    App._checkPin();
 
-        if (phone && fingerprint) {
-            // 1. التحقق المحلي من الاشتراك
-            const localSub = checkLocalSubscription();
-            if (localSub && localSub.valid) {
-                subscriptionValid = true;
-            } else {
-                subscriptionValid = false;
-            }
-
-            // 2. التحقق من السيرفر (حظر وتحديث الصلاحية)
-            try {
+    // ----- التحقق من السيرفر في الخلفية (غير معطل للواجهة) -----
+    (async function backgroundServerCheck() {
+        try {
+            const phone = localStorage.getItem('user_phone') || '';
+            const fingerprint = getDeviceFingerprint();
+            if (phone && fingerprint) {
                 const status = await checkUserStatusOnline(phone, fingerprint);
-                if (status.success) {
-                    isBlocked = status.blocked === true;
-                    if (isBlocked) {
-                        subscriptionValid = false;
+                if (status.success && status.blocked === true) {
+                    Utils.toast('🚫 تم حظر حسابك. يرجى التواصل مع الدعم الفني.', 5000);
+                    document.getElementById('welcomeScreen').classList.add('open');
+                    document.getElementById('app').style.display = 'none';
+                    const msgEl = document.getElementById('activationMessage');
+                    if (msgEl) {
+                        msgEl.textContent = '🚫 تم حظر حسابك. يرجى التواصل مع الدعم الفني.';
+                        msgEl.style.color = '#ff6b6b';
                     }
-                    // تحديث الاشتراك المحلي إذا تغير من السيرفر (اختياري)
-                    if (status.subscriptionExpiry) {
-                        const expiryDate = new Date(status.subscriptionExpiry);
-                        const currentSub = JSON.parse(localStorage.getItem('subscription') || '{}');
-                        if (currentSub.phone === phone) {
-                            currentSub.expiry = expiryDate.toISOString();
-                            currentSub.plan = status.plan || currentSub.plan;
-                            localStorage.setItem('subscription', JSON.stringify(currentSub));
-                        }
+                } else if (status.success && status.subscriptionExpiry) {
+                    const expiryDate = new Date(status.subscriptionExpiry);
+                    const currentSub = JSON.parse(localStorage.getItem('subscription') || '{}');
+                    if (currentSub.phone === phone) {
+                        currentSub.expiry = expiryDate.toISOString();
+                        currentSub.plan = status.plan || currentSub.plan;
+                        localStorage.setItem('subscription', JSON.stringify(currentSub));
                     }
-                } else {
-                    console.warn('فشل التحقق من السيرفر، نعتمد على المحلي');
                 }
-            } catch(e) {
-                console.warn('خطأ في التحقق من السيرفر:', e);
             }
+        } catch(e) {
+            console.warn('خطأ في التحقق الخلفي من السيرفر (غير مؤثر):', e);
         }
+    })();
 
-        // إذا كان محظوراً، نعرض رسالة ونمنع الدخول
-        if (isBlocked) {
-            const msgEl = document.getElementById('activationMessage');
-            if (msgEl) {
-                msgEl.textContent = '🚫 تم حظر حسابك. يرجى التواصل مع الدعم الفني.';
-                msgEl.style.color = '#ff6b6b';
-            }
-            document.getElementById('welcomeScreen').classList.add('open');
-            document.getElementById('app').style.display = 'none';
-            Utils.toast('🚫 تم حظر حسابك. يرجى التواصل مع الدعم الفني.', 5000);
-            return;
-        }
+    // تحميل البيانات الأساسية
+    try {
+        await ItemsModule.load();
+        AppState.customers = await DB.getAll('contacts');
+        await InvoicesRecordsModule.load();
+    } catch(e) { console.warn('Data load error:', e); }
 
-        if (!subscriptionValid) {
-            // إظهار شاشة الترحيب
-            document.getElementById('welcomeScreen').classList.add('open');
-            document.getElementById('app').style.display = 'none';
-            const msgEl = document.getElementById('activationMessage');
-            if (msgEl) {
-                msgEl.textContent = '📌 يرجى بدء تجربة مجانية أو إدخال كود التفعيل للوصول إلى التطبيق.';
-                msgEl.style.color = 'var(--text3)';
-            }
-            return;
-        }
+    // تهيئة التبويبات
+    document.querySelector('.nav-item[data-tab="invoices"]')?.classList.add('active');
+    document.getElementById('panel-invoices').classList.add('active');
+    InvoiceModule.resetUI();
 
-        // ========================================================
-        //  الاشتراك صالح: إخفاء شاشة الترحيب وإظهار التطبيق
-        // ========================================================
-        document.getElementById('welcomeScreen').classList.remove('open');
-        document.getElementById('app').style.display = 'flex';
-        App._checkPin();
+    // التقارير
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    document.getElementById('reportDateFrom').value = first.toISOString().split('T')[0];
+    document.getElementById('reportDateTo').value = now.toISOString().split('T')[0];
+    try { await ReportsModule.generate(); } catch(e) { console.warn('Report generate error:', e); }
+    App.updateQuickStats();
 
-        // تحميل البيانات الأساسية
-        try {
-            await ItemsModule.load();
-            AppState.customers = await DB.getAll('contacts');
-            await InvoicesRecordsModule.load();
-        } catch(e) { console.warn('Data load error:', e); }
+    // تهيئة الوحدات
+    try { RetailModule.init(); } catch(e) { console.warn('RetailModule init error:', e); }
+    try { InvoiceModule.init(); } catch(e) { console.warn('InvoiceModule init error:', e); }
+    try { SettingsModule.init(); } catch(e) { console.warn('SettingsModule init error:', e); }
 
-        // تهيئة التبويبات
-        document.querySelector('.nav-item[data-tab="invoices"]')?.classList.add('active');
-        document.getElementById('panel-invoices').classList.add('active');
-        InvoiceModule.resetUI();
+    // تفعيل اقتراحات العملاء
+    setupCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
+    setupCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
 
-        // التقارير
-        const now = new Date();
-        const first = new Date(now.getFullYear(), now.getMonth(), 1);
-        document.getElementById('reportDateFrom').value = first.toISOString().split('T')[0];
-        document.getElementById('reportDateTo').value = now.toISOString().split('T')[0];
-        try { await ReportsModule.generate(); } catch(e) { console.warn('Report generate error:', e); }
-        App.updateQuickStats();
+    // ربط الأحداث
+    this.bindEvents();
 
-        // تهيئة الوحدات
-        try { RetailModule.init(); } catch(e) { console.warn('RetailModule init error:', e); }
-        try { InvoiceModule.init(); } catch(e) { console.warn('InvoiceModule init error:', e); }
-        try { SettingsModule.init(); } catch(e) { console.warn('SettingsModule init error:', e); }
-
-        // تفعيل اقتراحات العملاء
-        setupCustomerSuggestions('retailCreditCustomerName', 'retailCustomerSuggestions');
-        setupCustomerSuggestions('invoiceCustomerName', 'invoiceCustomerSuggestions');
-
-        // ربط الأحداث (مثل الأزرار)
-        this.bindEvents();
-
-        Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
-    },
-
+    Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
+}
     bindEvents: function() {
         // زر الإعدادات
         document.getElementById('settingsGearBtn').addEventListener('click', function() {
@@ -4922,29 +4907,53 @@ async init() {
         });
 
         // التنقل عبر التبويبات
-        document.getElementById('bottomNav').addEventListener('click', (e) => {
-            const btn = e.target.closest('.nav-item');
-            if (!btn) return;
-            const tab = btn.dataset.tab;
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            const panel = document.getElementById('panel-' + tab);
-            if (panel) panel.classList.add('active');
-            document.getElementById('suggestionsBox')?.classList.remove('show');
-            if (tab === 'items') ItemsModule.load();
-            if (tab === 'invoices') { InvoiceModule.resetUI(); InvoicesRecordsModule.load(); RetailModule.applyMode(); }
-            if (tab === 'reports') {
-                const n = new Date();
-                document.getElementById('reportDateFrom').value = new Date(n.getFullYear(), n.getMonth(), 1).toISOString().split('T')[0];
-                document.getElementById('reportDateTo').value = n.toISOString().split('T')[0];
-                ReportsModule.generate();
-            }
-            if (tab === 'settings') { SettingsModule.renderFixedExpenses(); document.getElementById('exchangeRateInput').value = Currency.rate; SettingsModule.updateDisplays(); }
-            if (tab === 'retail') RetailModule.applyMode();
-            if (tab === 'debts') { if (typeof DebtsModule !== 'undefined' && DebtsModule.load) DebtsModule.load(); }
-        });
-
+    // التنقل عبر التبويبات (مع تحميل كسول)
+document.getElementById('bottomNav').addEventListener('click', (e) => {
+    const btn = e.target.closest('.nav-item');
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-' + tab);
+    if (panel) panel.classList.add('active');
+    document.getElementById('suggestionsBox')?.classList.remove('show');
+    
+    if (tab === 'items') {
+        ItemsModule.load();
+    }
+    if (tab === 'invoices') {
+        InvoiceModule.resetUI();
+        InvoicesRecordsModule.load();
+        RetailModule.applyMode();
+    }
+    if (tab === 'reports') {
+        const n = new Date();
+        document.getElementById('reportDateFrom').value = new Date(n.getFullYear(), n.getMonth(), 1).toISOString().split('T')[0];
+        document.getElementById('reportDateTo').value = n.toISOString().split('T')[0];
+        // تأكد من وجود الوحدة قبل استدعائها (لأنها قد لا تكون محملة بعد)
+        if (typeof ReportsModule !== 'undefined' && ReportsModule.generate) {
+            ReportsModule.generate();
+        }
+    }
+    if (tab === 'settings') {
+        if (typeof SettingsModule !== 'undefined' && SettingsModule.renderFixedExpenses) {
+            SettingsModule.renderFixedExpenses();
+        }
+        document.getElementById('exchangeRateInput').value = Currency.rate;
+        if (typeof SettingsModule !== 'undefined' && SettingsModule.updateDisplays) {
+            SettingsModule.updateDisplays();
+        }
+    }
+    if (tab === 'retail') {
+        RetailModule.applyMode();
+    }
+    if (tab === 'debts') {
+        if (typeof DebtsModule !== 'undefined' && DebtsModule.load) {
+            DebtsModule.load();
+        }
+    }
+});    
         // تحديث سعر الصرف
         document.getElementById('exchangeRateTopBtn').addEventListener('click', async () => {
             const val = parseFloat(document.getElementById('exchangeRateTop').value);
@@ -5338,18 +5347,26 @@ const SECRET_KEY = getSecretKey();
 function generateActivationCode(phone, plan, fingerprint, periodKey) {
     const data = phone + "|" + plan + "|" + fingerprint + "|" + periodKey;
     const hash = CryptoJS.HmacSHA256(data, SECRET_KEY);
+    // تحويل الهيكس إلى مصفوفة بايتات (محاكاة Utilities.computeHmacSha256Signature)
     const hex = hash.toString(CryptoJS.enc.Hex);
-    const num = BigInt("0x" + hex);
-    const code = Number(num % 100000000n).toString().padStart(8, '0');
+    const bytes = [];
+    for (let i = 0; i < hex.length; i += 2) {
+        bytes.push(parseInt(hex.substr(i, 2), 16));
+    }
+    // استخدم أول 4 بايتات
+    let num = 0;
+    for (let i = 0; i < 4; i++) {
+        num = (num << 8) | (bytes[i] & 0xFF);
+    }
+    num = num & 0x7FFFFFFF; // تأكد من أن الرقم موجب
+    const code = (num % 100000000).toString().padStart(8, '0');
     return code;
 }
-
 // التحقق من الكود
 function verifyActivationCode(phone, plan, fingerprint, periodKey, code) {
     const expected = generateActivationCode(phone, plan, fingerprint, periodKey);
     return expected === code;
 }
-
 // حساب تاريخ الانتهاء حسب الباقة
 function getExpiryDate(plan) {
     if (plan === 'forever') return null;
@@ -5617,7 +5634,20 @@ function setupCustomerSuggestions(inputId, suggestionsId) {
     el.addEventListener('click', (e) => {
         if (!e.target.closest('.splash-skip') && !e.target.closest('.splash-logo')) dismiss();
     });
-    setTimeout(dismiss, 2000);
+  // بدلاً من الانتظار 2 ثانية، ننتظر حتى يصبح DOM جاهزاً ونحمل البيانات الأساسية
+async function waitForAppReady() {
+    // ننتظر حتى يتم تحميل HTML بالكامل
+    if (document.readyState === 'loading') {
+        await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+    }
+    // ننتظر نصف ثانية إضافية للتأكد من بدء تهيئة IndexedDB (يمكن تعديل الرقم)
+    await new Promise(resolve => setTimeout(resolve, 400));
+    dismiss();
+}
+
+// استخدم هذه الدالة بدلاً من setTimeout
+// setTimeout(dismiss, 2000); // علق هذا السطر
+waitForAppReady();
 })();
 
 // =====================================================================
