@@ -474,49 +474,24 @@
         transform: scale(0.95);
         box-shadow: 0 4px 14px rgba(245, 166, 35, 0.6);
     }
-    .quick-undo-btn {
-        flex: 1 1 auto;      /* ⬅️ تعديل */
-        min-width: 80px;     /* ⬅️ إضافة */
-        background: rgba(255, 70, 70, 0.12);
-        color: #ff6b6b;
-        border: 2px solid rgba(255, 70, 70, 0.25);
-        font-size: 16px;
-        font-weight: 700;
-        padding: 14px 10px;
-        border-radius: 60px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-    .quick-undo-btn:active {
-        transform: scale(0.95);
-        background: rgba(255, 70, 70, 0.25);
-    }
-    .quick-item-btn {
-        background: rgba(255,255,255,0.05);
-        border-radius: 16px;
-        padding: 14px 8px;
-        border: 1px solid rgba(255,255,255,0.08);
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        position: relative;
-        box-sizing: border-box;   /* ⬅️ إضافة */
-        word-break: break-word;   /* ⬅️ إضافة */
 .quick-item-btn {
-    /* ... */
-    overflow: visible;   /* ⬅️ الحل السحري */
-    /* ... */
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 14px 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    box-sizing: border-box;
+    word-break: break-word;
+    overflow: visible;    /* ✅ منع قص النص */
+    width: 100%;          /* ✅ ملء العرض */
 } 
-        width: 100%;              /* ⬅️ إضافة */
-    }
     .quick-item-btn:active {
         transform: scale(0.94);
         background: rgba(255,255,255,0.12);
@@ -976,6 +951,27 @@ left: 0;
   
     
     /* ===== نهاية التعديلات الجديدة ===== */
+    .quick-undo-btn {
+    flex: 1 1 auto;
+    min-width: 80px;
+    background: rgba(255, 70, 70, 0.12);
+    color: #ff6b6b;
+    border: 2px solid rgba(255, 70, 70, 0.25);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px 10px;
+    border-radius: 60px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.quick-undo-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 70, 70, 0.25);
+}
     </style>
 </head>
 <body>
@@ -5172,22 +5168,22 @@ if (restoreBtn) {
     },
     _startTrial: async (phone) => {
     try {
+        const hash = localStorage.getItem('user_hash') || 'guest_device';
         const resp = await fetch(SERVER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ 
                 action: 'trial', 
-                phone: phone.trim(), 
-                // ✅ تم حذف hash الثابت، السيرفر سيعيد هاشاً فريداً
+                phone: phone.trim(),
+                hash: hash,          // ✅ أضف هذا السطر
                 fingerprint: App._fingerprint() 
             })
         });
         const json = await resp.json();
         if (json && json.success) {
-            // ✅ التغيير الجوهري: استلام الهاش الفريد من السيرفر
             const newHash = json.hash || 'trial_fallback';
             localStorage.setItem('user_phone', phone.trim());
-            localStorage.setItem('user_hash', newHash); // ✅ تخزين الهاش الفريد
+            localStorage.setItem('user_hash', newHash);
             localStorage.setItem('last_successful_ping', Date.now().toString());
             localStorage.setItem('cached_license', JSON.stringify({ 
                 isValid: true, 
@@ -5207,23 +5203,23 @@ if (restoreBtn) {
 },
     _activate: async (code, phone) => {
     try {
+        const hash = localStorage.getItem('user_hash') || 'guest_device';
         const resp = await fetch(SERVER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ 
                 action: 'activate', 
                 phone: phone || 'مستخدم', 
-                // ✅ تم حذف hash الثابت، السيرفر سيعيد هاشاً فريداً
                 code: code.trim(), 
+                hash: hash,          // ✅ أضف هذا السطر
                 fingerprint: App._fingerprint() 
             })
         });
         const json = await resp.json();
         if (json && json.success) {
-            // ✅ التغيير الجوهري: استلام الهاش الفريد من السيرفر
             const newHash = json.hash || 'activated_fallback';
             localStorage.setItem('user_phone', phone || 'مستخدم');
-            localStorage.setItem('user_hash', newHash); // ✅ تخزين الهاش الفريد
+            localStorage.setItem('user_hash', newHash);
             localStorage.setItem('last_successful_ping', Date.now().toString());
             localStorage.setItem('cached_license', JSON.stringify({ 
                 isValid: true, 
@@ -5241,15 +5237,6 @@ if (restoreBtn) {
         return false;
     }
 },
-    _fingerprint: () => {
-        try {
-            const comps = [navigator.userAgent, navigator.language, screen.width, screen.height, screen.colorDepth, navigator.hardwareConcurrency || 4, navigator.deviceMemory || 8];
-            const fp = comps.join('|||');
-            let stored = localStorage.getItem('device_fingerprint');
-            if (!stored) { stored = btoa(fp); localStorage.setItem('device_fingerprint', stored); }
-            return stored;
-        } catch(e) { return 'default_' + Date.now(); }
-    },
     _checkPin: () => {
         const stored = localStorage.getItem('app_pin');
         if (stored) { document.getElementById('pinScreen').classList.add('open'); document.querySelector('.pin-digit')?.focus(); } else { document.getElementById('pinScreen').classList.remove('open'); }
