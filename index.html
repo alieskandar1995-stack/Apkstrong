@@ -4742,7 +4742,7 @@ const DebtsModule = {
 // 15. APP (المعدل لاستخدام نظام الأكواد والتجربة)
 // =====================================================================
 const App = {
-    init: async () => {
+async init() {     
     bindWelcomeEvents();
         try { await DB.open(); } catch(e) { console.error('DB open error:', e); Utils.toast('⚠️ خطأ في قاعدة البيانات'); return; }
 
