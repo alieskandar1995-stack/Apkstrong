@@ -5143,30 +5143,37 @@ if (restoreBtn) {
 
         Utils.toast('📦 احسبلي+ جاهز - نظام فواتير محسّن', 2500);
     },
-    _checkAccess: async () => {
-        const phone = localStorage.getItem('user_phone') || 'guest';
-        const hash = localStorage.getItem('user_hash') || 'guest_device';
-        try {
-            const resp = await fetch(SERVER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'check', phone, hash, fingerprint: App._fingerprint() })
-            });
-            const json = await resp.json();
-            if (json && json.isValid === true) {
-                localStorage.setItem('last_successful_ping', Date.now().toString());
-                localStorage.setItem('cached_license', JSON.stringify(json));
-                return true;
-            }
-        } catch(e) {}
-        const lastPing = parseInt(localStorage.getItem('last_successful_ping') || '0');
-        if (Date.now() - lastPing < 72 * 60 * 60 * 1000) {
-            const cached = localStorage.getItem('cached_license');
-            if (cached) { const l = JSON.parse(cached); if (l.isValid === true) return true; }
+   _checkAccess: async () => {
+    const phone = localStorage.getItem('user_phone') || 'guest';
+    const hash = localStorage.getItem('user_hash') || 'guest_device';
+    try {
+        const resp = await fetch(SERVER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ 
+                action: 'check', 
+                phone: phone,
+                hash: hash,
+                fingerprint: App._fingerprint() 
+            })
+        });
+        const json = await resp.json();
+        if (json && json.isValid === true) {
+            localStorage.setItem('last_successful_ping', Date.now().toString());
+            localStorage.setItem('cached_license', JSON.stringify(json));
+            if (json.hash) localStorage.setItem('user_hash', json.hash);
+            return true;
         }
-        return false;
-    },
-    _startTrial: async (phone) => {
+    } catch(e) {}
+    const lastPing = parseInt(localStorage.getItem('last_successful_ping') || '0');
+    if (Date.now() - lastPing < 72 * 60 * 60 * 1000) {
+        const cached = localStorage.getItem('cached_license');
+        if (cached) { const l = JSON.parse(cached); if (l.isValid === true) return true; }
+    }
+    return false;
+},
+
+_startTrial: async (phone) => {
     try {
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         const resp = await fetch(SERVER_URL, {
@@ -5175,7 +5182,7 @@ if (restoreBtn) {
             body: JSON.stringify({ 
                 action: 'trial', 
                 phone: phone.trim(),
-                hash: hash,          // ✅ أضف هذا السطر
+                hash: hash,
                 fingerprint: App._fingerprint() 
             })
         });
@@ -5201,7 +5208,8 @@ if (restoreBtn) {
         return false;
     }
 },
-    _activate: async (code, phone) => {
+
+_activate: async (code, phone) => {
     try {
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         const resp = await fetch(SERVER_URL, {
@@ -5211,7 +5219,7 @@ if (restoreBtn) {
                 action: 'activate', 
                 phone: phone || 'مستخدم', 
                 code: code.trim(), 
-                hash: hash,          // ✅ أضف هذا السطر
+                hash: hash,
                 fingerprint: App._fingerprint() 
             })
         });
@@ -5237,6 +5245,18 @@ if (restoreBtn) {
         return false;
     }
 },
+
+_fingerprint: () => {
+    try {
+        const screen = `${window.screen.width}x${window.screen.height}`;
+        const ua = navigator.userAgent;
+        const lang = navigator.language;
+        return `${screen}|${ua}|${lang}`;
+    } catch(e) {
+        return 'fallback_device';
+    }
+},
+
     _checkPin: () => {
         const stored = localStorage.getItem('app_pin');
         if (stored) { document.getElementById('pinScreen').classList.add('open'); document.querySelector('.pin-digit')?.focus(); } else { document.getElementById('pinScreen').classList.remove('open'); }
@@ -5290,14 +5310,14 @@ if (restoreBtn) {
             dl.appendChild(opt);
         });
     },
-    performBackup: async () => {
+ performBackup: async () => {
     try {
         const phone = localStorage.getItem('user_phone') || 'guest';
         const hash = localStorage.getItem('user_hash') || 'guest_device';
         const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
         const data = {};
         for (let s of stores) data[s] = await DB.getAll(s);
-        const resp = await fetch(SERVER_URL, {  // ✅ استخدم SERVER_URL بدلاً من الرابط الثابت
+        const resp = await fetch(SERVER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({ action: 'save', phone, hash, data: JSON.stringify(data), fingerprint: App._fingerprint() })
@@ -5306,49 +5326,57 @@ if (restoreBtn) {
         if (json && json.success) {
             localStorage.setItem('last_backup_time', Date.now().toString());
             SettingsModule.updateDisplays();
-            return true;  // ✅ نجاح
+            return true;
         } else {
-            console.warn('Backup failed:', json);
-            return false; // ❌ فشل (السيرفر رد بفشل)
+            console.warn('Backup failed (maybe not supported):', json);
+            return false;
         }
     } catch(e) {
-        console.warn('Backup error:', e);
-        return false; // ❌ فشل (خطأ في الشبكة أو السيرفر)
+        console.warn('Backup error (maybe not supported):', e);
+        return false;
     }
 },
-    restoreBackup: async (file) => {
-        try {
-            let backupData = null;
-            if (file && file.name) {
-                const text = await file.text();
-                backupData = JSON.parse(text);
-            } else {
-                const phone = localStorage.getItem('user_phone') || 'guest';
-                const hash = localStorage.getItem('user_hash') || 'guest_device';
-                const resp = await fetch(SERVER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
-                });
-                const json = await resp.json();
-                if (!json.success || !json.data) { Utils.toast('⚠️ لا توجد نسخة سحابية'); return false; }
-                backupData = JSON.parse(json.data);
+
+restoreBackup: async (file) => {
+    try {
+        let backupData = null;
+        if (file && file.name) {
+            const text = await file.text();
+            backupData = JSON.parse(text);
+        } else {
+            const phone = localStorage.getItem('user_phone') || 'guest';
+            const hash = localStorage.getItem('user_hash') || 'guest_device';
+            const resp = await fetch(SERVER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'load', phone, hash, fingerprint: App._fingerprint() })
+            });
+            const json = await resp.json();
+            if (!json.success || !json.data) { 
+                Utils.toast('⚠️ لا توجد نسخة سحابية أو غير مدعومة');
+                return false; 
             }
-            if (!backupData || !backupData.data) throw new Error('بيانات غير صالحة');
-            const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
-            for (let s of stores) {
-                if (Array.isArray(backupData.data[s])) {
-                    const tx = DB._db.transaction(s, 'readwrite');
-                    const os = tx.objectStore(s);
-                    os.clear();
-                    for (let item of backupData.data[s]) os.add(item);
-                    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
-                }
+            backupData = JSON.parse(json.data);
+        }
+        if (!backupData || !backupData.data) throw new Error('بيانات غير صالحة');
+        const stores = ['items','contacts','invoices','invoiceItems','stockMovements','metadata','cashAdjustments','auditLog'];
+        for (let s of stores) {
+            if (Array.isArray(backupData.data[s])) {
+                const tx = DB._db.transaction(s, 'readwrite');
+                const os = tx.objectStore(s);
+                os.clear();
+                for (let item of backupData.data[s]) os.add(item);
+                await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
             }
-            Utils.toast('✅ تم استعادة البيانات');
-            return true;
-        } catch(e) { console.error(e); Utils.toast('❌ فشل الاستعادة: ' + e.message); return false; }
-    },
+        }
+        Utils.toast('✅ تم استعادة البيانات');
+        return true;
+    } catch(e) {
+        console.error(e);
+        Utils.toast('❌ فشل الاستعادة: ' + e.message);
+        return false;
+    }
+},   
     updateQuickStats: async () => {
         try {
             const today = Utils.today();
