@@ -5163,16 +5163,25 @@ if (restoreBtn) {
             localStorage.setItem('cached_license', JSON.stringify(json));
             if (json.hash) localStorage.setItem('user_hash', json.hash);
             return true;
+        } else {
+            // ✅ إذا كانت الصلاحية منتهية أو غير صالحة، احذف التخزين المؤقت
+            localStorage.removeItem('cached_license');
+            return false;
         }
-    } catch(e) {}
-    const lastPing = parseInt(localStorage.getItem('last_successful_ping') || '0');
-    if (Date.now() - lastPing < 72 * 60 * 60 * 1000) {
-        const cached = localStorage.getItem('cached_license');
-        if (cached) { const l = JSON.parse(cached); if (l.isValid === true) return true; }
+    } catch(e) {
+        // ✅ في حالة فشل الشبكة، نعتمد على التخزين المؤقت فقط كحل احتياطي
+        const lastPing = parseInt(localStorage.getItem('last_successful_ping') || '0');
+        if (Date.now() - lastPing < 72 * 60 * 60 * 1000) {
+            const cached = localStorage.getItem('cached_license');
+            if (cached) { 
+                const l = JSON.parse(cached); 
+                if (l.isValid === true) return true;
+            }
+        }
+        // ✅ إذا فشل كل شيء، ارفض الدخول
+        return false;
     }
-    return false;
 },
-
 _startTrial: async (phone) => {
     try {
         const hash = localStorage.getItem('user_hash') || 'guest_device';
