@@ -2135,6 +2135,113 @@
         min-width: 100px;
       }
     }
+    /* تحسين مودال تفاصيل الفاتورة */
+#invoiceDetailModal .modal-box {
+  max-height: 92vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 20px;
+  max-width: 480px;
+  width: 100%;
+  margin: 10px auto;
+}
+
+/* تأكد من أن المحتوى الداخلي لا يزيد العرض */
+#invoiceDetailModal .modal-box #detailContent {
+  flex: 1;
+  overflow-y: visible; /* أو auto إذا أردت تمريراً داخلياً */
+  width: 100%;
+  word-wrap: break-word;
+}
+
+/* الجدول داخل المودال: تمرير أفقي إذا لزم الأمر */
+#invoiceDetailModal .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 8px 0;
+}
+
+/* تحسين عرض الخلايا في الجدول */
+#invoiceDetailModal .table-wrap table td,
+#invoiceDetailModal .table-wrap table th {
+  white-space: nowrap;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+/* إذا أردت أن تبقى الأزرار ثابتة في الأسفل (اختياري) */
+#invoiceDetailModal .modal-box #detailContent .detail-actions {
+  position: sticky;
+  bottom: 0;
+  background: #1a1a24;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+/* ====================================================== */
+/* تحسين مودال تسعير الأصناف الجديدة (بعد فاتورة مشتريات) */
+/* ====================================================== */
+
+/* جعل المودال نفسه قابل للتمرير */
+#pricingModal .modal-box {
+  max-height: 92vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px 16px;
+  max-width: 480px;
+  width: 100%;
+  margin: 10px auto;
+}
+
+/* حاوية الأصناف تأخذ المساحة المتبقية */
+#pricingModal #pricingItemsContainer {
+  flex: 1;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* جعل عناصر التسعير الداخلية تظهر بشكل مرتب */
+#pricingModal .pricing-modal-item {
+  padding: 12px 10px;
+  margin-bottom: 10px;
+}
+
+/* تحسين حقول الإدخال داخل المودال */
+#pricingModal .price-field input {
+  font-size: 15px;
+  padding: 8px 12px;
+  min-width: 80px;
+}
+
+/* جعل الأزرار في الأسفل ثابتة (تبقى ظاهرة عند التمرير) */
+#pricingModal .modal-box > div:last-child {
+  position: sticky;
+  bottom: 0;
+  background: #1a1a24;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* تحسين عرض الأزرار على الشاشات الصغيرة */
+#pricingModal .modal-box > div:last-child .btn {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+}
   </style>
 </head>
 <body>
@@ -5515,7 +5622,7 @@
           else statusClass += 'paid';
           const statusText = inv.status === 'ملغاة' ? 'ملغاة' : inv.remaining > 0 ? 'عليها باقي' : 'مدفوعة';
           const actionBtns = inv.remaining > 0 && inv.status !== 'ملغاة' ?
-            `<button class="btn btn-sm btn-gold debt-pay-btn" data-id="${inv.id}">💰 تسديد</button>` : '';
+            `<button class="btn btn-sm btn-gold debt-pay-btn" data-id="${inv.id}">?? تسديد</button>` : '';
           html += `
                 <div class="invoice-row" data-id="${inv.id}">
                   <span class="inv-id">${inv.id}</span>
