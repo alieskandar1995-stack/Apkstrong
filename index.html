@@ -5368,6 +5368,10 @@
             paymentMethod: method,
             currencyUsed: Currency.display
           };
+
+if (method === 'كاش') {
+    paidAmount = net;
+}
           const ok = await RetailModule._applyPayment(inv, paidAmount, method, 'create');
           if (!ok) { Utils.toast('❌ فشل الدفع'); return; }
           const addP = [],
