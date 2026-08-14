@@ -3088,12 +3088,13 @@
     const DB = {
       _db: null,
       _name: 'HasbaliPlusDB',
-      _version: 13,
+      _version: 14,
 
       open: () => new Promise((res, rej) => {
         const req = indexedDB.open(DB._name, DB._version);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
+          const transaction = e.target.transaction;
           const storesWithId = ['items', 'contacts', 'invoiceItems', 'stockMovements', 'cashAdjustments'];
           storesWithId.forEach(s => {
             if (!d.objectStoreNames.contains(s)) {
@@ -3107,29 +3108,24 @@
             }
           });
           if (!d.objectStoreNames.contains('invoices')) {
-            const store = d.createObjectStore('invoices', { keyPath: 'id', autoIncrement: true });
+            const store = d.createObjectStore('invoices', { keyPath: 'id' });
+            store.createIndex('currencyUsed', 'currencyUsed', { unique: false });
+            store.createIndex('date', 'date', { unique: false });
+          } else {
+            const store = transaction.objectStore('invoices');
             if (!store.indexNames.contains('currencyUsed')) {
               store.createIndex('currencyUsed', 'currencyUsed', { unique: false });
             }
             if (!store.indexNames.contains('date')) {
               store.createIndex('date', 'date', { unique: false });
             }
-          } else {
-            const store = d.objectStore('invoices');
-            if (!store.indexNames.contains('date')) {
-              store.createIndex('date', 'date', { unique: false });
-            }
           }
           if (!d.objectStoreNames.contains('invoiceItems')) {
             const store = d.createObjectStore('invoiceItems', { keyPath: 'id' });
-            if (!store.indexNames.contains('invoiceId')) {
-              store.createIndex('invoiceId', 'invoiceId', { unique: false });
-            }
-            if (!store.indexNames.contains('itemId')) {
-              store.createIndex('itemId', 'itemId', { unique: false });
-            }
+            store.createIndex('invoiceId', 'invoiceId', { unique: false });
+            store.createIndex('itemId', 'itemId', { unique: false });
           } else {
-            const store = d.objectStore('invoiceItems');
+            const store = transaction.objectStore('invoiceItems');
             if (!store.indexNames.contains('invoiceId')) {
               store.createIndex('invoiceId', 'invoiceId', { unique: false });
             }
@@ -3138,7 +3134,11 @@
             }
           }
           if (!d.objectStoreNames.contains('auditLog')) {
-            const store = d.createObjectStore('auditLog', { keyPath: 'id', autoIncrement: true });
+            const store = d.createObjectStore('auditLog', { keyPath: 'id' });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+            store.createIndex('invoiceId', 'invoiceId', { unique: false });
+          } else {
+            const store = transaction.objectStore('auditLog');
             if (!store.indexNames.contains('timestamp')) {
               store.createIndex('timestamp', 'timestamp', { unique: false });
             }
@@ -3383,7 +3383,10 @@
       set: (v) => { localStorage.setItem('cashLiquidity', String(parseFloat(v) || 0)); },
 
       addAudit: async (entry) => {
-        try { await DB.add('auditLog', entry); } catch (e) {}
+        try { 
+          if (!entry.id) entry.id = Utils.generateId('audit');
+          await DB.add('auditLog', entry); 
+        } catch (e) {}
       },
 
       adjust: async (amount, desc, type) => {
@@ -3575,7 +3578,7 @@
           document.getElementById('itemCount').textContent = items.length;
           container.querySelectorAll('.item-row').forEach(row => {
             row.addEventListener('click', function() {
-              const id = Number(this.dataset.id);
+              const id = this.dataset.id;
               ItemsModule.openDetail(id);
             });
           });
@@ -3611,7 +3614,7 @@
           container.appendChild(div);
         });
         container.querySelectorAll('.favorite-toggle-btn').forEach(b => b.addEventListener('click', async function() {
-          const id = Number(this.dataset.id);
+          const id = this.dataset.id;
           let favs = [];
           try {
             const meta = await DB.get('metadata', 'favoriteItems');
@@ -3974,7 +3977,7 @@
             if (AppState.quickModeTotal === 0) { Utils.toast('⚠️ لم تقم بإضافة أي صنف'); return; }
             for (const [id, qty] of Object.entries(AppState.quickModeQty)) {
               if (qty <= 0) continue;
-              const chk = RetailModule.validateStock(Number(id), qty);
+              const chk = RetailModule.validateStock(id, qty);
               if (!chk.valid) { Utils.toast(chk.msg); return; }
             }
             AppState.tempLines = [];
@@ -4026,7 +4029,7 @@
               const firstItem = box.querySelector('.suggestion-item');
               if (firstItem) {
                 e.preventDefault();
-                const id = Number(firstItem.dataset.id);
+                const id = firstItem.dataset.id;
                 RetailModule.selectItem(id);
                 box.style.display = 'none';
                 box.classList.remove('show');
@@ -4198,7 +4201,7 @@
               };
               const editId = this.dataset.editId;
               if (editId) {
-                data.id = Number(editId);
+                data.id = editId;
                 const ex = await DB.get('contacts', data.id);
                 if (ex) data.balance = ex.balance || 0;
                 await DB.put('contacts', data);
@@ -4319,7 +4322,7 @@
         box.querySelectorAll('.suggestion-item').forEach(el => {
           el.addEventListener('mousedown', function(e) {
             e.preventDefault();
-            const id = Number(this.dataset.id);
+            const id = this.dataset.id;
             RetailModule.selectItem(id);
             box.style.display = 'none';
             box.classList.remove('show');
@@ -4399,7 +4402,7 @@
           container.innerHTML = html;
           container.querySelectorAll('.quick-item-btn').forEach(b => {
             b.addEventListener('click', function() {
-              const id = Number(this.dataset.id);
+              const id = this.dataset.id;
               const item = AppState.items.find(i => i.id === id);
               if (!item) return;
               const cur = AppState.quickModeQty[id] || 0;
@@ -4412,7 +4415,7 @@
             });
             b.addEventListener('contextmenu', function(e) {
               e.preventDefault();
-              const id = Number(this.dataset.id);
+              const id = this.dataset.id;
               if (AppState.quickModeQty[id] > 0) {
                 AppState.quickModeQty[id]--;
                 if (!AppState.quickModeQty[id]) delete AppState.quickModeQty[id];
@@ -4440,7 +4443,7 @@
         container.innerHTML = html;
         container.querySelectorAll('.chip-remove').forEach(b => b.addEventListener('click', function(e) {
           e.stopPropagation();
-          const id = Number(this.dataset.id);
+          const id = this.dataset.id;
           if (AppState.quickModeQty[id] > 0) {
             AppState.quickModeHistory.push({ id, oldQty: AppState.quickModeQty[id], newQty: 0 });
             delete AppState.quickModeQty[id];
@@ -4876,7 +4879,7 @@
             };
             const editId = this.dataset.editId;
             if (editId) {
-              data.id = Number(editId);
+              data.id = editId;
               const ex = await DB.get('contacts', data.id);
               if (ex) data.balance = ex.balance || 0;
               await DB.put('contacts', data);
@@ -5013,7 +5016,7 @@
         let purchasePriceUSD = 0;
 
         if (opt) {
-          itemId = Number(opt.dataset.id);
+          itemId = opt.dataset.id;
           item = AppState.items.find(i => i.id === itemId);
           if (!item) { Utils.toast('⚠️ الصنف غير مسجل'); return; }
           purchasePriceUSD = item.purchasePriceUSD || 0;
@@ -5404,7 +5407,7 @@
           let err = false,
             errMsg = '';
           for (let div of inputs) {
-            const id = Number(div.dataset.id);
+            const id = div.dataset.id;
             const r = div.querySelector('.pricing-retail');
             const w = div.querySelector('.pricing-wholesale');
             const rv = Utils.parseNumber(r.value, 'سعر المفرق');
@@ -7114,11 +7117,11 @@
         document.getElementById('openItemModalBtn').addEventListener('click', () => ItemsModule.openAdd());
 
         document.getElementById('viewEditBtn').addEventListener('click', function() {
-          const id = Number(this.dataset.id);
+          const id = this.dataset.id;
           if (id) ItemsModule.switchToEdit(id);
         });
         document.getElementById('viewDeleteBtn').addEventListener('click', function() {
-          const id = Number(this.dataset.id);
+          const id = this.dataset.id;
           if (id) ItemsModule.deleteItem(id);
         });
         document.getElementById('viewCloseBtn').addEventListener('click', () => ItemsModule.closeView());
@@ -7251,7 +7254,7 @@
           };
           const editId = this.dataset.editId;
           if (editId) {
-            data.id = Number(editId);
+            data.id = editId;
             const ex = await DB.get('contacts', data.id);
             if (ex) data.balance = ex.balance || 0;
             await DB.put('contacts', data);
@@ -7349,7 +7352,7 @@
           container.innerHTML = html;
           container.querySelectorAll('[data-del]').forEach((btn) => {
             btn.addEventListener('click', async function() {
-              const id = Number(this.dataset.id);
+              const id = this.dataset.id;
               const invs = await DB.getAll('invoices');
               const rel = invs.filter((inv) => inv.contactId === id);
               if (rel.length) {
@@ -8077,7 +8080,7 @@
       document.getElementById('priceAlertSaveBtn').onclick = async function() {
         const inputs = container.querySelectorAll('.pricing-modal-item');
         for (let div of inputs) {
-          const id = Number(div.dataset.id);
+          const id = div.dataset.id;
           const retailInput = div.querySelector('.alert-retail-price');
           const wholesaleInput = div.querySelector('.alert-wholesale-price');
           const retailVal = Utils.parseNumber(retailInput.value, 'سعر المفرق') || 0;
