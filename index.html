@@ -3477,7 +3477,8 @@
       viewingItemId: null,
       isEditMode: false,
       valuationMethod: 'historical',
-      debtRevaluationEnabled: false
+      debtRevaluationEnabled: false, 
+      currentNet: 0, 
     };
 
     // =====================================================================
@@ -4929,34 +4930,34 @@
           });
         }
 
-        const creditInvoiceBtn = document.getElementById('invoiceCreditBtn');
-        if (creditInvoiceBtn) {
-          creditInvoiceBtn.addEventListener('click', () => {
-            if (AppState.currentInvoiceType === 'sales') {
-              const warn = AppState.invoiceRows.some(r => r.warning && r.itemName.trim() !== '');
-              if (warn) { Utils.toast('⚠️ توجد تحذيرات في الكميات'); return; }
-            }
-            const netText = document.getElementById('newNetTotal').textContent;
-            const net = parseFloat(netText.replace(/[^0-9.]/g, '')) || 0;
-            if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; }
-            document.getElementById('creditNetDisplay').textContent = Currency.format(net);
-            document.getElementById('creditPaidAmount').value = '0';
-            document.getElementById('creditRemainingDisplay').textContent = Currency.format(net);
-            document.getElementById('creditPaymentModal').classList.add('open');
-            document.getElementById('creditPaymentConfirm').onclick = async function() {
-              const netVal = parseFloat(document.getElementById('creditNetDisplay').textContent.replace(/[^0-9.]/g,
-                '')) || 0;
-              const paid = Utils.parseNumber(document.getElementById('creditPaidAmount').value, 'المبلغ المدفوع');
-              if (paid === null) return;
-              const paidOld = Currency.toOld(paid);
-              if (paidOld > netVal) { Utils.toast('⚠️ المدفوع لا يتجاوز الصافي'); return; }
-              document.getElementById('creditPaymentModal').classList.remove('open');
-              await InvoiceModule.save('آجل', paidOld);
-            };
-            document.getElementById('creditPaymentCancel').onclick = () => document.getElementById('creditPaymentModal')
-              .classList.remove('open');
-          });
-        }
+      const creditInvoiceBtn = document.getElementById('invoiceCreditBtn');
+if (creditInvoiceBtn) {
+  creditInvoiceBtn.addEventListener('click', () => {
+    if (AppState.currentInvoiceType === 'sales') {
+      const warn = AppState.invoiceRows.some(r => r.warning && r.itemName.trim() !== '');
+      if (warn) { Utils.toast('⚠️ توجد تحذيرات في الكميات'); return; }
+    }
+    // استخدم القيمة المخزنة مباشرة (بالليرة السورية)
+    const net = AppState.currentNet;
+    if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; }
+    document.getElementById('creditNetDisplay').textContent = Currency.format(net);
+    document.getElementById('creditPaidAmount').value = '0';
+    document.getElementById('creditRemainingDisplay').textContent = Currency.format(net);
+    document.getElementById('creditPaymentModal').classList.add('open');
+    
+    document.getElementById('creditPaymentConfirm').onclick = async function() {
+      const netVal = AppState.currentNet;  // استخدم نفس القيمة المخزنة
+      const paid = Utils.parseNumber(document.getElementById('creditPaidAmount').value, 'المبلغ المدفوع');
+      if (paid === null) return;
+      const paidOld = Currency.toOld(paid);
+      if (paidOld > netVal) { Utils.toast('⚠️ المدفوع لا يتجاوز الصافي'); return; }
+      document.getElementById('creditPaymentModal').classList.remove('open');
+      await InvoiceModule.save('آجل', paidOld);
+    };
+    
+    document.getElementById('creditPaymentCancel').onclick = () => document.getElementById('creditPaymentModal').classList.remove('open');
+  });
+}  
 
         const discPercent = document.getElementById('newDiscountPercent');
         if (discPercent) discPercent.addEventListener('input', InvoiceModule.calcSummary);
@@ -5296,6 +5297,7 @@
         const discAmt = subtotal * (discP / 100);
         const taxAmt = subtotal * (taxP / 100);
         const net = subtotal - discAmt + taxAmt;
+        AppState.currentNet = net;
         document.getElementById('newSubtotal').textContent = Currency.format(subtotal);
         document.getElementById('newDiscountAmount').textContent = Currency.format(discAmt);
         document.getElementById('newTaxAmount').textContent = Currency.format(taxAmt);
@@ -7588,25 +7590,14 @@ if (method === 'كاش') {
           }
 
           const expenses = todayInvs.filter(
-    (inv) => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات' || inv.type === 'تعديل نقدي'
-);
-for (const inv of expenses) {
-    if (inv.paymentMethod === 'كاش') {
-        const amount = inv.paidAmount || inv.netAmount || 0;
-        // ✅ التمييز بين الإيداع والسحب النقدي
-        if (inv.type === 'تعديل نقدي') {
-            if (inv.category === 'إيداع نقدي') {
-                cashIn += amount; // إيداع = دخل (موجب)
-            } else if (inv.category === 'سحب نقدي') {
-                cashOut += amount; // سحب = خرج (سالب)
-            }
-        } else {
-            // باقي المعاملات (مشتريات، مصروفات) تعامل كخرج
-            cashOut += amount;
-        }
-    }
-}
-const cashNet = cashIn - cashOut;
+            (inv) => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات' || inv.type ===
+            'تعديل نقدي'
+          );
+          for (const inv of expenses) {
+            if (inv.paymentMethod === 'كاش') cashOut += inv.paidAmount || inv.netAmount || 0;
+          }
+
+          const cashNet = cashIn - cashOut;
 
           document.getElementById('statTodaySales').textContent = Currency.format(totalSales);
           document.getElementById('statTodayProfit').textContent = Currency.format(totalSales - cogs);
