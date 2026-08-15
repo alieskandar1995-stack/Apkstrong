@@ -7588,14 +7588,25 @@ if (method === 'كاش') {
           }
 
           const expenses = todayInvs.filter(
-            (inv) => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات' || inv.type ===
-            'تعديل نقدي'
-          );
-          for (const inv of expenses) {
-            if (inv.paymentMethod === 'كاش') cashOut += inv.paidAmount || inv.netAmount || 0;
-          }
-
-          const cashNet = cashIn - cashOut;
+    (inv) => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات' || inv.type === 'تعديل نقدي'
+);
+for (const inv of expenses) {
+    if (inv.paymentMethod === 'كاش') {
+        const amount = inv.paidAmount || inv.netAmount || 0;
+        // ✅ التمييز بين الإيداع والسحب النقدي
+        if (inv.type === 'تعديل نقدي') {
+            if (inv.category === 'إيداع نقدي') {
+                cashIn += amount; // إيداع = دخل (موجب)
+            } else if (inv.category === 'سحب نقدي') {
+                cashOut += amount; // سحب = خرج (سالب)
+            }
+        } else {
+            // باقي المعاملات (مشتريات، مصروفات) تعامل كخرج
+            cashOut += amount;
+        }
+    }
+}
+const cashNet = cashIn - cashOut;
 
           document.getElementById('statTodaySales').textContent = Currency.format(totalSales);
           document.getElementById('statTodayProfit').textContent = Currency.format(totalSales - cogs);
