@@ -2960,15 +2960,27 @@
   </div>
 
   <!-- مودال تسديد دين -->
-  <div class="modal-overlay" id="debtPaymentModal">
+<!-- مودال تسديد دين -->
+<div class="modal-overlay" id="debtPaymentModal">
     <div class="modal-box">
-      <h3>💰 تسديد دفعة</h3>
-      <p style="color:var(--text3);font-size:14px;margin-bottom:10px;">أدخل المبلغ الذي ترغب في تسديده لهذه الفاتورة.</p>
-      <div class="form-group"><label>المبلغ المدفوع</label><input type="number" id="debtPaymentAmount" step="0.01" inputmode="decimal" min="0" value="0" /></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:15px;"><span style="color:var(--text3);">المتبقي الحالي</span><span style="font-weight:700;color:var(--gold);" id="debtPaymentRemainingDisplay">0.00</span></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;"><button class="btn btn-gold-outline" id="debtPaymentCancel">إلغاء</button><button class="btn btn-gold" id="debtPaymentConfirm">تأكيد</button></div>
+        <h3>💰 تسديد دفعة</h3>
+        <p style="color:var(--text3); font-size:14px; margin-bottom:10px;">
+            أدخل المبلغ الذي ترغب في تسديده لهذه الفاتورة.
+        </p>
+        <div class="form-group">
+            <label id="debtPaymentLabel">المبلغ المدفوع (ل.س)</label>
+            <input type="number" id="debtPaymentAmount" step="0.01" inputmode="decimal" min="0" value="0" />
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:15px; border-top:1px solid rgba(255,255,255,.05);">
+            <span style="color:var(--text3);">المتبقي الحالي</span>
+            <span style="font-weight:700; color:var(--gold);" id="debtPaymentRemainingDisplay">0.00</span>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+            <button class="btn btn-gold-outline" id="debtPaymentCancel">إلغاء</button>
+            <button class="btn btn-gold" id="debtPaymentConfirm">تأكيد</button>
+        </div>
     </div>
-  </div>
+</div>
 
   <!-- مودال تفاصيل الفاتورة -->
   <div class="modal-overlay" id="invoiceDetailModal">
@@ -3103,6 +3115,15 @@
         return num;
       }
     };
+    function formatInCurrency(amountInOld, currency) {
+    if (currency === 'usd') {
+        return (amountInOld / Currency.rate).toFixed(2) + ' $';
+    } else if (currency === 'new') {
+        return (amountInOld / 100).toFixed(2) + ' ل.س.ج';
+    } else {
+        return amountInOld.toFixed(2) + ' ل.س';
+    }
+}
 
     // =====================================================================
     // 2. العملات (Currency)
@@ -6718,9 +6739,12 @@ if (method === 'كاش') {
     // =====================================================================
     // 14. دوال سجل الفواتير (RecordsModule) + دالة عكس العمليات الموحدة
     // =====================================================================
-    const RecordsModule = {
-      // دالة موحدة لعكس تأثير الفاتورة (إلغاء / مرتجع)
-      reverseTransaction: async (invoiceId, reason = 'إلغاء') => {
+    // =====================================================================
+// 14. دوال سجل الفواتير (RecordsModule) + دالة عكس العمليات الموحدة
+// =====================================================================
+const RecordsModule = {
+    // دالة موحدة لعكس تأثير الفاتورة (إلغاء / مرتجع)
+    reverseTransaction: async (invoiceId, reason = 'إلغاء') => {
         const inv = await DB.get('invoices', invoiceId);
         if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return false; }
         if (inv.status === 'ملغاة') { Utils.toast('⚠️ الفاتورة ملغاة بالفعل'); return false; }
@@ -6734,134 +6758,153 @@ if (method === 'كاش') {
         const isPurchase = inv.type === 'مشتريات';
         const isReturn = inv.type === 'مرتجع مبيعات' || inv.type === 'مرتجع مشتريات';
 
-        // التحقق من إمكانية عكس العملية
-        if (isSales) {
-          for (let it of items) {
-            const item = AppState.items.find(i => i.id === it.itemId);
-            if (item) {
-              // التحقق من أن الكمية المرتجعة لا تتجاوز الكمية المباعة
-              const qtyToReturn = it.quantity * (it.wholesaleFactor || 1);
-              // يمكن إضافة تحقق إضافي هنا إذا لزم الأمر
-            }
-          }
-        }
-
         try {
-          // 1. عكس تأثير المخزون
-          const updP = [];
-          const stkP = [];
-          for (let it of items) {
-            const item = AppState.items.find(i => i.id === it.itemId);
-            if (item) {
-              let change = 0;
-              if (isSales || isReturn) {
-                // مبيعات أو مرتجع مشتريات → إعادة الكمية للمخزون
-                change = it.quantity * (it.wholesaleFactor || 1);
-              } else if (isPurchase) {
-                // مشتريات → خصم الكمية من المخزون
-                change = -(it.quantity * (it.wholesaleFactor || 1));
-              }
-              item.quantity = (item.quantity || 0) + change;
-              updP.push(DB.put('items', item));
-              stkP.push(DB.add('stockMovements', {
-                id: Utils.generateId('stk'),
-                itemId: it.itemId,
-                invoiceId: inv.id + '_reverse',
-                change: change,
-                date: Utils.nowISO(),
-                note: `عكس فاتورة ${inv.id} - ${reason}`
-              }));
+            // 1. عكس تأثير المخزون
+            const updP = [];
+            const stkP = [];
+            for (let it of items) {
+                const item = AppState.items.find(i => i.id === it.itemId);
+                if (item) {
+                    let change = 0;
+                    if (isSales || isReturn) {
+                        // مبيعات أو مرتجع مشتريات → إعادة الكمية للمخزون
+                        change = it.quantity * (it.wholesaleFactor || 1);
+                    } else if (isPurchase) {
+                        // مشتريات → خصم الكمية من المخزون
+                        change = -(it.quantity * (it.wholesaleFactor || 1));
+                    }
+                    item.quantity = (item.quantity || 0) + change;
+                    updP.push(DB.put('items', item));
+                    stkP.push(DB.add('stockMovements', {
+                        id: Utils.generateId('stk'),
+                        itemId: it.itemId,
+                        invoiceId: inv.id + '_reverse',
+                        change: change,
+                        date: Utils.nowISO(),
+                        note: `عكس فاتورة ${inv.id} - ${reason}`
+                    }));
+                }
             }
-          }
-          await Promise.all([...updP, ...stkP]);
+            await Promise.all([...updP, ...stkP]);
 
-          // 2. عكس تأثير النقدية
-          const cash = Cash.get();
-          let newCash = cash;
-          const paidAmt = inv.paidAmount || 0;
-          const netAmt = inv.netAmount || 0;
+            // 2. عكس تأثير النقدية
+            const cash = Cash.get();
+            let newCash = cash;
+            const netAmt = inv.netAmount || 0;
 
-          if (isSales || isReturn) {
-            // مبيعات أو مرتجع مشتريات → سحب النقدية (استرداد)
-            newCash = cash - netAmt;
-          } else if (isPurchase) {
-            // مشتريات → إضافة النقدية
-            newCash = cash + netAmt;
-          } else if (inv.type === 'مصروفات' || inv.type === 'تعديل نقدي') {
-            newCash = cash + netAmt;
-          }
-
-          if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لعكس العملية'); return false; }
-          Cash.set(newCash);
-          await DB.put('metadata', { key: 'cashLiquidity', value: newCash });
-
-          // 3. عكس تأثير الديون
-          if (inv.contactId && inv.paymentMethod === 'آجل') {
-            const contact = await DB.get('contacts', inv.contactId);
-            if (contact) {
-              let balChange = 0;
-              if (isSales) {
-                balChange = -inv.remaining; // تقليل الدين المستحق على العميل
-              } else if (isPurchase) {
-                balChange = inv.remaining; // تقليل الدين المستحق للمورد
-              }
-              contact.balance = (contact.balance || 0) + balChange;
-              if (contact.balance < 0) contact.balance = 0;
-              await DB.put('contacts', contact);
-              AppState.customers = await DB.getAll('contacts');
-              App.updateCustomerDatalist();
-              App.updateRetailCustomerDatalist();
+            if (isSales || isReturn) {
+                // مبيعات أو مرتجع مشتريات → سحب النقدية (استرداد)
+                newCash = cash - netAmt;
+            } else if (isPurchase) {
+                // مشتريات → إضافة النقدية
+                newCash = cash + netAmt;
+            } else if (inv.type === 'مصروفات' || inv.type === 'تعديل نقدي') {
+                newCash = cash + netAmt;
             }
-          }
 
-          // 4. تحديث حالة الفاتورة إلى ملغاة
-          inv.status = 'ملغاة';
-          inv.remaining = 0;
-          inv.paidAmount = 0;
-          await DB.put('invoices', inv);
+            if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لعكس العملية'); return false; }
+            Cash.set(newCash);
+            await DB.put('metadata', { key: 'cashLiquidity', value: newCash });
 
-          // 5. تسجيل سجل تدقيق
-          await Cash.addAudit({
-            action: 'عكس فاتورة',
-            invoiceId: inv.id,
-            amount: netAmt,
-            remaining: 0,
-            description: `عكس فاتورة ${inv.id} - ${reason}`
-          });
+            // 3. عكس تأثير الديون
+            if (inv.contactId && inv.paymentMethod === 'آجل') {
+                const contact = await DB.get('contacts', inv.contactId);
+                if (contact) {
+                    let balChange = 0;
+                    if (isSales) {
+                        balChange = -inv.remaining; // تقليل الدين المستحق على العميل
+                    } else if (isPurchase) {
+                        balChange = inv.remaining; // تقليل الدين المستحق للمورد
+                    }
+                    contact.balance = (contact.balance || 0) + balChange;
+                    if (contact.balance < 0) contact.balance = 0;
+                    await DB.put('contacts', contact);
+                    AppState.customers = await DB.getAll('contacts');
+                    App.updateCustomerDatalist();
+                    App.updateRetailCustomerDatalist();
+                }
+            }
 
-          Utils.toast(`✅ تم عكس الفاتورة ${inv.id} بنجاح (${reason})`);
-          return true;
+            // 4. تحديث حالة الفاتورة إلى ملغاة
+            inv.status = 'ملغاة';
+            inv.remaining = 0;
+            inv.paidAmount = 0;
+            await DB.put('invoices', inv);
+
+            // 5. تسجيل سجل تدقيق
+            await Cash.addAudit({
+                action: 'عكس فاتورة',
+                invoiceId: inv.id,
+                amount: netAmt,
+                remaining: 0,
+                description: `عكس فاتورة ${inv.id} - ${reason}`
+            });
+
+            Utils.toast(`✅ تم عكس الفاتورة ${inv.id} بنجاح (${reason})`);
+            return true;
         } catch (e) {
-          console.error('فشل عكس الفاتورة:', e);
-          Utils.toast('❌ فشل عكس الفاتورة');
-          return false;
+            console.error('فشل عكس الفاتورة:', e);
+            Utils.toast('❌ فشل عكس الفاتورة');
+            return false;
         }
-      },
+    },
 
-      openDebtPayment: (invoiceId) => {
+    openDebtPayment: (invoiceId) => {
         AppState.debtPaymentInvoiceId = invoiceId;
-        document.getElementById('debtPaymentAmount').value = '0';
         const inv = AppState.invoices.find(i => i.id === invoiceId);
-        if (inv) document.getElementById('debtPaymentRemainingDisplay').textContent = Currency.format(inv.remaining);
-        document.getElementById('debtPaymentModal').classList.add('open');
-        document.getElementById('debtPaymentConfirm').onclick = async function() {
-          if (!AppState.debtPaymentInvoiceId) { Utils.toast('⚠️ لم يتم تحديد الفاتورة'); return; }
-          const amt = Utils.parseNumber(document.getElementById('debtPaymentAmount').value, 'المبلغ');
-          if (amt === null || amt <= 0) { Utils.toast('⚠️ مبلغ صحيح'); return; }
-          const inv = await DB.get('invoices', AppState.debtPaymentInvoiceId);
-          if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
-          if (inv.remaining < amt) { Utils.toast('⚠️ المبلغ يتجاوز المتبقي'); return; }
-          const ok = await RetailModule._applyPayment(inv, amt, inv.paymentMethod || 'آجل', 'repayment');
-          if (!ok) { Utils.toast('❌ فشل التسديد'); return; }
-          document.getElementById('debtPaymentModal').classList.remove('open');
-          await InvoicesRecordsModule.load();
-          await App.updateQuickStats();
-        };
-        document.getElementById('debtPaymentCancel').onclick = () => document.getElementById('debtPaymentModal').classList
-          .remove('open');
-      },
+        if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
 
-      openDetail: async (invoiceId) => {
+        // تحديد عملة الفاتورة
+        const currencyUsed = inv.currencyUsed || 'old';
+        let currencySymbol = 'ل.س';
+        if (currencyUsed === 'usd') currencySymbol = '$';
+        else if (currencyUsed === 'new') currencySymbol = 'ل.س.ج';
+
+        // عرض المتبقي بعملة الفاتورة
+        document.getElementById('debtPaymentRemainingDisplay').textContent = formatInCurrency(inv.remaining, currencyUsed);
+        document.getElementById('debtPaymentAmount').value = '0';
+
+        // تحديث تسمية الحقل لإظهار العملة الصحيحة
+        const label = document.getElementById('debtPaymentLabel');
+        if (label) label.textContent = `المبلغ المدفوع (${currencySymbol})`;
+
+        document.getElementById('debtPaymentModal').classList.add('open');
+
+        document.getElementById('debtPaymentConfirm').onclick = async function() {
+            if (!AppState.debtPaymentInvoiceId) { Utils.toast('⚠️ لم يتم تحديد الفاتورة'); return; }
+            const amt = Utils.parseNumber(document.getElementById('debtPaymentAmount').value, 'المبلغ');
+            if (amt === null || amt <= 0) { Utils.toast('⚠️ مبلغ صحيح'); return; }
+            const inv2 = await DB.get('invoices', AppState.debtPaymentInvoiceId);
+            if (!inv2) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
+
+            // تحويل المبلغ المدخل إلى ليرة قديمة وفق عملة الفاتورة
+            let amountInOld = amt;
+            const cur = inv2.currencyUsed || 'old';
+            if (cur === 'usd') {
+                amountInOld = amt * Currency.rate;
+            } else if (cur === 'new') {
+                amountInOld = amt * 100;
+            }
+            // إذا كانت old، تبقى كما هي
+
+            // التحقق من أن المبلغ المحول لا يتجاوز المتبقي (المتبقي مخزّن بالليرة القديمة)
+            if (inv2.remaining < amountInOld) {
+                Utils.toast(`⚠️ المبلغ يتجاوز المتبقي (${formatInCurrency(inv2.remaining, cur)})`);
+                return;
+            }
+
+            const ok = await RetailModule._applyPayment(inv2, amountInOld, inv2.paymentMethod || 'آجل', 'repayment');
+            if (!ok) { Utils.toast('❌ فشل التسديد'); return; }
+            document.getElementById('debtPaymentModal').classList.remove('open');
+            await InvoicesRecordsModule.load();
+            await App.updateQuickStats();
+            Utils.toast(`✅ تم تسديد ${formatInCurrency(amountInOld, cur)}`);
+        };
+
+        document.getElementById('debtPaymentCancel').onclick = () => document.getElementById('debtPaymentModal').classList.remove('open');
+    },
+
+    openDetail: async (invoiceId) => {
         const inv = await DB.get('invoices', invoiceId);
         if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
         AppState.currentDetailInvoiceId = invoiceId;
@@ -6871,7 +6914,7 @@ if (method === 'كاش') {
         document.getElementById('detailDate').textContent = new Date(inv.date).toLocaleDateString();
         document.getElementById('detailCustomer').textContent = Utils.escape(cName);
         document.getElementById('detailType').textContent = inv.type === 'مبيعات' ? '🟢 مبيعات' : inv.type === 'مشتريات' ?
-          '🔵 مشتريات' : inv.type === 'مصروفات' ? '🟠 مصروفات' : inv.type === 'رأس_مال' ? '🟣 رأس مال' : '⚪ أخرى';
+            '🔵 مشتريات' : inv.type === 'مصروفات' ? '🟠 مصروفات' : inv.type === 'رأس_مال' ? '🟣 رأس مال' : '⚪ أخرى';
         document.getElementById('detailPayment').textContent = inv.paymentMethod;
         document.getElementById('detailTotal').textContent = Currency.format(inv.totalAmount);
         document.getElementById('detailDiscount').textContent = Currency.format(inv.discount || 0);
@@ -6882,232 +6925,231 @@ if (method === 'كاش') {
         let sText = inv.status === 'ملغاة' ? 'ملغاة ❌' : inv.remaining > 0 ? 'عليها باقي' : 'مدفوعة ✅';
         document.getElementById('detailStatus').textContent = sText;
         const curLbl = inv.currencyUsed ? (inv.currencyUsed === 'new' ? 'ل.س.ج' : inv.currencyUsed === 'usd' ? '$' :
-          'ل.س') : 'ل.س';
+            'ل.س') : 'ل.س';
         document.getElementById('detailCurrencyUsed').textContent = curLbl;
         const items = await DB.getInvoiceItemsByInvoiceId(inv.id);
         let itemHtml = '';
         if (!items.length) itemHtml =
-          '<tr><td colspan="4" style="text-align:center;color:var(--text4);">لا توجد بنود</td></tr>';
+            '<tr><td colspan="4" style="text-align:center;color:var(--text4);">لا توجد بنود</td></tr>';
         else {
-          for (let it of items) {
-            const p = AppState.items.find(p2 => p2.id === it.itemId);
-            const name = p ? p.name : 'صنف غير معروف';
-            const unitDisplay = it.wholesaleUnit || 'قطعة';
-            const qtyDisplay = it.isWholesale ? `${it.quantity} (${unitDisplay})` : `${it.quantity} قطعة`;
-            itemHtml +=
-              `<tr><td>${Utils.escape(name)}</td><td>${qtyDisplay}</td><td>${Currency.format(it.unitPrice)}</td><td>${Currency.format(it.total)}</td></tr>`;
-          }
+            for (let it of items) {
+                const p = AppState.items.find(p2 => p2.id === it.itemId);
+                const name = p ? p.name : 'صنف غير معروف';
+                const unitDisplay = it.wholesaleUnit || 'قطعة';
+                const qtyDisplay = it.isWholesale ? `${it.quantity} (${unitDisplay})` : `${it.quantity} قطعة`;
+                itemHtml +=
+                    `<tr><td>${Utils.escape(name)}</td><td>${qtyDisplay}</td><td>${Currency.format(it.unitPrice)}</td><td>${Currency.format(it.total)}</td></tr>`;
+            }
         }
         document.getElementById('detailItemsBody').innerHTML = itemHtml;
         document.getElementById('invoiceDetailModal').classList.add('open');
 
         // زر المرتجع يستخدم الدالة الموحدة reverseTransaction
         document.getElementById('detailReturnBtn').onclick = async function() {
-          if (!AppState.currentDetailInvoiceId) return;
-          const inv3 = await DB.get('invoices', AppState.currentDetailInvoiceId);
-          if (!inv3) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
-          if (inv3.status === 'ملغاة') { Utils.toast('⚠️ لا يمكن مرتجع لملغاة'); return; }
-          if (inv3.type !== 'مبيعات' && inv3.type !== 'مشتريات') { Utils.toast('⚠️ المرتجع فقط للمبيعات والمشتريات'); return; }
-          const items3 = await DB.getInvoiceItemsByInvoiceId(inv3.id);
-          if (!items3.length) { Utils.toast('⚠️ لا توجد بنود'); return; }
+            if (!AppState.currentDetailInvoiceId) return;
+            const inv3 = await DB.get('invoices', AppState.currentDetailInvoiceId);
+            if (!inv3) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
+            if (inv3.status === 'ملغاة') { Utils.toast('⚠️ لا يمكن مرتجع لملغاة'); return; }
+            if (inv3.type !== 'مبيعات' && inv3.type !== 'مشتريات') { Utils.toast('⚠️ المرتجع فقط للمبيعات والمشتريات'); return; }
+            const items3 = await DB.getInvoiceItemsByInvoiceId(inv3.id);
+            if (!items3.length) { Utils.toast('⚠️ لا توجد بنود'); return; }
 
-          const allReturns = AppState.invoices.filter(inv => inv.originalInvoiceId === AppState.currentDetailInvoiceId &&
-            inv.isReturn && inv.status !== 'ملغاة');
-          const retQtys = {};
-          for (let ret of allReturns) {
-            const retItems = await DB.getInvoiceItemsByInvoiceId(ret.id);
-            for (let ri of retItems) retQtys[ri.itemId] = (retQtys[ri.itemId] || 0) + ri.quantity * (ri.wholesaleFactor ||
-              1);
-          }
-          document.getElementById('returnInvoiceId').textContent = inv3.id;
-          let html2 = '',
-            totalRet = 0;
-          items3.forEach((it, idx) => {
-            const p = AppState.items.find(p2 => p2.id === it.itemId);
-            const name = p ? p.name : 'صنف غير معروف';
-            const maxQty = it.quantity - (retQtys[it.itemId] || 0);
-            if (maxQty <= 0) {
-              html2 +=
-                `<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04);padding:6px 0;opacity:.5;"><span style="flex:2;">${Utils.escape(name)}</span><span style="flex:1;">الكمية المتاحة: 0</span><span style="flex:1;">سعر الوحدة: ${Currency.format(it.unitPrice)}</span><span style="flex:1;">الإجمالي: 0.00</span></div>`;
-              return;
+            const allReturns = AppState.invoices.filter(inv => inv.originalInvoiceId === AppState.currentDetailInvoiceId &&
+                inv.isReturn && inv.status !== 'ملغاة');
+            const retQtys = {};
+            for (let ret of allReturns) {
+                const retItems = await DB.getInvoiceItemsByInvoiceId(ret.id);
+                for (let ri of retItems) retQtys[ri.itemId] = (retQtys[ri.itemId] || 0) + ri.quantity * (ri.wholesaleFactor ||
+                    1);
             }
-            const unitDisplay = it.wholesaleUnit || 'قطعة';
-            html2 +=
-              `<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04);padding:6px 0;"><span style="flex:2;">${Utils.escape(name)}</span><span style="flex:1;">الكمية: <input type="number" class="return-qty" data-item-id="${it.id}" data-max="${maxQty}" min="0" max="${maxQty}" value="0" style="width:60px;padding:4px;background:var(--bg3);border:1px solid rgba(255,255,255,.10);border-radius:8px;color:#fff;" /></span><span style="flex:1;">سعر الوحدة: ${Currency.format(it.unitPrice)}</span><span style="flex:1;">الإجمالي: <span class="return-line-total" data-item-id="${it.id}">0.00</span></span></div>`;
-          });
-          document.getElementById('returnItemsContainer').innerHTML = html2;
-          document.getElementById('returnItemsContainer').querySelectorAll('.return-qty').forEach(inp => {
-            inp.addEventListener('input', function() {
-              const id = this.dataset.itemId;
-              const qty = parseFloat(this.value) || 0;
-              const max = parseFloat(this.dataset.max);
-              if (qty > max) { this.value = max;
-                Utils.toast('⚠️ لا يمكن تجاوز الكمية المتاحة'); return; }
-              const price = parseFloat(document.querySelector(
-                `.return-line-total[data-item-id="${id}"]`).dataset.price) || 0;
-              document.querySelector(`.return-line-total[data-item-id="${id}"]`).textContent =
-                Currency.format(qty * price);
-              let total2 = 0;
-              document.querySelectorAll('.return-qty').forEach(inp2 => {
-                const q2 = parseFloat(inp2.value) || 0;
-                const p2 = parseFloat(document.querySelector(
-                  `.return-line-total[data-item-id="${inp2.dataset.itemId}"]`)?.dataset
-                  .price) || 0;
-                total2 += q2 * p2;
-              });
-              document.getElementById('returnTotalDisplay').textContent = Currency.format(total2);
+            document.getElementById('returnInvoiceId').textContent = inv3.id;
+            let html2 = '',
+                totalRet = 0;
+            items3.forEach((it, idx) => {
+                const p = AppState.items.find(p2 => p2.id === it.itemId);
+                const name = p ? p.name : 'صنف غير معروف';
+                const maxQty = it.quantity - (retQtys[it.itemId] || 0);
+                if (maxQty <= 0) {
+                    html2 +=
+                        `<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04);padding:6px 0;opacity:.5;"><span style="flex:2;">${Utils.escape(name)}</span><span style="flex:1;">الكمية المتاحة: 0</span><span style="flex:1;">سعر الوحدة: ${Currency.format(it.unitPrice)}</span><span style="flex:1;">الإجمالي: 0.00</span></div>`;
+                    return;
+                }
+                const unitDisplay = it.wholesaleUnit || 'قطعة';
+                html2 +=
+                    `<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04);padding:6px 0;"><span style="flex:2;">${Utils.escape(name)}</span><span style="flex:1;">الكمية: <input type="number" class="return-qty" data-item-id="${it.id}" data-max="${maxQty}" min="0" max="${maxQty}" value="0" style="width:60px;padding:4px;background:var(--bg3);border:1px solid rgba(255,255,255,.10);border-radius:8px;color:#fff;" /></span><span style="flex:1;">سعر الوحدة: ${Currency.format(it.unitPrice)}</span><span style="flex:1;">الإجمالي: <span class="return-line-total" data-item-id="${it.id}">0.00</span></span></div>`;
             });
-            const id = inp.dataset.itemId;
-            const price2 = items3.find(it => it.id == id)?.unitPrice || 0;
-            const span = document.querySelector(`.return-line-total[data-item-id="${id}"]`);
-            if (span) span.dataset.price = price2;
-          });
-          document.getElementById('returnTotalDisplay').textContent = '0.00';
-          document.getElementById('returnModal').classList.add('open');
+            document.getElementById('returnItemsContainer').innerHTML = html2;
+            document.getElementById('returnItemsContainer').querySelectorAll('.return-qty').forEach(inp => {
+                inp.addEventListener('input', function() {
+                    const id = this.dataset.itemId;
+                    const qty = parseFloat(this.value) || 0;
+                    const max = parseFloat(this.dataset.max);
+                    if (qty > max) { this.value = max;
+                        Utils.toast('⚠️ لا يمكن تجاوز الكمية المتاحة'); return; }
+                    const price = parseFloat(document.querySelector(
+                        `.return-line-total[data-item-id="${id}"]`).dataset.price) || 0;
+                    document.querySelector(`.return-line-total[data-item-id="${id}"]`).textContent =
+                        Currency.format(qty * price);
+                    let total2 = 0;
+                    document.querySelectorAll('.return-qty').forEach(inp2 => {
+                        const q2 = parseFloat(inp2.value) || 0;
+                        const p2 = parseFloat(document.querySelector(
+                            `.return-line-total[data-item-id="${inp2.dataset.itemId}"]`)?.dataset
+                            .price) || 0;
+                        total2 += q2 * p2;
+                    });
+                    document.getElementById('returnTotalDisplay').textContent = Currency.format(total2);
+                });
+                const id = inp.dataset.itemId;
+                const price2 = items3.find(it => it.id == id)?.unitPrice || 0;
+                const span = document.querySelector(`.return-line-total[data-item-id="${id}"]`);
+                if (span) span.dataset.price = price2;
+            });
+            document.getElementById('returnTotalDisplay').textContent = '0.00';
+            document.getElementById('returnModal').classList.add('open');
         };
 
         document.getElementById('returnConfirmBtn').onclick = async function() {
-          const retItems = [];
-          let totalRet2 = 0;
-          document.querySelectorAll('.return-qty').forEach(inp => {
-            const q = parseFloat(inp.value) || 0;
-            if (q > 0) {
-              const id = inp.dataset.itemId;
-              const price = parseFloat(document.querySelector(
-                `.return-line-total[data-item-id="${id}"]`)?.dataset.price) || 0;
-              retItems.push({ itemId: id, quantity: q, unitPrice: price });
-              totalRet2 += q * price;
-            }
-          });
-          if (totalRet2 <= 0) { Utils.toast('⚠️ حدد كمية مرتجعة'); return; }
-
-          // استخدام الدالة الموحدة لعكس العملية
-          const inv4 = await DB.get('invoices', AppState.currentDetailInvoiceId);
-          if (!inv4) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
-
-          // إنشاء فاتورة مرتجع باستخدام reverseTransaction ولكن مع تعديل جزئي
-          // بدلاً من عكس الفاتورة بالكامل، نقوم بإنشاء مرتجع جزئي
-          const method = document.getElementById('returnCompensationMethod').value;
-
-          try {
-            // إنشاء فاتورة مرتجع جزئي
-            const count2 = await DB.count('invoices');
-            const retId = Utils.generateInvoiceId(count2);
-            const retType = inv4.type === 'مبيعات' ? 'مرتجع مبيعات' : 'مرتجع مشتريات';
-
-            const subtotalRet = totalRet2;
-            const discP = inv4.discount && inv4.totalAmount ? (inv4.discount / inv4.totalAmount) : 0;
-            const taxP = inv4.tax && inv4.totalAmount ? (inv4.tax / inv4.totalAmount) : 0;
-            const discAmtRet = subtotalRet * discP;
-            const taxAmtRet = (subtotalRet - discAmtRet) * taxP;
-            const netRet = subtotalRet - discAmtRet + taxAmtRet;
-
-            const retInv = {
-              id: retId,
-              date: Utils.nowISO(),
-              type: retType,
-              category: 'مرتجع جزئي',
-              contactId: inv4.contactId || null,
-              totalAmount: subtotalRet,
-              discount: discAmtRet,
-              tax: taxAmtRet,
-              netAmount: netRet,
-              paidAmount: 0,
-              remaining: 0,
-              status: 'مغلقة',
-              paymentMethod: method === 'cash' ? 'كاش' : 'آجل',
-              currencyUsed: Currency.display,
-              originalInvoiceId: inv4.id,
-              isReturn: true
-            };
-
-            // تحديث المخزون والنقدية والديون
-            const updP = [],
-              stkP = [],
-              addP = [];
-            for (let r of retItems) {
-              const item = AppState.items.find(p => p.id == r.itemId);
-              if (item) {
-                const chg = inv4.type === 'مبيعات' ? r.quantity : -r.quantity;
-                item.quantity = (item.quantity || 0) + chg;
-                updP.push(DB.put('items', item));
-                stkP.push(DB.add('stockMovements', {
-                  id: Utils.generateId('stk'),
-                  itemId: r.itemId,
-                  invoiceId: retInv.id,
-                  change: chg,
-                  date: Utils.nowISO(),
-                  note: 'مرتجع جزئي'
-                }));
-              }
-              addP.push(DB.add('invoiceItems', {
-                id: Utils.generateId('invItem'),
-                invoiceId: retInv.id,
-                itemId: r.itemId,
-                quantity: r.quantity,
-                unitPrice: r.unitPrice,
-                total: r.quantity * r.unitPrice,
-                purchasePriceAtSale: 0
-              }));
-            }
-
-            // تحديث النقدية
-            let paidAmt = 0;
-            if (method === 'cash') {
-              paidAmt = netRet;
-              const cash3 = Cash.get();
-              let newBal;
-              if (inv4.type === 'مبيعات') { newBal = cash3 - netRet;
-                Cash.set(newBal);
-                await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); } else if (inv4.type === 'مشتريات') { newBal =
-                  cash3 + netRet;
-                Cash.set(newBal);
-                await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); }
-            } else if (method === 'credit' || method === 'discount') {
-              if (inv4.contactId) {
-                const contact = await DB.get('contacts', inv4.contactId);
-                if (contact) {
-                  let bal = 0;
-                  if (inv4.type === 'مبيعات') bal = -netRet;
-                  else if (inv4.type === 'مشتريات') bal = netRet;
-                  contact.balance = (contact.balance || 0) + bal;
-                  if (contact.balance < 0) contact.balance = 0;
-                  await DB.put('contacts', contact);
-                  AppState.customers = await DB.getAll('contacts');
-                  App.updateCustomerDatalist();
-                  App.updateRetailCustomerDatalist();
+            const retItems = [];
+            let totalRet2 = 0;
+            document.querySelectorAll('.return-qty').forEach(inp => {
+                const q = parseFloat(inp.value) || 0;
+                if (q > 0) {
+                    const id = inp.dataset.itemId;
+                    const price = parseFloat(document.querySelector(
+                        `.return-line-total[data-item-id="${id}"]`)?.dataset.price) || 0;
+                    retItems.push({ itemId: id, quantity: q, unitPrice: price });
+                    totalRet2 += q * price;
                 }
-              }
-            }
-            retInv.paidAmount = paidAmt;
-            retInv.remaining = 0;
-            await DB.add('invoices', retInv);
-            await Promise.all([...updP, ...stkP, ...addP]);
+            });
+            if (totalRet2 <= 0) { Utils.toast('⚠️ حدد كمية مرتجعة'); return; }
 
-            // تحديث الفاتورة الأصلية (تخفيض المتبقي)
-            inv4.remaining = (inv4.remaining || 0) - netRet;
-            if (inv4.remaining < 0) inv4.remaining = 0;
-            inv4.paidAmount = (inv4.paidAmount || 0) + netRet;
-            if (inv4.remaining === 0) inv4.status = 'مغلقة';
-            await DB.put('invoices', inv4);
+            // استخدام الدالة الموحدة لعكس العملية
+            const inv4 = await DB.get('invoices', AppState.currentDetailInvoiceId);
+            if (!inv4) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
 
-            Utils.toast(`✅ تم إنشاء مرتجع ${retInv.id} ${Currency.format(netRet)}`);
-            document.getElementById('returnModal').classList.remove('open');
-            await ItemsModule.load();
-            await InvoicesRecordsModule.load();
-            App.updateQuickStats();
-            InvoiceModule.buildDatalist();
-          } catch (e) { console.error(e);
-            Utils.toast('❌ فشل المرتجع'); }
+            // إنشاء فاتورة مرتجع باستخدام reverseTransaction ولكن مع تعديل جزئي
+            // بدلاً من عكس الفاتورة بالكامل، نقوم بإنشاء مرتجع جزئي
+            const method = document.getElementById('returnCompensationMethod').value;
+
+            try {
+                // إنشاء فاتورة مرتجع جزئي
+                const count2 = await DB.count('invoices');
+                const retId = Utils.generateInvoiceId(count2);
+                const retType = inv4.type === 'مبيعات' ? 'مرتجع مبيعات' : 'مرتجع مشتريات';
+
+                const subtotalRet = totalRet2;
+                const discP = inv4.discount && inv4.totalAmount ? (inv4.discount / inv4.totalAmount) : 0;
+                const taxP = inv4.tax && inv4.totalAmount ? (inv4.tax / inv4.totalAmount) : 0;
+                const discAmtRet = subtotalRet * discP;
+                const taxAmtRet = (subtotalRet - discAmtRet) * taxP;
+                const netRet = subtotalRet - discAmtRet + taxAmtRet;
+
+                const retInv = {
+                    id: retId,
+                    date: Utils.nowISO(),
+                    type: retType,
+                    category: 'مرتجع جزئي',
+                    contactId: inv4.contactId || null,
+                    totalAmount: subtotalRet,
+                    discount: discAmtRet,
+                    tax: taxAmtRet,
+                    netAmount: netRet,
+                    paidAmount: 0,
+                    remaining: 0,
+                    status: 'مغلقة',
+                    paymentMethod: method === 'cash' ? 'كاش' : 'آجل',
+                    currencyUsed: Currency.display,
+                    originalInvoiceId: inv4.id,
+                    isReturn: true
+                };
+
+                // تحديث المخزون والنقدية والديون
+                const updP = [],
+                    stkP = [],
+                    addP = [];
+                for (let r of retItems) {
+                    const item = AppState.items.find(p => p.id == r.itemId);
+                    if (item) {
+                        const chg = inv4.type === 'مبيعات' ? r.quantity : -r.quantity;
+                        item.quantity = (item.quantity || 0) + chg;
+                        updP.push(DB.put('items', item));
+                        stkP.push(DB.add('stockMovements', {
+                            id: Utils.generateId('stk'),
+                            itemId: r.itemId,
+                            invoiceId: retInv.id,
+                            change: chg,
+                            date: Utils.nowISO(),
+                            note: 'مرتجع جزئي'
+                        }));
+                    }
+                    addP.push(DB.add('invoiceItems', {
+                        id: Utils.generateId('invItem'),
+                        invoiceId: retInv.id,
+                        itemId: r.itemId,
+                        quantity: r.quantity,
+                        unitPrice: r.unitPrice,
+                        total: r.quantity * r.unitPrice,
+                        purchasePriceAtSale: 0
+                    }));
+                }
+
+                // تحديث النقدية
+                let paidAmt = 0;
+                if (method === 'cash') {
+                    paidAmt = netRet;
+                    const cash3 = Cash.get();
+                    let newBal;
+                    if (inv4.type === 'مبيعات') { newBal = cash3 - netRet;
+                        Cash.set(newBal);
+                        await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); } else if (inv4.type === 'مشتريات') { newBal =
+                            cash3 + netRet;
+                        Cash.set(newBal);
+                        await DB.put('metadata', { key: 'cashLiquidity', value: newBal }); }
+                } else if (method === 'credit' || method === 'discount') {
+                    if (inv4.contactId) {
+                        const contact = await DB.get('contacts', inv4.contactId);
+                        if (contact) {
+                            let bal = 0;
+                            if (inv4.type === 'مبيعات') bal = -netRet;
+                            else if (inv4.type === 'مشتريات') bal = netRet;
+                            contact.balance = (contact.balance || 0) + bal;
+                            if (contact.balance < 0) contact.balance = 0;
+                            await DB.put('contacts', contact);
+                            AppState.customers = await DB.getAll('contacts');
+                            App.updateCustomerDatalist();
+                            App.updateRetailCustomerDatalist();
+                        }
+                    }
+                }
+                retInv.paidAmount = paidAmt;
+                retInv.remaining = 0;
+                await DB.add('invoices', retInv);
+                await Promise.all([...updP, ...stkP, ...addP]);
+
+                // تحديث الفاتورة الأصلية (تخفيض المتبقي)
+                inv4.remaining = (inv4.remaining || 0) - netRet;
+                if (inv4.remaining < 0) inv4.remaining = 0;
+                inv4.paidAmount = (inv4.paidAmount || 0) + netRet;
+                if (inv4.remaining === 0) inv4.status = 'مغلقة';
+                await DB.put('invoices', inv4);
+
+                Utils.toast(`✅ تم إنشاء مرتجع ${retInv.id} ${Currency.format(netRet)}`);
+                document.getElementById('returnModal').classList.remove('open');
+                await ItemsModule.load();
+                await InvoicesRecordsModule.load();
+                App.updateQuickStats();
+                InvoiceModule.buildDatalist();
+            } catch (e) { console.error(e);
+                Utils.toast('❌ فشل المرتجع'); }
         };
 
         document.getElementById('returnCancelBtn').onclick = () => document.getElementById('returnModal').classList.remove(
-          'open');
+            'open');
         document.getElementById('detailCloseBtn').onclick = () => document.getElementById('invoiceDetailModal').classList
-          .remove('open');
-      }
-    };
-
+            .remove('open');
+    }
+};
     // =====================================================================
     // 15. التطبيق الرئيسي (App)
     // =====================================================================
