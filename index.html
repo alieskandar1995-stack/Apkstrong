@@ -7601,61 +7601,65 @@ const RecordsModule = {
         });
       },
 
-      updateQuickStats: async function() {
-        try {
-          const today = Utils.today();
-          const allInv = await DB.getAll('invoices');
-          const todayInvs = allInv.filter((inv) => inv.date.startsWith(today) && inv.status !== 'ملغاة');
+ updateQuickStats: async function() {
+    try {
+        const today = Utils.today();
+        const allInv = await DB.getAll('invoices');
+        const todayInvs = allInv.filter((inv) => inv.date.startsWith(today) && inv.status !== 'ملغاة');
 
-          const sales = todayInvs.filter((inv) => inv.type === 'مبيعات');
-          let totalSales = 0,
+        const sales = todayInvs.filter((inv) => inv.type === 'مبيعات');
+        let totalSales = 0,
             cogs = 0,
             cashIn = 0,
             cashOut = 0;
 
-          // استخدام الفهرس لجلب بنود الفواتير اليومية
-          const todayInvoiceIds = sales.map(inv => inv.id);
-          const allTodayItems = [];
-          for (let id of todayInvoiceIds) {
+        const todayInvoiceIds = sales.map(inv => inv.id);
+        const allTodayItems = [];
+        for (let id of todayInvoiceIds) {
             const items = await DB.getInvoiceItemsByInvoiceId(id);
             allTodayItems.push(...items);
-          }
+        }
 
-          for (const inv of sales) {
+        for (const inv of sales) {
             totalSales += inv.netAmount || 0;
             const items = allTodayItems.filter((i) => i.invoiceId === inv.id);
             for (const it of items) {
-              const cost = it.purchasePriceAtSale || 0;
-              cogs += cost * it.quantity * (it.wholesaleFactor || 1);
+                const cost = it.purchasePriceAtSale || 0;
+                cogs += cost * it.quantity * (it.wholesaleFactor || 1);
             }
             if (inv.paymentMethod === 'كاش') cashIn += inv.paidAmount || 0;
-          }
-
-          const expenses = todayInvs.filter(
-            (inv) => inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'مشتريات' || inv.type ===
-            'تعديل نقدي'
-          );
-          for (const inv of expenses) {
-            if (inv.paymentMethod === 'كاش') cashOut += inv.paidAmount || inv.netAmount || 0;
-          }
-
-          const cashNet = cashIn - cashOut;
-
-          document.getElementById('statTodaySales').textContent = Currency.format(totalSales);
-          document.getElementById('statTodayProfit').textContent = Currency.format(totalSales - cogs);
-          const cashNetEl = document.getElementById('statTodayCashNet');
-          cashNetEl.textContent = Currency.format(cashNet);
-          cashNetEl.className = 'stat-value ' + (cashNet >= 0 ? 'green' : 'red');
-          document.getElementById('statTodayInvoices').textContent = todayInvs.length;
-
-          const equity = await Cash.calcEquity();
-          document.getElementById('statTotalEquity').textContent = Currency.format(equity);
-
-          SettingsModule.updateDisplays();
-        } catch (e) {
-          console.warn('⚠️ فشل تحديث الإحصائيات السريعة:', e);
         }
-      },
+
+        // تصنيف التعديلات النقدية بشكل صحيح
+        const otherInvs = todayInvs.filter((inv) => inv.type !== 'مبيعات' && inv.type !== 'مشتريات');
+
+        for (const inv of otherInvs) {
+            if (inv.paymentMethod !== 'كاش') continue;
+            const amount = inv.paidAmount || inv.netAmount || 0;
+            if (inv.type === 'تعديل نقدي' && inv.category === 'إيداع نقدي') {
+                cashIn += amount;
+            } else {
+                cashOut += amount;
+            }
+        }
+
+        const cashNet = cashIn - cashOut;
+
+        document.getElementById('statTodaySales').textContent = Currency.format(totalSales);
+        document.getElementById('statTodayProfit').textContent = Currency.format(totalSales - cogs);
+        const cashNetEl = document.getElementById('statTodayCashNet');
+        cashNetEl.textContent = Currency.format(cashNet);
+        cashNetEl.className = 'stat-value ' + (cashNet >= 0 ? 'green' : 'red');
+        document.getElementById('statTodayInvoices').textContent = todayInvs.length;
+
+        const equity = await Cash.calcEquity();
+        document.getElementById('statTotalEquity').textContent = Currency.format(equity);
+
+        SettingsModule.updateDisplays();
+    } catch (e) {
+        console.warn('⚠️ فشل تحديث الإحصائيات السريعة:', e);
+    }
+},        
 
       updateAllDisplays: function() {
         ItemsModule.render();
