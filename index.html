@@ -930,7 +930,7 @@
       <div class="stat-item"><span class="material-symbols-outlined">account_balance</span> رأس المال: <span class="stat-value equity" id="statTotalEquity">0</span></div>
     </div>
 
-<div id="exchangeRateBar" style="display:none;">
+    <div id="exchangeRateBar" style="display:none;">
       <span class="label"><span class="material-symbols-outlined">currency_exchange</span> سعر صرف الدولار (ل.س/$)</span>
       <div class="input-group">
         <input type="number" id="exchangeRateTop" step="0.01" inputmode="decimal" min="0" placeholder="13000" />
@@ -1072,10 +1072,13 @@
           </div>
 
           <div class="invoice-entry-row">
-            <div class="form-group">
+            <!-- ===== START: Step 1 - Custom Suggestions Input (replaces datalist) ===== -->
+            <div class="form-group" style="position:relative;">
               <label>اسم الصنف</label>
-              <input type="text" id="invoiceRowName" list="invoiceItemsDatalist" placeholder="اكتب اسم الصنف..." />
+              <input type="text" id="invoiceRowName" placeholder="اكتب اسم الصنف..." style="width:100%; padding:10px 14px; border-radius:var(--radius); background:var(--bg3); border:1px solid var(--border2); color:var(--text); font-size:14px; outline:none;" />
+              <div class="suggestions-box" id="invoiceItemSuggestions" style="position:absolute; top:100%; left:0; right:0; z-index:1000; display:none; max-height:200px; overflow-y:auto; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 8px 24px var(--shadow);"></div>
             </div>
+            <!-- ===== END: Step 1 ===== -->
             <div class="form-group">
               <label>الوحدة</label>
               <input type="text" id="invoiceRowUnit" list="unitSuggestions" placeholder="قطعة، كيلو..." />
@@ -1269,7 +1272,7 @@
           <button class="btn" data-settings-tab="privacy">🔒 الخصوصية</button>
           <button class="btn" data-settings-tab="help">📘 تعليمات الاستخدام</button>
           <button class="btn btn-gold-outline" id="manageCustomersBtn"><span class="material-symbols-outlined">groups</span> إدارة العملاء</button>
-<button class="btn btn-gold-outline" id="manageSubscriptionBtn"><span class="material-symbols-outlined">sell</span> إدارة الاشتراك</button>
+          <button class="btn btn-gold-outline" id="manageSubscriptionBtn"><span class="material-symbols-outlined">sell</span> إدارة الاشتراك</button>
         </div>
 
         <!-- تبويب الأموال -->
@@ -1303,6 +1306,24 @@
             </div>
             <div id="fixedExpenseList" style="margin-top:10px;"></div>
           </div>
+         <!-- ===== START: إضافة منهجية التقييم ===== -->
+          <div class="settings-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px;">
+            <h4><span class="material-symbols-outlined">inventory</span> منهجية تقييم المخزون</h4>
+            <div style="margin:8px 0 12px; display:flex; gap:20px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text2);">
+                <input type="radio" name="valuationMethod" value="historical" checked /> 
+                <span>📜 تاريخي (سعر الشراء المسجل)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text2);">
+                <input type="radio" name="valuationMethod" value="replacement" /> 
+                <span>🔄 استبدال (سعر السوق الحالي بالدولار)</span>
+              </label>
+            </div>
+            <div style="font-size:13px; color:var(--text4); margin-top:4px;">
+              💡 يؤثر هذا الخيار على حساب <strong>تكلفة البضاعة المباعة (COGS)</strong> وقيمة المخزون في التقارير المالية.
+            </div>
+          </div>
+          <!-- ===== END: إضافة منهجية التقييم ===== -->
 
           <div class="settings-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px;">
             <h4><span class="material-symbols-outlined">autorenew</span> تحديث الأسعار وإعادة تقييم الديون</h4>
@@ -1777,12 +1798,10 @@
           osc.stop(ctx.currentTime + .25);
         } catch (e) {}
       },
-      // استخدام fallback لـ crypto.randomUUID
       generateId: (prefix = 'id') => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
           return prefix + '_' + crypto.randomUUID();
         }
-        // fallback
         const rand = () => Math.random().toString(36).substring(2, 9);
         return prefix + '_' + Date.now() + '_' + rand();
       },
@@ -1878,10 +1897,17 @@
         const old = this.getPrice(priceObj);
         return this.format(old);
       },
+      // ===== START: إصلاح الدالة التاريخية لتستخدم التكلفة الثابتة =====
       getHistoricalCostInSYP: function(item) {
         if (!item) return 0;
+        // FIX: استخدام التكلفة التاريخية الثابتة: سعر الشراء بالدولار × سعر الصرف وقت الشراء
+        if (item.purchasePriceUSD !== undefined && item.exchangeRateAtPurchase !== undefined && item.exchangeRateAtPurchase > 0) {
+          return item.purchasePriceUSD * item.exchangeRateAtPurchase;
+        }
+        // Fallback للبيانات القديمة التي قد لا تحتوي على الحقول الجديدة
         return Currency.getPrice(item.purchasePrice) || 0;
       },
+      // ===== END: إصلاح الدالة التاريخية =====
       getReplacementCostInSYP: function(item) {
         if (!item) return 0;
         if (item.purchasePriceUSD !== undefined && item.purchasePriceUSD > 0) {
@@ -1905,7 +1931,7 @@
     const DB = {
       _db: null,
       _name: 'HasbaliPlusDB',
-      _version: 23, // زيادة الإصدار لتحديث الفهارس إن لزم
+      _version: 23,
 
       open: () => new Promise((res, rej) => {
         const req = indexedDB.open(DB._name, DB._version);
@@ -2504,7 +2530,8 @@
         ItemsModule._cache.lastUpdate = Date.now();
         ItemsModule.render();
         await ItemsModule.populateFavorites();
-        InvoiceModule.buildDatalist();
+        // ===== STEP 4a: Commented out InvoiceModule.buildDatalist(); =====
+        // InvoiceModule.buildDatalist();
         ItemsModule._updateUnitDatalist();
         App.updateCustomerDatalist();
         App.updateRetailCustomerDatalist();
@@ -2567,7 +2594,6 @@
           container.innerHTML = '';
           container.appendChild(fragment);
           document.getElementById('itemCount').textContent = items.length;
-          // استخدام click بدلاً من mousedown
           container.addEventListener('click', function(e) {
             const row = e.target.closest('.item-row');
             if (row) {
@@ -2782,7 +2808,6 @@
           if (retail === null || retail <= 0) { Utils.toast('⚠️ يرجى إدخال سعر مفرق صحيح'); return; }
           if (purchase !== null && purchase < 0) { Utils.toast('⚠️ سعر الشراء لا يمكن أن يكون سالباً'); return; }
 
-          // ===== فحص الباركود المكرر =====
           if (barcode) {
             const allItems = await DB.getAll('items');
             const existing = allItems.find(it => it.barcode === barcode && (AppState.editingItemId ? it.id !== AppState.editingItemId : true));
@@ -2956,11 +2981,15 @@
             return;
           }
 
+          // FIX: الحفاظ على exchangeRateAtPurchase الأصلي عند تحديث الأسعار
           for (let item of itemsToUpdate) {
             try {
               const retailUSD = item.retailPriceUSD || 0;
               const wholesaleUSD = item.wholesalePriceUSD || 0;
               const purchaseUSD = item.purchasePriceUSD || 0;
+
+              // نحتفظ بسعر الصرف الأصلي إذا كان موجوداً، وإلا نستخدم السعر الحالي
+              const originalRate = item.exchangeRateAtPurchase || rate;
 
               const newRetailOld = retailUSD * rate;
               const newWholesaleOld = wholesaleUSD * rate;
@@ -2970,7 +2999,11 @@
               item.wholesalePrice = Currency.makeObj(newWholesaleOld, 'old');
               item.purchasePrice = Currency.makeObj(newPurchaseOld, 'old');
               item.priceUpdated = true;
-              item.exchangeRateAtPurchase = rate;
+              // نحافظ على exchangeRateAtPurchase الأصلي للتقييم التاريخي
+              // ولا نقوم بتحديثه إلا إذا كان غير موجود
+              if (item.exchangeRateAtPurchase === undefined) {
+                item.exchangeRateAtPurchase = originalRate;
+              }
 
               await DB.put('items', item);
               updated++;
@@ -3718,6 +3751,7 @@
         return true;
       },
 
+      // ===== START: إصلاح المعاملات الذرية في processPayment =====
       processPayment: async (paymentMethod, customerData) => {
         if (!AppState.tempLines.length) { Utils.toast('⚠️ لا توجد أصناف'); return; }
         for (let line of AppState.tempLines) {
@@ -3725,101 +3759,160 @@
           if (!item) { Utils.toast(`⚠️ "${line.itemName}" غير موجود`); return; }
           if ((item.quantity || 0) < line.quantity) { Utils.toast(`⚠️ كمية "${item.name}" غير كافية`); return; }
         }
+
         let subtotal = AppState.tempLines.reduce((s, l) => s + l.total, 0);
         const discP = parseFloat(document.getElementById('retailDiscountPercent').value) || 0;
         const discAmt = subtotal * (discP / 100);
         const net = subtotal - discAmt;
+
         if (paymentMethod === 'آجل' && !customerData) { Utils.toast('⚠️ يجب اختيار عميل'); return; }
+
+        let contactId = customerData?.contactId || null;
+        let customerName = 'زائر';
+        if (paymentMethod === 'آجل' && customerData) {
+          customerName = customerData.name.trim();
+          // لا نقوم بإضافة العميل هنا خارج المعاملة، بل سنقوم بذلك داخل المعاملة.
+        }
+
+        const count = await DB.count('invoices');
+        const invId = Utils.generateInvoiceId(count);
+        const rate = Currency.rate;
+        const usdValue = net / rate;
+
+        const inv = {
+          id: invId,
+          date: Utils.nowISO(),
+          type: 'مبيعات',
+          category: 'مفرق',
+          contactId: contactId || null,
+          customerName: customerName || 'زائر',
+          totalAmount: subtotal,
+          discount: discAmt,
+          tax: 0,
+          netAmount: net,
+          paidAmount: 0,
+          remaining: net,
+          status: 'مفتوحة',
+          paymentMethod: paymentMethod,
+          currencyUsed: 'old',
+          exchangeRateAtCreation: rate,
+          usdValueAtCreation: usdValue,
+          usdRemaining: usdValue
+        };
+
+        let paidAmount = paymentMethod === 'كاش' ? net : (customerData?.paidAmount || 0);
+        if (paidAmount > net) { Utils.toast('⚠️ المبلغ المدفوع يتجاوز قيمة الفاتورة'); return; }
+
+        // ===== START: معاملة ذرية مع تضمين 'metadata' و 'contacts' =====
+        const currentCash = Cash.get();
+        let newCash = currentCash;
+        if (paymentMethod === 'كاش') {
+          newCash = currentCash + net;
+        } else {
+          newCash = currentCash + paidAmount;
+        }
+        if (newCash < 0) { throw new Error('⚠️ الرصيد النقدي غير كافٍ'); }
+
+        // FIX: تضمين 'metadata' في المعاملة لضمان اتساق الرصيد النقدي
+        const tx = DB._db.transaction(['invoices', 'invoiceItems', 'items', 'stockMovements', 'contacts', 'cashAdjustments', 'metadata'], 'readwrite');
+        const metadataStore = tx.objectStore('metadata');
+        const contactStore = tx.objectStore('contacts');
+        const invStore = tx.objectStore('invoices');
+        const itemStore = tx.objectStore('items');
+        const invItemStore = tx.objectStore('invoiceItems');
+        const stkStore = tx.objectStore('stockMovements');
+        const cashAdjStore = tx.objectStore('cashAdjustments');
+
         try {
-          let contactId = customerData?.contactId || null;
-          let customerName = 'زائر';
-          if (paymentMethod === 'آجل' && customerData) {
-            customerName = customerData.name.trim();
-            if (contactId) {
-              const contact = AppState.customers.find(c => c.id === contactId);
-              if (contact) customerName = contact.name;
-            } else {
-              const contact = {
-                id: Utils.generateId('contact'),
-                name: customerName,
-                phone: '',
-                address: '',
-                balance: 0,
-                type: 'customer'
-              };
-              if (!contact.name) { Utils.toast('⚠️ اسم العميل مطلوب'); return; }
-              contactId = await DB.add('contacts', contact);
-              const customers = await DB.getAll('contacts');
-              store.batchUpdate({ customers: customers });
-              App.updateCustomerDatalist();
-              App.updateRetailCustomerDatalist();
-              InvoiceModule._populateCustomerSelect();
+          // FIX: إضافة العميل الجديد داخل المعاملة إذا كان آجل ولم يتم العثور عليه
+          if (paymentMethod === 'آجل' && !contactId && customerData) {
+            const newContact = {
+              id: Utils.generateId('contact'),
+              name: customerData.name.trim(),
+              phone: '',
+              address: '',
+              balance: 0,
+              type: 'customer'
+            };
+            const addReq = contactStore.add(newContact);
+            contactId = await new Promise((res, rej) => {
+              addReq.onsuccess = () => res(addReq.result);
+              addReq.onerror = () => rej(addReq.error);
+            });
+            // تحديث الفاتورة بـ contactId الجديد
+            inv.contactId = contactId;
+            inv.customerName = newContact.name;
+          }
+
+          // تحديث الرصيد النقدي في metadata داخل المعاملة
+          metadataStore.put({ key: 'cashLiquidity', value: newCash });
+
+          // تحديث الفاتورة
+          inv.paidAmount = paidAmount;
+          inv.remaining = net - paidAmount;
+          inv.status = inv.remaining === 0 ? 'مغلقة' : 'مفتوحة';
+          invStore.add(inv);
+
+          // تحديث رصيد العميل إذا كان آجل
+          if (paymentMethod === 'آجل' && contactId) {
+            const contactRequest = contactStore.get(contactId);
+            const contact = await new Promise((res, rej) => {
+              contactRequest.onsuccess = () => res(contactRequest.result);
+              contactRequest.onerror = () => rej(contactRequest.error);
+            });
+            if (contact) {
+              contact.balance = (contact.balance || 0) + inv.remaining;
+              contactStore.put(contact);
             }
           }
-          const count = await DB.count('invoices');
-          const invId = Utils.generateInvoiceId(count);
-          const inv = {
-            id: invId,
-            date: Utils.nowISO(),
-            type: 'مبيعات',
-            category: 'مفرق',
-            contactId: contactId || null,
-            customerName: customerName || 'زائر',
-            totalAmount: subtotal,
-            discount: discAmt,
-            tax: 0,
-            netAmount: net,
-            paidAmount: 0,
-            remaining: net,
-            status: 'مفتوحة',
-            paymentMethod: paymentMethod,
-            currencyUsed: 'old'
-          };
-          let paidAmount = paymentMethod === 'كاش' ? net : (customerData?.paidAmount || 0);
-        
-          if (paidAmount > net) { Utils.toast('⚠️ المبلغ المدفوع يتجاوز قيمة الفاتورة'); return; }
-          const ok = await RetailModule._applyPayment(inv, paidAmount, paymentMethod, 'create');
-          if (!ok) { Utils.toast('❌ فشل الدفع'); return; }
-          const addP = [],
-            updP = [],
-            stkP = [];
+
+          // معالجة بنود الفاتورة وتحديث المخزون
           for (let line of AppState.tempLines) {
             const item = AppState.items.find(i => i.id === line.itemId);
-            const costAtSale = item ? Currency.getHistoricalCostInSYP(item) : 0;
-            addP.push(DB.add('invoiceItems', {
+            if (!item) continue;
+            const costAtSale = Currency.getHistoricalCostInSYP(item);
+            invItemStore.add({
               id: Utils.generateId('invItem'),
               invoiceId: inv.id,
               itemId: line.itemId,
               quantity: line.quantity,
               unitPrice: line.unitPrice,
               total: line.total,
-              purchasePriceAtSale: costAtSale
-            }));
-            if (item) {
-              item.quantity = (item.quantity || 0) - line.quantity;
-              updP.push(DB.put('items', item));
-              stkP.push(DB.add('stockMovements', {
-                id: Utils.generateId('stk'),
-                itemId: line.itemId,
-                invoiceId: inv.id,
-                change: -line.quantity,
-                date: Utils.nowISO()
-              }));
-            }
-          }
-          await Promise.all([...addP, ...updP, ...stkP]);
-          if (paymentMethod === 'آجل' && contactId) {
-            await Cash.addAudit({
-              action: 'بيع آجل',
+              purchasePriceAtSale: costAtSale,
+              isWholesale: false,
+              wholesaleFactor: 1
+            });
+            item.quantity = (item.quantity || 0) - line.quantity;
+            itemStore.put(item);
+            stkStore.add({
+              id: Utils.generateId('stk'),
+              itemId: line.itemId,
               invoiceId: inv.id,
-              amount: paidAmount,
-              remaining: net - paidAmount,
-              description: `فاتورة آجل للمفرق - ${customerName}`
+              change: -line.quantity,
+              date: Utils.nowISO()
             });
           }
+
+          // تسجيل تعديل نقدي
+          cashAdjStore.add({
+            id: Utils.generateId('cashAdj'),
+            date: Utils.nowISO(),
+            amount: paidAmount,
+            type: paymentMethod === 'كاش' ? 'deposit' : 'credit',
+            description: `بيع ${paymentMethod === 'كاش' ? 'كاش' : 'آجل'} - ${inv.id}`,
+            oldBalance: currentCash,
+            newBalance: newCash
+          });
+
+          await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+
+          // FIX: تحديث localStorage بعد نجاح المعاملة
+          Cash.set(newCash);
+
           Utils.toast(`✅ تم البيع (${paymentMethod}) · ${Currency.format(net)}`);
           if (navigator.vibrate) navigator.vibrate(50);
           Utils.playBeep();
+
           store.batchUpdate({ tempLines: [], tempLineId: 0 });
           RetailModule.renderTemp();
           document.getElementById('retailDiscountPercent').value = '0';
@@ -3827,11 +3920,15 @@
           await ItemsModule.load(true);
           await InvoicesRecordsModule.load();
           App.updateQuickStats();
+
         } catch (e) {
-          Utils.logError('processPayment', e);
-          Utils.toast('❌ فشل البيع');
+          tx.abort();
+          Utils.logError('processPayment transaction', e);
+          Utils.toast('❌ فشل البيع: ' + (e.message || 'غير معروف'));
         }
+        // ===== END: معاملة ذرية =====
       },
+      // ===== END: إصلاح المعاملات الذرية في processPayment =====
 
       _applyPayment: async (inv, paid, method, op) => {
         if (paid < 0) { Utils.toast('⚠️ المبلغ المدفوع يجب أن يكون موجباً'); return false; }
@@ -3860,6 +3957,12 @@
         if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لعملية الدفع'); return false; }
         Cash.set(newCash);
         await DB.put('metadata', { key: 'cashLiquidity', value: newCash });
+
+        if (inv.usdRemaining !== undefined && paid > 0) {
+          const rate = inv.exchangeRateAtCreation || Currency.rate;
+          const paidUSD = paid / rate;
+          inv.usdRemaining = Math.max(0, (inv.usdRemaining || 0) - paidUSD);
+        }
 
         if (inv.contactId) {
           const contact = await DB.get('contacts', inv.contactId);
@@ -4117,7 +4220,8 @@
         const taxPercent = document.getElementById('newTaxPercent');
         if (taxPercent) taxPercent.addEventListener('input', InvoiceModule.calcSummary);
 
-        InvoiceModule.buildDatalist();
+        // ===== STEP 4b: Commented out InvoiceModule.buildDatalist(); =====
+        // InvoiceModule.buildDatalist();
 
         // ===== START: تعديل اختيار العميل (ربط أحداث) =====
         const customerInput = document.getElementById('invoiceCustomerInput');
@@ -4171,7 +4275,6 @@
             }, 200);
           });
 
-          // عند اختيار العميل من المودال
           const addCustomerBtn = document.getElementById('addCustomerFromInvoiceBtn');
           if (addCustomerBtn) {
             addCustomerBtn.addEventListener('click', function() {
@@ -4179,8 +4282,6 @@
               App.openCustomerAddModal(type);
             });
           }
-
-          // تحديث الحقول عند تغيير نوع الفاتورة (يتم في show)
         }
         // ===== END: تعديل اختيار العميل =====
 
@@ -4188,6 +4289,84 @@
           const type = AppState.currentInvoiceType === 'sales' ? 'customer' : 'supplier';
           App.openCustomerAddModal(type);
         });
+
+        // ===== START: Step 2 - Custom Suggestions Box for Invoice Items (Replaces datalist) =====
+        const itemNameInput = document.getElementById('invoiceRowName');
+        const suggestionsBoxItems = document.getElementById('invoiceItemSuggestions');
+
+        if (itemNameInput && suggestionsBoxItems) {
+          const renderItemSuggestions = (query) => {
+            const q = query.trim().toLowerCase();
+            if (!q) {
+              suggestionsBoxItems.style.display = 'none';
+              suggestionsBoxItems.classList.remove('show');
+              return;
+            }
+            const matches = AppState.items.filter(it =>
+              it.name.toLowerCase().includes(q) || (it.barcode && it.barcode.includes(q))
+            );
+            if (!matches.length) {
+              suggestionsBoxItems.style.display = 'none';
+              suggestionsBoxItems.classList.remove('show');
+              return;
+            }
+            let html = '';
+            matches.slice(0, 15).forEach(it => {
+              const priceDisplay = Currency.displayPrice(it.retailPrice);
+              html += `<div class="suggestion-item" data-id="${it.id}" style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--border); color:var(--text); display:flex; justify-content:space-between; align-items:center;">
+                          <span>${Utils.escape(it.name)}</span>
+                          <span style="color:var(--gold); font-weight:600; font-size:13px;">${priceDisplay}</span>
+                      </div>`;
+            });
+            suggestionsBoxItems.innerHTML = html;
+            suggestionsBoxItems.style.display = 'block';
+            suggestionsBoxItems.classList.add('show');
+
+            suggestionsBoxItems.querySelectorAll('.suggestion-item').forEach(el => {
+              el.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                const selectedItem = AppState.items.find(i => i.id === id);
+                if (selectedItem) {
+                  itemNameInput.value = selectedItem.name;
+                  itemNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  suggestionsBoxItems.style.display = 'none';
+                  suggestionsBoxItems.classList.remove('show');
+                  itemNameInput.blur();
+                  document.getElementById('invoiceRowQty')?.focus();
+                }
+              });
+            });
+          };
+
+          const debouncedRenderItems = Utils.debounce(() => renderItemSuggestions(itemNameInput.value), 200);
+
+          itemNameInput.addEventListener('input', debouncedRenderItems);
+          itemNameInput.addEventListener('focus', function() {
+            if (this.value.trim()) renderItemSuggestions(this.value);
+            else {
+              suggestionsBoxItems.style.display = 'none';
+              suggestionsBoxItems.classList.remove('show');
+            }
+          });
+          itemNameInput.addEventListener('blur', function() {
+            setTimeout(() => {
+              suggestionsBoxItems.style.display = 'none';
+              suggestionsBoxItems.classList.remove('show');
+            }, 200);
+          });
+
+          itemNameInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              const firstItem = suggestionsBoxItems.querySelector('.suggestion-item');
+              if (firstItem) {
+                e.preventDefault();
+                firstItem.click();
+              }
+            }
+          });
+        }
+        // ===== END: Step 2 =====
       },
 
       _updatePriceFromSaleType: function() {
@@ -4226,17 +4405,12 @@
         dl.innerHTML = html;
       },
 
-      // ===== START: تعديل اختيار العميل (تحديث الاقتراحات عند تغيير النوع) =====
       _populateCustomerSelect: function() {
-        // هذه الدالة لم تعد تستخدم select، لكن نحتفظ بها لتحديث حقل الاسم إن لزم
-        // نقوم بتحديث الحقل المخفي والمدخل إذا كان هناك عميل محدد
         const input = document.getElementById('invoiceCustomerInput');
         const hidden = document.getElementById('invoiceCustomerId');
         if (input && hidden) {
-          // لا نقوم بتغيير القيمة تلقائياً، لأن المستخدم قد يكون اختار بالفعل
-          // لكننا نحرص على مسح الأخطاء
+          // لا نقوم بتغيير القيمة تلقائياً
         }
-        // نقوم بتحديث datalist إن وجد (اختياري)
         const dl = document.getElementById('customerDatalist');
         if (dl) {
           const type = AppState.currentInvoiceType === 'sales' ? 'customer' : 'supplier';
@@ -4249,7 +4423,6 @@
           });
         }
       },
-      // ===== END: تعديل اختيار العميل =====
 
       show: (type) => {
         store.batchUpdate({ currentInvoiceType: type });
@@ -4266,17 +4439,13 @@
           document.getElementById('invoiceRowWholesaleGroup').style.display = 'none';
         }
         document.getElementById('invoiceDateNew').value = Utils.today();
-        // ===== START: تعديل اختيار العميل (مسح الحقول) =====
         document.getElementById('invoiceCustomerInput').value = '';
         document.getElementById('invoiceCustomerId').value = '';
-        // ===== END: تعديل اختيار العميل =====
-        // نحدث الاقتراحات
         const suggestionsBox = document.getElementById('invoiceCustomerSuggestions');
         if (suggestionsBox) {
           suggestionsBox.style.display = 'none';
           suggestionsBox.classList.remove('show');
         }
-        // نحدث datalist
         InvoiceModule._populateCustomerSelect();
 
         document.getElementById('newDiscountPercent').value = '0';
@@ -4325,7 +4494,19 @@
         let price = parseFloat(document.getElementById('invoiceRowPrice').value) || 0;
 
         if (!name) { Utils.toast('⚠️ يرجى إدخال اسم الصنف'); return; }
-        const opt = document.querySelector(`#invoiceItemsDatalist option[value="${Utils.escape(name)}"]`);
+        // ===== START: Step 3 - Replace datalist query with AppState.items.find =====
+        const foundItem = AppState.items.find(it => it.name === name);
+        const opt = foundItem ? { 
+            dataset: { 
+                id: foundItem.id, 
+                purchase: Currency.getPrice(foundItem.purchasePrice), 
+                retail: Currency.getPrice(foundItem.retailPrice), 
+                wholesale: Currency.getPrice(foundItem.wholesalePrice), 
+                wholesaleUnit: foundItem.wholesaleUnit || '', 
+                wholesaleFactor: foundItem.wholesaleUnitFactor || 1 
+            } 
+        } : null;
+        // ===== END: Step 3 =====
         let itemId = null;
         let item = null;
         let unitPrice = 0;
@@ -4421,16 +4602,18 @@
         if (unitPrice <= 0) { Utils.toast('⚠️ يرجى تحديد سعر الوحدة'); return; }
         const total = qty * unitPrice;
 
+        // ===== START: إصلاح حساب profitUSD للجملة =====
         let profitUSD = 0;
         if (AppState.currentInvoiceType === 'sales' && item) {
           const unitPriceUSD = unitPrice / Currency.rate;
-          let priceInUSD = 0;
-          if (Currency.display === 'usd') priceInUSD = unitPriceUSD;
-          else if (Currency.display === 'new') priceInUSD = unitPriceUSD / Currency.rate;
-          else priceInUSD = unitPriceUSD / Currency.rate;
-          const costUSD = purchasePriceUSD || 0;
-          profitUSD = priceInUSD - costUSD;
+          // سعر البيع بالدولار (نفس سعر الوحدة بالدولار)
+          const priceInUSD = unitPriceUSD;
+          const costUSD = item.purchasePriceUSD || 0;
+          // إذا كانت الجملة، نضرب التكلفة في عامل التحويل للحصول على تكلفة وحدة الجملة
+          const costForUnit = isWholesale ? costUSD * wholesaleFactor : costUSD;
+          profitUSD = priceInUSD - costForUnit;
         }
+        // ===== END: إصلاح حساب profitUSD للجملة =====
 
         const row = {
           id: ++AppState.rowCounter,
@@ -4526,6 +4709,7 @@
         document.getElementById('newNetTotal').style.color = hasWarn ? '#ff6b6b' : 'var(--gold)';
       },
 
+      // ===== START: إصلاح المعاملات الذرية في save + إصلاح COGS للأصناف الجديدة =====
       save: async (method, paidAmount) => {
         const valid = AppState.invoiceRows.filter(r => r.itemName.trim() !== '' && r.quantity > 0 && r.unitPrice > 0);
         if (!valid.length) { Utils.toast('⚠️ أضف صفوفاً صالحة (اسم، كمية، سعر)'); return; }
@@ -4552,20 +4736,16 @@
         if (net <= 0) { Utils.toast('⚠️ لا يمكن حفظ فاتورة بصافي صفر أو أقل'); return; }
         if (method === 'آجل' && paidAmount > net) { Utils.toast('⚠️ المدفوع لا يتجاوز الصافي'); return; }
 
-        // ===== START: تعديل اختيار العميل (استخدام الحقل المخفي) =====
         const contactId = document.getElementById('invoiceCustomerId').value || null;
         let customerName = 'زائر';
         if (contactId) {
           const contact = AppState.customers.find(c => c.id === contactId);
           if (contact) customerName = contact.name;
         } else {
-          // إذا كان هناك اسم مكتوب ولكن id فارغ، نعطي تحذير
           const inputName = document.getElementById('invoiceCustomerInput').value.trim();
           if (inputName) {
-            // إذا كان الاسم موجوداً في العملاء لكن لم يتم اختياره من الاقتراحات
             const found = AppState.customers.find(c => c.name === inputName && (c.type === 'customer' || c.type === 'supplier'));
             if (found) {
-              // إذا كان مطابقاً تاماً، نأخذ id
               document.getElementById('invoiceCustomerId').value = found.id;
               customerName = found.name;
             } else {
@@ -4574,13 +4754,14 @@
             }
           }
         }
-        // ===== END: تعديل اختيار العميل =====
 
         try {
           const count = await DB.count('invoices');
           const invId = Utils.generateInvoiceId(count);
           const invType = AppState.currentInvoiceType === 'sales' ? 'مبيعات' : 'مشتريات';
           const invCat = AppState.currentInvoiceType === 'sales' ? (AppState.currentPriceType === 'retail' ? 'مفرق' : 'جملة') : 'مشتريات';
+          const rate = Currency.rate;
+          const usdValue = net / rate;
           const inv = {
             id: invId,
             date: document.getElementById('invoiceDateNew').value || Utils.today(),
@@ -4596,130 +4777,222 @@
             remaining: net,
             status: 'مفتوحة',
             paymentMethod: method,
-            currencyUsed: 'old'
+            currencyUsed: 'old',
+            exchangeRateAtCreation: rate,
+            usdValueAtCreation: usdValue,
+            usdRemaining: usdValue
           };
 
           if (method === 'كاش') paidAmount = net;
           let paidInOld = paidAmount;
-    
-          
-          const ok = await RetailModule._applyPayment(inv, paidInOld, method, 'create');
-          if (!ok) { Utils.toast('❌ فشل الدفع'); return; }
-          const addP = [],
-            updP = [],
-            stkP = [];
-          const newItems = [];
-          for (let row of valid) {
-            let itemId = row.itemId;
-            let item = null;
-            if (itemId) item = AppState.items.find(i => i.id === itemId);
-            if (row.isNewItem || (!item && AppState.currentInvoiceType === 'purchases')) {
-              let baseUnitPrice = row.unitPrice;
-              let baseUnit = row.baseUnit || 'قطعة';
-              if (row.isWholesale && row.wholesaleFactor > 0) {
-                baseUnitPrice = row.unitPrice / row.wholesaleFactor;
-                baseUnit = row.baseUnit || 'قطعة';
-              }
-              const rateNow = Currency.rate;
-              const purchaseUSD = rateNow > 0 ? baseUnitPrice / rateNow : 0;
-              const wholesaleFactor = row.wholesaleFactor || 1;
-              const wholesaleUnit = row.wholesaleUnit || '';
-              const ni = {
-                id: Utils.generateId('item'),
-                name: row.itemName.trim(),
-                unit: baseUnit,
-                purchasePrice: Currency.makeObj(baseUnitPrice, 'old'),
-                retailPrice: Currency.makeObj(0, 'old'),
-                wholesalePrice: Currency.makeObj(0, 'old'),
-                wholesaleUnit: wholesaleUnit,
-                wholesaleUnitFactor: wholesaleFactor,
-                quantity: row.isWholesale ? row.quantity * wholesaleFactor : row.quantity,
-                minQuantity: 5,
-                barcode: '',
-                newItem: true,
-                priceUpdated: false,
-                purchasePriceUSD: purchaseUSD,
-                retailPriceUSD: 0,
-                wholesalePriceUSD: 0,
-                exchangeRateAtPurchase: rateNow,
-                autoUpdatePrice: true,
-              };
-              itemId = await DB.add('items', ni);
-              item = { ...ni, id: itemId };
-              newItems.push({ id: itemId, name: row.itemName.trim(), purchasePrice: baseUnitPrice });
-              const items = [...AppState.items, item];
-              store.batchUpdate({ items: items });
-            } else if (item && AppState.currentInvoiceType === 'purchases') {
-              let newBasePrice = row.unitPrice;
-              if (row.isWholesale && row.wholesaleFactor > 0) {
-                newBasePrice = row.unitPrice / row.wholesaleFactor;
-              }
-              const oldP = Currency.getPrice(item.purchasePrice);
-              item.purchasePrice = Currency.makeObj(newBasePrice, 'old');
-              const rateNow2 = Currency.rate;
-              item.purchasePriceUSD = rateNow2 > 0 ? newBasePrice / rateNow2 : 0;
-              item.exchangeRateAtPurchase = rateNow2;
-              item.priceUpdated = true;
-              item.newItem = false;
-              if (!newItems.find(n => n.id === item.id)) newItems.push({ id: item.id, name: item.name, purchasePrice: newBasePrice });
 
-              if (row.isWholesale && row.wholesaleUnit && row.wholesaleFactor > 0) {
-                item.wholesaleUnit = row.wholesaleUnit;
-                item.wholesaleUnitFactor = row.wholesaleFactor;
+          // ===== START: معاملة ذرية مع تضمين 'metadata' =====
+          const currentCash = Cash.get();
+          let newCash = currentCash;
+          if (AppState.currentInvoiceType === 'sales') {
+            newCash = currentCash + paidInOld;
+          } else {
+            newCash = currentCash - paidInOld;
+          }
+          if (newCash < 0) { throw new Error('⚠️ الرصيد النقدي غير كافٍ'); }
+
+          // FIX: تضمين 'metadata' في المعاملة لضمان اتساق الرصيد النقدي
+          const tx = DB._db.transaction(['invoices', 'invoiceItems', 'items', 'stockMovements', 'contacts', 'cashAdjustments', 'metadata'], 'readwrite');
+          const metadataStore = tx.objectStore('metadata');
+          const invStore = tx.objectStore('invoices');
+          const itemStore = tx.objectStore('items');
+          const invItemStore = tx.objectStore('invoiceItems');
+          const stkStore = tx.objectStore('stockMovements');
+          const contactStore = tx.objectStore('contacts');
+          const cashAdjStore = tx.objectStore('cashAdjustments');
+
+          try {
+            // تحديث الرصيد النقدي في metadata داخل المعاملة
+            metadataStore.put({ key: 'cashLiquidity', value: newCash });
+
+            inv.paidAmount = paidInOld;
+            inv.remaining = net - paidInOld;
+            inv.status = inv.remaining === 0 ? 'مغلقة' : 'مفتوحة';
+            invStore.add(inv);
+
+            if (contactId && (method === 'آجل' || inv.paymentMethod === 'آجل')) {
+              const contactRequest = contactStore.get(contactId);
+              const contact = await new Promise((res, rej) => {
+                contactRequest.onsuccess = () => res(contactRequest.result);
+                contactRequest.onerror = () => rej(contactRequest.error);
+              });
+              if (contact) {
+                let balanceChange = 0;
+                if (AppState.currentInvoiceType === 'sales') {
+                  balanceChange = inv.remaining;
+                } else {
+                  balanceChange = -inv.remaining;
+                }
+                contact.balance = (contact.balance || 0) + balanceChange;
+                contactStore.put(contact);
               }
-              const qtyToAdd = row.isWholesale ? row.quantity * row.wholesaleFactor : row.quantity;
-              item.quantity = (item.quantity || 0) + qtyToAdd;
-              updP.push(DB.put('items', item));
-            } else if (item && AppState.currentInvoiceType === 'sales') {
-              let qtyToDeduct = row.quantity;
-              if (row.isWholesale && row.wholesaleFactor > 0) { qtyToDeduct = row.quantity * row.wholesaleFactor; }
-              if ((item.quantity || 0) < qtyToDeduct) { Utils.toast(`⚠️ كمية "${item.name}" غير كافية`); return; }
-              item.quantity = (item.quantity || 0) - qtyToDeduct;
-              updP.push(DB.put('items', item));
             }
-            const costAtSale = item ? Currency.getHistoricalCostInSYP(item) : 0;
-            addP.push(DB.add('invoiceItems', {
-              id: Utils.generateId('invItem'),
-              invoiceId: inv.id,
-              itemId: itemId || row.itemId,
-              quantity: row.quantity,
-              unitPrice: row.unitPrice,
-              total: row.total,
-              purchasePriceAtSale: costAtSale,
-              isWholesale: row.isWholesale || false,
-              wholesaleFactor: row.wholesaleFactor || 1,
-              wholesaleUnit: row.isWholesale ? row.unit : ''
-            }));
-            if (item) {
-              let chg = 0;
-              if (AppState.currentInvoiceType === 'sales') { chg = row.isWholesale ? -row.quantity * row.wholesaleFactor : -row.quantity; } else { chg = row.isWholesale ? row.quantity * row.wholesaleFactor : row.quantity; }
-              stkP.push(DB.add('stockMovements', {
-                id: Utils.generateId('stk'),
-                itemId: itemId || row.itemId,
+
+            const newItems = [];
+            for (let row of valid) {
+              let itemId = row.itemId;
+              let item = null;
+              if (itemId) item = AppState.items.find(i => i.id === itemId);
+
+              if (row.isNewItem || (!item && AppState.currentInvoiceType === 'purchases')) {
+                let baseUnitPrice = row.unitPrice;
+                let baseUnit = row.baseUnit || 'قطعة';
+                if (row.isWholesale && row.wholesaleFactor > 0) {
+                  baseUnitPrice = row.unitPrice / row.wholesaleFactor;
+                  baseUnit = row.baseUnit || 'قطعة';
+                }
+                const rateNow = Currency.rate;
+                const purchaseUSD = rateNow > 0 ? baseUnitPrice / rateNow : 0;
+                const wholesaleFactor = row.wholesaleFactor || 1;
+                const wholesaleUnit = row.wholesaleUnit || '';
+                const ni = {
+                  id: Utils.generateId('item'),
+                  name: row.itemName.trim(),
+                  unit: baseUnit,
+                  purchasePrice: Currency.makeObj(baseUnitPrice, 'old'),
+                  retailPrice: Currency.makeObj(0, 'old'),
+                  wholesalePrice: Currency.makeObj(0, 'old'),
+                  wholesaleUnit: wholesaleUnit,
+                  wholesaleUnitFactor: wholesaleFactor,
+                  quantity: row.isWholesale ? row.quantity * wholesaleFactor : row.quantity,
+                  minQuantity: 5,
+                  barcode: '',
+                  newItem: true,
+                  priceUpdated: false,
+                  purchasePriceUSD: purchaseUSD,
+                  retailPriceUSD: 0,
+                  wholesalePriceUSD: 0,
+                  exchangeRateAtPurchase: rateNow,
+                  autoUpdatePrice: true,
+                };
+                const addItemReq = itemStore.add(ni);
+                itemId = await new Promise((res, rej) => {
+                  addItemReq.onsuccess = () => res(addItemReq.result);
+                  addItemReq.onerror = () => rej(addItemReq.error);
+                });
+                item = { ...ni, id: itemId };
+                newItems.push({ id: itemId, name: row.itemName.trim(), purchasePrice: baseUnitPrice });
+                const items = [...AppState.items, item];
+                store.batchUpdate({ items: items });
+              } else if (item && AppState.currentInvoiceType === 'purchases') {
+                let newBasePrice = row.unitPrice;
+                if (row.isWholesale && row.wholesaleFactor > 0) {
+                  newBasePrice = row.unitPrice / row.wholesaleFactor;
+                }
+                const rateNow2 = Currency.rate;
+                item.purchasePrice = Currency.makeObj(newBasePrice, 'old');
+                item.purchasePriceUSD = rateNow2 > 0 ? newBasePrice / rateNow2 : 0;
+                item.exchangeRateAtPurchase = rateNow2;
+                item.priceUpdated = true;
+                item.newItem = false;
+                if (!newItems.find(n => n.id === item.id)) newItems.push({ id: item.id, name: item.name, purchasePrice: newBasePrice });
+
+                if (row.isWholesale && row.wholesaleUnit && row.wholesaleFactor > 0) {
+                  item.wholesaleUnit = row.wholesaleUnit;
+                  item.wholesaleUnitFactor = row.wholesaleFactor;
+                }
+                const qtyToAdd = row.isWholesale ? row.quantity * row.wholesaleFactor : row.quantity;
+                item.quantity = (item.quantity || 0) + qtyToAdd;
+                itemStore.put(item);
+              } else if (item && AppState.currentInvoiceType === 'sales') {
+                let qtyToDeduct = row.quantity;
+                if (row.isWholesale && row.wholesaleFactor > 0) { qtyToDeduct = row.quantity * row.wholesaleFactor; }
+                if ((item.quantity || 0) < qtyToDeduct) { throw new Error(`⚠️ كمية "${item.name}" غير كافية`); }
+                item.quantity = (item.quantity || 0) - qtyToDeduct;
+                itemStore.put(item);
+              }
+
+              // ===== FIX: حساب COGS للصنف الجديد =====
+              let costAtSale = 0;
+              if (item) {
+                costAtSale = Currency.getHistoricalCostInSYP(item);
+              } else if (row.isNewItem && AppState.currentInvoiceType === 'purchases') {
+                let basePrice = row.unitPrice;
+                if (row.isWholesale && row.wholesaleFactor > 0) {
+                  basePrice = row.unitPrice / row.wholesaleFactor;
+                }
+                costAtSale = basePrice;
+              }
+              // ===== END: إصلاح COGS =====
+
+              invItemStore.add({
+                id: Utils.generateId('invItem'),
                 invoiceId: inv.id,
-                change: chg,
-                date: Utils.nowISO()
-              }));
+                itemId: itemId || row.itemId,
+                quantity: row.quantity,
+                unitPrice: row.unitPrice,
+                total: row.total,
+                purchasePriceAtSale: costAtSale,
+                isWholesale: row.isWholesale || false,
+                wholesaleFactor: row.wholesaleFactor || 1,
+                wholesaleUnit: row.isWholesale ? row.unit : ''
+              });
+
+              if (item) {
+                let chg = 0;
+                if (AppState.currentInvoiceType === 'sales') {
+                  chg = row.isWholesale ? -row.quantity * row.wholesaleFactor : -row.quantity;
+                } else {
+                  chg = row.isWholesale ? row.quantity * row.wholesaleFactor : row.quantity;
+                }
+                stkStore.add({
+                  id: Utils.generateId('stk'),
+                  itemId: itemId || row.itemId,
+                  invoiceId: inv.id,
+                  change: chg,
+                  date: Utils.nowISO()
+                });
+              }
             }
+
+            cashAdjStore.add({
+              id: Utils.generateId('cashAdj'),
+              date: Utils.nowISO(),
+              amount: paidInOld,
+              type: method === 'كاش' ? 'deposit' : 'credit',
+              description: `فاتورة ${inv.id} - ${method}`,
+              oldBalance: currentCash,
+              newBalance: newCash
+            });
+
+            await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+
+            // FIX: تحديث localStorage بعد نجاح المعاملة
+            Cash.set(newCash);
+
+            Utils.toast(`✅ تم حفظ الفاتورة ${inv.id}`);
+            if (navigator.vibrate) navigator.vibrate(50);
+            Utils.playBeep();
+
+            if (AppState.currentInvoiceType === 'purchases' && newItems.length) {
+              store.batchUpdate({ pendingPricingItems: newItems });
+              InvoiceModule.showPricing(newItems);
+            }
+
+            InvoiceModule.resetUI();
+            await ItemsModule.load(true);
+            await InvoicesRecordsModule.load();
+            App.updateQuickStats();
+            InvoiceModule.buildDatalist();
+
+          } catch (e) {
+            tx.abort();
+            Utils.logError('save invoice transaction', e);
+            Utils.toast('❌ فشل حفظ الفاتورة: ' + (e.message || 'غير معروف'));
           }
-          await Promise.all([...addP, ...updP, ...stkP]);
-          Utils.toast(`✅ تم حفظ الفاتورة ${inv.id}`);
-          if (navigator.vibrate) navigator.vibrate(50);
-          Utils.playBeep();
-          if (AppState.currentInvoiceType === 'purchases' && newItems.length) {
-            store.batchUpdate({ pendingPricingItems: newItems });
-            InvoiceModule.showPricing(newItems);
-          }
-          InvoiceModule.resetUI();
-          await ItemsModule.load(true);
-          await InvoicesRecordsModule.load();
-          App.updateQuickStats();
-          InvoiceModule.buildDatalist();
+          // ===== END: معاملة ذرية =====
+
         } catch (e) {
           Utils.logError('save invoice', e);
           Utils.toast('❌ فشل حفظ الفاتورة');
         }
       },
+      // ===== END: إصلاح المعاملات الذرية في save + إصلاح COGS للأصناف الجديدة =====
 
       showPricing: (items) => {
         const container = document.getElementById('pricingItemsContainer');
@@ -4981,7 +5254,7 @@
     };
 
     // =====================================================================
-    // 13. التقارير (ReportsModule)
+    // 13. التقارير (ReportsModule) - مع إصلاح حساب الإيرادات واستخدام معامل الجملة في COGS واستبعاد الإيداع النقدي من المصروفات
     // =====================================================================
     const ReportsModule = {
       _cache: null,
@@ -5011,42 +5284,58 @@
           retByInv[orig] += r.netAmount; }
         const allInvItems = await DB.getAll('invoiceItems');
 
+        for (let inv of sales) {
+          const revenue = inv.totalAmount - (inv.discount || 0);
+          const retAmt = retByInv[inv.id] || 0;
+          totalSales += revenue - retAmt;
+        }
+
+        totalPurchases = purchases.reduce((s, inv) => s + inv.netAmount, 0);
+        const totalExp = expenses.reduce((s, inv) => s + inv.netAmount, 0);
+        const fixedExp = await FixedExp.periodTotal(from, to);
+
         let historicalCOGS = 0;
         let replacementCOGS = 0;
         for (let inv of sales) {
           const items = allInvItems.filter(i => i.invoiceId === inv.id);
           for (let it of items) {
-            const qty = it.quantity * (it.wholesaleFactor || 1);
-            historicalCOGS += (it.purchasePriceAtSale || 0) * qty;
+            const baseCost = it.purchasePriceAtSale || 0;
+            const factor = it.wholesaleFactor || 1;
+            const qtyInBase = it.quantity * factor;
+            historicalCOGS += baseCost * qtyInBase;
             const item = AppState.items.find(i => i.id === it.itemId);
             if (item) {
               const replCost = Currency.getReplacementCostInSYP(item);
-              replacementCOGS += replCost * qty;
+              replacementCOGS += replCost * qtyInBase;
             } else {
-              replacementCOGS += (it.purchasePriceAtSale || 0) * qty;
+              replacementCOGS += baseCost * qtyInBase;
             }
           }
         }
+        // ===== START: FIX - التمييز بين مرتجع المبيعات ومرتجع المشتريات في COGS =====
         for (let r of returns) {
           const items = allInvItems.filter(i => i.invoiceId === r.id);
           for (let it of items) {
-            const qty = it.quantity * (it.wholesaleFactor || 1);
-            historicalCOGS -= (it.purchasePriceAtSale || 0) * qty;
+            const baseCost = it.purchasePriceAtSale || 0;
+            const factor = it.wholesaleFactor || 1;
+            const qtyInBase = it.quantity * factor;
             const item = AppState.items.find(i => i.id === it.itemId);
-            if (item) {
-              const replCost = Currency.getReplacementCostInSYP(item);
-              replacementCOGS -= replCost * qty;
+            const replCost = item ? Currency.getReplacementCostInSYP(item) : baseCost;
+
+            if (r.type === 'مرتجع مبيعات') {
+              historicalCOGS -= baseCost * qtyInBase;
+              replacementCOGS -= replCost * qtyInBase;
+            } else if (r.type === 'مرتجع مشتريات') {
+              historicalCOGS += baseCost * qtyInBase;
+              replacementCOGS += replCost * qtyInBase;
             } else {
-              replacementCOGS -= (it.purchasePriceAtSale || 0) * qty;
+              // افتراضياً (مرتجع غير محدد) نطبق نفس منطق مرتجع مبيعات
+              historicalCOGS -= baseCost * qtyInBase;
+              replacementCOGS -= replCost * qtyInBase;
             }
           }
         }
-
-        for (let inv of sales) { const retAmt = retByInv[inv.id] || 0;
-          totalSales += inv.netAmount - retAmt; }
-        totalPurchases = purchases.reduce((s, inv) => s + inv.netAmount, 0);
-        const totalExp = expenses.reduce((s, inv) => s + inv.netAmount, 0);
-        const fixedExp = await FixedExp.periodTotal(from, to);
+        // ===== END: FIX =====
 
         const netProfitHistorical = totalSales - historicalCOGS - totalExp - fixedExp + totalRevalGainLoss;
         const netProfitReplacement = totalSales - replacementCOGS - totalExp - fixedExp + totalRevalGainLoss;
@@ -5126,7 +5415,12 @@
 
         const todayInvs = await DB.getInvoicesByDateRange(todayStr, todayStr);
         const todaySales = todayInvs.filter(inv => inv.type === 'مبيعات' && !inv.isReturn && inv.status !== 'ملغاة');
-        const todayExpenses = todayInvs.filter(inv => (inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'تعديل نقدي') && inv.status !== 'ملغاة');
+        // ===== START: FIX - استبعاد الإيداع النقدي من مصروفات اليوم =====
+        const todayExpenses = todayInvs.filter(inv => 
+          inv.type === 'مصروفات' && inv.status !== 'ملغاة'
+        );
+        // ===== END: FIX =====
+
         let todayTotalSales = 0,
           todayCOGS = 0,
           todayTotalExp = 0;
@@ -5137,11 +5431,13 @@
           allTodayItems.push(...items);
         }
         for (let inv of todaySales) {
-          todayTotalSales += inv.netAmount || 0;
+          const revenue = inv.totalAmount - (inv.discount || 0);
+          todayTotalSales += revenue;
           const items = allTodayItems.filter(i => i.invoiceId === inv.id);
           for (let it of items) {
             const cost = it.purchasePriceAtSale || 0;
-            todayCOGS += cost * it.quantity * (it.wholesaleFactor || 1);
+            const factor = it.wholesaleFactor || 1;
+            todayCOGS += cost * it.quantity * factor;
           }
         }
         for (let inv of todayExpenses) {
@@ -5154,7 +5450,9 @@
 
         const monthInvs = await DB.getInvoicesByDateRange(monthStartStr, todayStr);
         const monthSales = monthInvs.filter(inv => inv.type === 'مبيعات' && !inv.isReturn && inv.status !== 'ملغاة');
-        const monthExpenses = monthInvs.filter(inv => (inv.type === 'مصروفات' || inv.type === 'مصروفات ثابت' || inv.type === 'تعديل نقدي') && inv.status !== 'ملغاة');
+        const monthExpenses = monthInvs.filter(inv => 
+          inv.type === 'مصروفات' && inv.status !== 'ملغاة'
+        );
         let monthTotalSales = 0,
           monthCOGS = 0,
           monthTotalExp = 0;
@@ -5165,11 +5463,13 @@
           allMonthItems.push(...items);
         }
         for (let inv of monthSales) {
-          monthTotalSales += inv.netAmount || 0;
+          const revenue = inv.totalAmount - (inv.discount || 0);
+          monthTotalSales += revenue;
           const items = allMonthItems.filter(i => i.invoiceId === inv.id);
           for (let it of items) {
             const cost = it.purchasePriceAtSale || 0;
-            monthCOGS += cost * it.quantity * (it.wholesaleFactor || 1);
+            const factor = it.wholesaleFactor || 1;
+            monthCOGS += cost * it.quantity * factor;
           }
         }
         for (let inv of monthExpenses) {
@@ -5233,7 +5533,10 @@
           const ds = d.toISOString().split('T')[0];
           dates.push(ds);
           const dayInvs = invoices.filter(inv => inv.date === ds && inv.type === 'مبيعات' && !inv.isReturn && inv.status !== 'ملغاة');
-          const total = dayInvs.reduce((s, inv) => s + (inv.netAmount || 0), 0);
+          let total = 0;
+          for (let inv of dayInvs) {
+            total += (inv.totalAmount - (inv.discount || 0));
+          }
           salesData.push(total);
         }
         const maxVal = Math.max(...salesData, 1);
@@ -5312,22 +5615,17 @@
         navButtons.forEach(btn => {
           btn.addEventListener('click', function() {
             const tabId = this.dataset.settingsTab;
-            // إزالة التفعيل من جميع الأزرار
             navButtons.forEach(b => b.classList.remove('active-settings-tab'));
             this.classList.add('active-settings-tab');
 
-            // إخفاء جميع المحتويات
             tabs.forEach(t => t.classList.remove('active'));
-            // إظهار المحتوى المطلوب
             const target = document.getElementById('settings-tab-' + tabId);
             if (target) target.classList.add('active');
           });
         });
 
-        // أزرار العودة
         document.querySelectorAll('.back-to-settings').forEach(btn => {
           btn.addEventListener('click', function() {
-            // إعادة تعيين التبويب النشط إلى الأول (الأموال)
             navButtons.forEach(b => b.classList.remove('active-settings-tab'));
             const moneyBtn = document.querySelector('.settings-nav .btn[data-settings-tab="money"]');
             if (moneyBtn) moneyBtn.classList.add('active-settings-tab');
@@ -5338,7 +5636,6 @@
           });
         });
 
-        // تهيئة باقي الإعدادات
         const methodRadios = document.querySelectorAll('input[name="valuationMethod"]');
         const savedMethod = localStorage.getItem('valuationMethod') || 'historical';
         AppState.valuationMethod = savedMethod;
@@ -5356,7 +5653,6 @@
           });
         });
 
-        // المصاريف الثابتة
         const fixedExpBtn = document.getElementById('addFixedExpenseBtn');
         if (fixedExpBtn) {
           fixedExpBtn.addEventListener('click', async () => {
@@ -5371,7 +5667,6 @@
           });
         }
 
-        // PIN
         const pinEnable = document.getElementById('pinEnableBtn');
         if (pinEnable) {
           pinEnable.addEventListener('click', async () => {
@@ -5400,7 +5695,6 @@
         const hash = localStorage.getItem('app_pin_hash');
         document.getElementById('pinStatus').textContent = hash ? 'مفعل (مشفر)' : 'غير مفعل';
 
-        // إيداع وسحب
         const cashAdd = document.getElementById('manualCashAddBtn');
         if (cashAdd) {
           cashAdd.addEventListener('click', async () => {
@@ -5442,7 +5736,6 @@
           });
         }
 
-        // النسخ الاحتياطي
         const backupBtn = document.getElementById('manualBackupBtn');
         if (backupBtn) {
           backupBtn.addEventListener('click', async () => {
@@ -5677,7 +5970,6 @@
           });
         }
 
-        // المفضلة
         const saveFav = document.getElementById('saveFavoritesBtn');
         if (saveFav) {
           saveFav.addEventListener('click', () => {
@@ -5688,7 +5980,6 @@
           });
         }
 
-        // سعر الصرف
         const saveRateBtn = document.getElementById('saveExchangeRateBtn');
         if (saveRateBtn) {
           saveRateBtn.addEventListener('click', async () => {
@@ -5708,7 +5999,6 @@
           });
         }
 
-        // إعادة تقييم الديون
         const debtToggle = document.getElementById('debtRevaluationToggle');
         if (debtToggle) {
           const saved = localStorage.getItem('debtRevaluationEnabled') === 'true';
@@ -5728,7 +6018,6 @@
           });
         }
 
-        // بيانات المتجر
         document.getElementById('storeName').value = localStorage.getItem('storeName') || '';
         document.getElementById('storeAddress').value = localStorage.getItem('storeAddress') || '';
         document.getElementById('storePhone').value = localStorage.getItem('storePhone') || '';
@@ -5743,7 +6032,6 @@
           Utils.toast('✅ تم حفظ بيانات المتجر');
         });
 
-        // إعدادات الإيصال
         const receiptSizeSelect = document.getElementById('receiptSize');
         const storeLogoInput = document.getElementById('storeLogo');
         const saveReceiptBtn = document.getElementById('saveReceiptSettingsBtn');
@@ -5800,7 +6088,6 @@
           });
         }
 
-        // التحديث التلقائي للأسعار
         const autoPriceToggle = document.getElementById('autoPriceUpdateToggle');
         const savedAutoPrice = localStorage.getItem('autoPriceUpdateEnabled') === 'true';
         AppState.autoPriceUpdateEnabled = savedAutoPrice;
@@ -5815,7 +6102,6 @@
           await ItemsModule.updateAllPrices();
         });
 
-        // إدارة العملاء والاشتراك
         document.getElementById('manageCustomersBtn').addEventListener('click', function() {
           App._switchTab('customers');
         });
@@ -5982,32 +6268,43 @@
         });
       },
 
+      // ===== START: تحسين وصف فاتورة إعادة تقييم الديون =====
       revaluateDebts: async () => {
         const statusEl = document.getElementById('debtRevalStatus');
         if (statusEl) statusEl.textContent = '⏳ جاري إعادة تقييم الديون...';
         try {
           const allInvoices = await DB.getAll('invoices');
-          const debtInvs = allInvoices.filter(inv => inv.remaining > 0 && inv.status !== 'ملغاة' && inv.paymentMethod === 'آجل');
+          const debtInvs = allInvoices.filter(inv => 
+            inv.remaining > 0 && 
+            inv.status !== 'ملغاة' && 
+            (inv.paymentMethod === 'آجل' || inv.type === 'دين يدوي') &&
+            inv.usdRemaining !== undefined
+          );
           let totalReval = 0;
           let count = 0;
+          const oldRate = Currency.rate; // سنحتفظ بالسعر القديم قبل التحديث (لكننا نستخدم السعر الحالي)
+          // للحصول على السعر القديم، نحتاج إلى قراءة آخر سعر مخزن.
+          let oldRateValue = 13000;
+          try {
+            const metaRate = await DB.get('metadata', 'exchangeRate');
+            if (metaRate && metaRate.value) oldRateValue = metaRate.value;
+          } catch (e) {}
+          // قد يكون المستخدم قد غيَّر السعر بالفعل، لذلك نحتاج إلى قيمة قديمة مخزنة.
+          // سنستخدم السعر الحالي قبل التحديث.
+          const newRate = Currency.rate;
+          // لتحديد السعر القديم، نأخذ القيمة المخزنة في metadata قبل التحديث.
+          // لكن قد لا تكون متاحة، لذا نستخدم قيمة افتراضية.
+          // سنخزن السعر القديم في متغير.
+          let oldRateStored = oldRateValue;
+          
           for (let inv of debtInvs) {
-            const oldRemaining = inv.remaining;
-            const currencyUsed = inv.currencyUsed || 'old';
-            let newRemaining = oldRemaining;
-            if (currencyUsed === 'usd') {
-              newRemaining = oldRemaining * Currency.rate;
-            } else if (currencyUsed === 'new') {
-              newRemaining = oldRemaining / 100 * Currency.rate;
-            }
-            const diff = newRemaining - oldRemaining;
+            const newRemainingSYP = inv.usdRemaining * Currency.rate;
+            const diff = newRemainingSYP - inv.remaining;
             if (Math.abs(diff) > 0.01) {
-              totalReval += diff;
-              count++;
-              inv.remaining = newRemaining;
+              inv.remaining = newRemainingSYP;
               inv.netAmount = (inv.netAmount || 0) + diff;
               inv.totalAmount = (inv.totalAmount || 0) + diff;
               await DB.put('invoices', inv);
-              // تسجيل إعادة التقييم في سجل منفصل (اختياري)
               if (inv.contactId) {
                 const contact = await DB.get('contacts', inv.contactId);
                 if (contact) {
@@ -6015,10 +6312,13 @@
                   await DB.put('contacts', contact);
                 }
               }
+              totalReval += diff;
+              count++;
             }
           }
           if (Math.abs(totalReval) > 0.01) {
             const countInv = await DB.count('invoices');
+            const affectedCustomers = [...new Set(debtInvs.map(inv => inv.customerName).filter(Boolean))].slice(0, 5);
             const inv = {
               id: Utils.generateInvoiceId(countInv),
               date: Utils.nowISO(),
@@ -6034,9 +6334,15 @@
               remaining: 0,
               status: 'مغلقة',
               paymentMethod: 'غير نقدي',
-              description: `أثر إعادة تقييم الديون (${totalReval >= 0 ? '+' : ''}${Currency.format(totalReval)})`,
+              description: `إعادة تقييم الديون: تغير سعر الصرف من ${oldRateStored} إلى ${newRate} - أثر صافي: ${totalReval >= 0 ? '+' : ''}${Currency.format(totalReval)} - عدد الفواتير المتأثرة: ${count}`,
               currencyUsed: 'old',
-              revaluationGainLoss: totalReval
+              revaluationGainLoss: totalReval,
+              revaluationDetails: {
+                oldRate: oldRateStored,
+                newRate: newRate,
+                affectedInvoicesCount: count,
+                affectedCustomers: affectedCustomers
+              }
             };
             await DB.add('invoices', inv);
           }
@@ -6048,6 +6354,7 @@
           if (statusEl) statusEl.textContent = '❌ فشل إعادة التقييم: ' + e.message;
           Utils.toast('❌ فشل إعادة تقييم الديون'); }
       },
+      // ===== END: تحسين وصف فاتورة إعادة تقييم الديون =====
 
       renderFixedExpenses: async () => {
         const list = await FixedExp.get();
@@ -6302,6 +6609,8 @@
           const amountOld = Currency.toOld(amount);
           const count = await DB.count('invoices');
           const invId = Utils.generateInvoiceId(count);
+          const rate = Currency.rate;
+          const usdValue = amountOld / rate;
 
           let contact = AppState.customers.find(c => c.name === name && c.type === 'customer');
           let customerName = name;
@@ -6341,7 +6650,10 @@
             status: 'مفتوحة',
             paymentMethod: 'آجل',
             currencyUsed: 'old',
-            description: desc
+            description: desc,
+            exchangeRateAtCreation: rate,
+            usdValueAtCreation: usdValue,
+            usdRemaining: usdValue
           };
 
           await DB.add('invoices', inv);
@@ -6454,7 +6766,6 @@
 
           const oldRemaining = inv.remaining;
           const newRemainingOld = Currency.toOld(newAmount);
-
           const diff = newRemainingOld - oldRemaining;
 
           inv.remaining = newRemainingOld;
@@ -6462,6 +6773,8 @@
           inv.totalAmount = newRemainingOld;
           if (newRemainingOld === 0) inv.status = 'مغلقة';
           inv.description = newDesc;
+          const rate = inv.exchangeRateAtCreation || Currency.rate;
+          inv.usdRemaining = newRemainingOld / rate;
           await DB.put('invoices', inv);
 
           if (cId) {
@@ -6502,9 +6815,10 @@
     };
 
     // =====================================================================
-    // 16. سجل الفواتير (RecordsModule) - مع إصلاحات حذف العملاء
+    // 16. سجل الفواتير (RecordsModule) - مع إصلاحات حذف العملاء واستخدام netAmount في عكس الفاتورة
     // =====================================================================
     const RecordsModule = {
+      // ===== START: إصلاح المعاملات الذرية في reverseTransaction =====
       reverseTransaction: async (invoiceId, reason = 'إلغاء') => {
         const inv = await DB.get('invoices', invoiceId);
         if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return false; }
@@ -6514,64 +6828,102 @@
         const items = await DB.getInvoiceItemsByInvoiceId(inv.id);
         if (!items.length) { Utils.toast('⚠️ لا توجد بنود لعكسها'); return false; }
 
-        const isSales = inv.type === 'مبيعات';
-        const isPurchase = inv.type === 'مشتريات';
-        const isReturn = inv.type === 'مرتجع مبيعات' || inv.type === 'مرتجع مشتريات';
+        const currentCash = Cash.get();
+        let newCash = currentCash;
+        const paidAmount = inv.paidAmount || 0;
+
+        // تحديد اتجاه التغيير في النقد والمخزون حسب نوع الفاتورة بدقة
+        let cashDelta = 0;
+        let stockDeltaSign = 0; // +1 للزيادة، -1 للنقص
+
+        switch (inv.type) {
+          case 'مبيعات':
+            cashDelta = -paidAmount; // عكس المبيعات: نقص النقد
+            stockDeltaSign = 1; // عكس المبيعات: زيادة المخزون
+            break;
+          case 'مرتجع مبيعات':
+            cashDelta = paidAmount; // عكس مرتجع المبيعات: زيادة النقد
+            stockDeltaSign = -1; // عكس مرتجع المبيعات: نقص المخزون
+            break;
+          case 'مشتريات':
+            cashDelta = paidAmount; // عكس المشتريات: زيادة النقد
+            stockDeltaSign = -1; // عكس المشتريات: نقص المخزون
+            break;
+          case 'مرتجع مشتريات':
+            cashDelta = -paidAmount; // عكس مرتجع المشتريات: نقص النقد
+            stockDeltaSign = 1; // عكس مرتجع المشتريات: زيادة المخزون
+            break;
+          case 'مصروفات':
+            cashDelta = paidAmount; // عكس المصروف: زيادة النقد
+            stockDeltaSign = 0;
+            break;
+          case 'تعديل نقدي':
+            if (inv.category === 'إيداع نقدي') {
+              cashDelta = -paidAmount; // عكس الإيداع: نقص النقد
+            } else if (inv.category === 'سحب نقدي') {
+              cashDelta = paidAmount; // عكس السحب: زيادة النقد
+            }
+            stockDeltaSign = 0;
+            break;
+          default:
+            cashDelta = 0;
+            stockDeltaSign = 0;
+        }
+
+        newCash = currentCash + cashDelta;
+        if (newCash < 0) { throw new Error('⚠️ الرصيد النقدي غير كافٍ لعكس العملية'); }
+
+        const tx = DB._db.transaction(['invoices', 'invoiceItems', 'items', 'stockMovements', 'contacts', 'cashAdjustments', 'metadata'], 'readwrite');
+        const metadataStore = tx.objectStore('metadata');
+        const invStore = tx.objectStore('invoices');
+        const itemStore = tx.objectStore('items');
+        const stkStore = tx.objectStore('stockMovements');
+        const contactStore = tx.objectStore('contacts');
+        const cashAdjStore = tx.objectStore('cashAdjustments');
 
         try {
-          const updP = [];
-          const stkP = [];
+          metadataStore.put({ key: 'cashLiquidity', value: newCash });
+
+          // عكس حركات المخزون
           for (let it of items) {
             const item = AppState.items.find(i => i.id === it.itemId);
             if (item) {
-              let change = 0;
-              if (isSales || isReturn) {
-                change = it.quantity * (it.wholesaleFactor || 1);
-              } else if (isPurchase) {
-                change = -(it.quantity * (it.wholesaleFactor || 1));
-              }
+              const change = stockDeltaSign * it.quantity * (it.wholesaleFactor || 1);
               item.quantity = (item.quantity || 0) + change;
-              updP.push(DB.put('items', item));
-              stkP.push(DB.add('stockMovements', {
+              itemStore.put(item);
+              stkStore.add({
                 id: Utils.generateId('stk'),
                 itemId: it.itemId,
                 invoiceId: inv.id + '_reverse',
                 change: change,
                 date: Utils.nowISO(),
                 note: `عكس فاتورة ${inv.id} - ${reason}`
-              }));
+              });
             }
           }
-          await Promise.all([...updP, ...stkP]);
 
-          const cash = Cash.get();
-          let newCash = cash;
-          const netAmt = inv.netAmount || 0;
-
-          if (isSales || isReturn) {
-            newCash = cash - netAmt;
-          } else if (isPurchase) {
-            newCash = cash + netAmt;
-          } else if (inv.type === 'مصروفات' || inv.type === 'تعديل نقدي') {
-            newCash = cash + netAmt;
-          }
-
-          if (newCash < 0) { Utils.toast('⚠️ الرصيد النقدي غير كافٍ لعكس العملية'); return false; }
-          Cash.set(newCash);
-          await DB.put('metadata', { key: 'cashLiquidity', value: newCash });
-
+          // ===== FIX: تحديث رصيد العميل باستخدام المبلغ المتبقي (remaining) =====
           if (inv.contactId && inv.paymentMethod === 'آجل') {
-            const contact = await DB.get('contacts', inv.contactId);
+            const contact = await new Promise((res, rej) => {
+              const req = contactStore.get(inv.contactId);
+              req.onsuccess = () => res(req.result);
+              req.onerror = () => rej(req.error);
+            });
             if (contact) {
               let balChange = 0;
-              if (isSales) {
-                balChange = -inv.remaining;
-              } else if (isPurchase) {
-                balChange = inv.remaining;
+              const remaining = inv.remaining || 0;
+              if (inv.type === 'مبيعات') {
+                balChange = -remaining;
+              } else if (inv.type === 'مشتريات') {
+                balChange = remaining;
+              } else if (inv.type === 'مرتجع مبيعات') {
+                balChange = remaining;
+              } else if (inv.type === 'مرتجع مشتريات') {
+                balChange = -remaining;
               }
               contact.balance = (contact.balance || 0) + balChange;
               if (contact.balance < 0) contact.balance = 0;
-              await DB.put('contacts', contact);
+              contactStore.put(contact);
               const customers = await DB.getAll('contacts');
               store.batchUpdate({ customers: customers });
               App.updateCustomerDatalist();
@@ -6580,101 +6932,107 @@
             }
           }
 
+          // تحديث الفاتورة إلى ملغاة
           inv.status = 'ملغاة';
           inv.remaining = 0;
           inv.paidAmount = 0;
-          await DB.put('invoices', inv);
+          invStore.put(inv);
 
-          await Cash.addAudit({
-            action: 'عكس فاتورة',
-            invoiceId: inv.id,
-            amount: netAmt,
-            remaining: 0,
-            description: `عكس فاتورة ${inv.id} - ${reason}`
+          // تسجيل تعديل نقدي لعملية العكس
+          cashAdjStore.add({
+            id: Utils.generateId('cashAdj'),
+            date: Utils.nowISO(),
+            amount: paidAmount,
+            type: 'reverse',
+            description: `عكس فاتورة ${inv.id} - ${reason}`,
+            oldBalance: currentCash,
+            newBalance: newCash
           });
+
+          await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+
+          // FIX: تحديث localStorage بعد نجاح المعاملة
+          Cash.set(newCash);
 
           Utils.toast(`✅ تم عكس الفاتورة ${inv.id} بنجاح (${reason})`);
           return true;
-        } catch (e) { Utils.logError('reverseTransaction', e);
-          Utils.toast('❌ فشل عكس الفاتورة'); return false; }
+
+        } catch (e) {
+          tx.abort();
+          Utils.logError('reverseTransaction transaction', e);
+          Utils.toast('❌ فشل عكس الفاتورة: ' + (e.message || 'غير معروف'));
+          return false;
+        }
       },
+      // ===== END: إصلاح المعاملات الذرية في reverseTransaction =====
 
-      // ===== START: تعديل دعم العملات في تسديد الديون =====
-      // ===== START: تعديل دعم العملات في تسديد الديون (بدون تحذير) =====
-openDebtPayment: async (invoiceId) => {
-  store.batchUpdate({ debtPaymentInvoiceId: invoiceId });
-  const inv = AppState.invoices.find(i => i.id === invoiceId);
-  if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
+      openDebtPayment: async (invoiceId) => {
+        store.batchUpdate({ debtPaymentInvoiceId: invoiceId });
+        const inv = AppState.invoices.find(i => i.id === invoiceId);
+        if (!inv) { Utils.toast('⚠️ الفاتورة غير موجودة'); return; }
 
-  // ✅ نعتمد على العملة المعروضة حالياً في الواجهة (وليس عملة الفاتورة)
-  // لأن التخزين أساساً بالعملة القديمة، والمستخدم يرى الأسعار بالعملة التي اختارها
-  const currencyUsed = Currency.display;
-  const remainingInOld = inv.remaining || 0;
+        const currencyUsed = Currency.display;
+        const remainingInOld = inv.remaining || 0;
 
-  // عرض المبلغ المتبقي بالعملة المعروضة حالياً (ل.س / ل.س.ج / $)
-  document.getElementById('debtPaymentRemainingDisplay').textContent = formatInCurrency(remainingInOld, currencyUsed);
+        document.getElementById('debtPaymentRemainingDisplay').textContent = formatInCurrency(remainingInOld, currencyUsed);
 
-  const label = document.getElementById('debtPaymentLabel');
-  if (label) {
-    let symbol = 'ل.س';
-    if (currencyUsed === 'usd') symbol = '$';
-    else if (currencyUsed === 'new') symbol = 'ل.س.ج';
-    label.textContent = `المبلغ المدفوع (${symbol})`;
-  }
+        const label = document.getElementById('debtPaymentLabel');
+        if (label) {
+          let symbol = 'ل.س';
+          if (currencyUsed === 'usd') symbol = '$';
+          else if (currencyUsed === 'new') symbol = 'ل.س.ج';
+          label.textContent = `المبلغ المدفوع (${symbol})`;
+        }
 
-  document.getElementById('debtPaymentAmount').value = '0';
+        document.getElementById('debtPaymentAmount').value = '0';
 
-  document.getElementById('debtPaymentModal').classList.add('open');
+        document.getElementById('debtPaymentModal').classList.add('open');
 
-  document.getElementById('debtPaymentConfirm').onclick = async function() {
-    if (!AppState.debtPaymentInvoiceId) {
-      Utils.toast('⚠️ لم يتم تحديد الفاتورة');
-      return;
-    }
-    const amt = Utils.parseNumber(document.getElementById('debtPaymentAmount').value, 'المبلغ');
-    if (amt === null || amt <= 0) {
-      Utils.toast('⚠️ مبلغ صحيح');
-      return;
-    }
-    const inv2 = await DB.get('invoices', AppState.debtPaymentInvoiceId);
-    if (!inv2) {
-      Utils.toast('⚠️ الفاتورة غير موجودة');
-      return;
-    }
+        document.getElementById('debtPaymentConfirm').onclick = async function() {
+          if (!AppState.debtPaymentInvoiceId) {
+            Utils.toast('⚠️ لم يتم تحديد الفاتورة');
+            return;
+          }
+          const amt = Utils.parseNumber(document.getElementById('debtPaymentAmount').value, 'المبلغ');
+          if (amt === null || amt <= 0) {
+            Utils.toast('⚠️ مبلغ صحيح');
+            return;
+          }
+          const inv2 = await DB.get('invoices', AppState.debtPaymentInvoiceId);
+          if (!inv2) {
+            Utils.toast('⚠️ الفاتورة غير موجودة');
+            return;
+          }
 
-    // ✅ تحويل المبلغ المدخل من العملة المعروضة حالياً إلى العملة القديمة (ل.س) للتخزين
-    let amountInOld = 0;
-    if (currencyUsed === 'usd') {
-      amountInOld = amt * Currency.rate;
-    } else if (currencyUsed === 'new') {
-      amountInOld = amt * 100;
-    } else {
-      amountInOld = amt;
-    }
+          let amountInOld = 0;
+          if (currencyUsed === 'usd') {
+            amountInOld = amt * Currency.rate;
+          } else if (currencyUsed === 'new') {
+            amountInOld = amt * 100;
+          } else {
+            amountInOld = amt;
+          }
 
-    if (inv2.remaining < amountInOld) {
-      Utils.toast(`⚠️ المبلغ يتجاوز المتبقي (${formatInCurrency(inv2.remaining, currencyUsed)})`);
-      return;
-    }
+          if (inv2.remaining < amountInOld) {
+            Utils.toast(`⚠️ المبلغ يتجاوز المتبقي (${formatInCurrency(inv2.remaining, currencyUsed)})`);
+            return;
+          }
 
-    // تطبيق الدفع (الدالة تتوقع المبلغ بالعملة القديمة)
-    const ok = await RetailModule._applyPayment(inv2, amountInOld, inv2.paymentMethod || 'آجل', 'repayment');
-    if (!ok) {
-      Utils.toast('❌ فشل التسديد');
-      return;
-    }
-    document.getElementById('debtPaymentModal').classList.remove('open');
-    await InvoicesRecordsModule.load();
-    await App.updateQuickStats();
-    Utils.toast(`✅ تم تسديد ${formatInCurrency(amountInOld, currencyUsed)}`);
-  };
+          const ok = await RetailModule._applyPayment(inv2, amountInOld, inv2.paymentMethod || 'آجل', 'repayment');
+          if (!ok) {
+            Utils.toast('❌ فشل التسديد');
+            return;
+          }
+          document.getElementById('debtPaymentModal').classList.remove('open');
+          await InvoicesRecordsModule.load();
+          await App.updateQuickStats();
+          Utils.toast(`✅ تم تسديد ${formatInCurrency(amountInOld, currencyUsed)}`);
+        };
 
-  document.getElementById('debtPaymentCancel').onclick = () => {
-    document.getElementById('debtPaymentModal').classList.remove('open');
-  };
-},
-// ===== END: تعديل دعم العملات في تسديد الديون =====
-      // ===== END: تعديل دعم العملات في تسديد الديون =====
+        document.getElementById('debtPaymentCancel').onclick = () => {
+          document.getElementById('debtPaymentModal').classList.remove('open');
+        };
+      },
 
       openDetail: async (invoiceId) => {
         const inv = await DB.get('invoices', invoiceId);
@@ -7150,7 +7508,6 @@ ${storeLogo ? `<img src="${storeLogo}" class="print-store-logo" alt="شعار ا
     // =====================================================================
     // 19. دوال العملاء - إعادة تعيين مودال العميل (تعريف واحد فقط)
     // =====================================================================
-    // تم تعريف الدالة مرة واحدة هنا وسيتم استخدامها في كل مكان
     function resetCustomerModalToDefault() {
       const nameInput = document.getElementById('customerAddName');
       if (nameInput) {
@@ -7794,11 +8151,13 @@ ${storeLogo ? `<img src="${storeLogo}" class="print-store-logo" alt="شعار ا
           }
 
           for (const inv of sales) {
-            totalSales += inv.netAmount || 0;
+            const revenue = inv.totalAmount - (inv.discount || 0);
+            totalSales += revenue;
             const items = allTodayItems.filter((i) => i.invoiceId === inv.id);
             for (const it of items) {
               const cost = it.purchasePriceAtSale || 0;
-              cogs += cost * it.quantity * (it.wholesaleFactor || 1);
+              const factor = it.wholesaleFactor || 1;
+              cogs += cost * it.quantity * factor;
             }
             if (inv.paymentMethod === 'كاش') cashIn += inv.paidAmount || 0;
           }
